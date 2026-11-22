@@ -1,4 +1,4 @@
-name: Build Serpent-Wild v7 Ultra Edition APK
+name: Build Serpent-Wild v8 Ultra Pro Max APK
 
 on:
   push:
@@ -29,7 +29,7 @@ jobs:
             yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null 2>&1 || true
           fi
 
-      - name: Generate Serpent-Wild v7 Android Project
+      - name: Generate Serpent-Wild v8 Android Project
         run: |
           mkdir -p app/src/main/java/com/apexwild/serpent app/src/main/assets app/src/main/res/values
 
@@ -76,8 +76,8 @@ jobs:
                   applicationId = "com.apexwild.serpent.royale"
                   minSdk = 26
                   targetSdk = 35
-                  versionCode = 7
-                  versionName = "7.0.0"
+                  versionCode = 8
+                  versionName = "8.0.0"
               }
               signingConfigs {
                   create("release") {
@@ -270,11 +270,11 @@ jobs:
           <head>
             <meta charset="UTF-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-            <title>SERPENT WILD: APEX — v7 Ultra Edition</title>
+            <title>SERPENT WILD: APEX — v8 Ultra Pro Max</title>
             <style>
               :root {
                 --bg-dark: #060b07;
-                --panel-bg: rgba(10, 18, 12, 0.9);
+                --panel-bg: rgba(10, 18, 12, 0.92);
                 --panel-border: rgba(164, 224, 124, 0.34);
                 --gold: #f6c445;
                 --green: #7ce846;
@@ -313,13 +313,13 @@ jobs:
                 background: rgba(255,255,255,0.08); color: #dcead7; font-size: 12px; font-weight: 800; text-transform: uppercase; cursor: pointer;
               }
 
-              /* 1. SPLASH SCREEN */
+              /* 1. SPLASH SCREEN (BUTTON-ONLY ENTRY) */
               #splashScreen {
                 position: fixed; inset: 0; z-index: 120; display: flex; flex-direction: column;
                 align-items: center; justify-content: space-between;
                 padding: 18px 24px 24px;
                 background: radial-gradient(circle at 50% 40%, rgba(28, 62, 26, 0.92), rgba(5, 10, 6, 0.99) 76%);
-                cursor: pointer; transition: opacity 0.4s ease;
+                transition: opacity 0.4s ease;
               }
               #splashScreen.fade-out { opacity: 0; pointer-events: none; }
               .studio-brand { font-size: 11px; font-weight: 900; letter-spacing: 5px; color: #b7d9a7; text-transform: uppercase; }
@@ -338,7 +338,7 @@ jobs:
               }
               .splash-subtitle { font-size: 11px; font-weight: 900; letter-spacing: 3px; color: var(--green); text-transform: uppercase; }
               #tapEnterWrap { display: flex; flex-direction: column; align-items: center; gap: 7px; width: 100%; max-width: 320px; }
-              #btnTapEnter { width: 100%; padding: 13px 22px; font-size: 14.5px; letter-spacing: 1.8px; animation: pulse 1.9s ease-in-out infinite; }
+              #btnTapEnter { width: 100%; padding: 14px 22px; font-size: 14.5px; letter-spacing: 1.8px; animation: pulse 1.9s ease-in-out infinite; }
               #loaderWrap { display: none; width: 100%; max-width: 440px; flex-direction: column; gap: 6px; }
               .loader-row { display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 800; color: #d6ead0; }
               .loader-bar { width: 100%; height: 9px; border-radius: 999px; background: rgba(255,255,255,0.1); border: 1px solid rgba(246,196,69,0.45); overflow: hidden; padding: 1px; }
@@ -365,8 +365,8 @@ jobs:
               .mode-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
               #btnStartMatch { width: 178px; height: 46px; padding: 0; font-size: 15px; }
 
-              /* MODALS — ZERO OVERLAP FIXED FLEX LAYOUT */
-              #matchmakingOverlay, .modal-backdrop, #tacMapOverlay, #payModal { position: fixed; inset: 0; z-index: 80; display: none; align-items: center; justify-content: center; padding: 10px; background: rgba(5,10,6,0.85); backdrop-filter: blur(8px); }
+              /* WORKSHOP MODAL (VIDEO 2 STYLE: LEFT LIVE PREVIEW + RIGHT VISUAL CARDS!) */
+              #matchmakingOverlay, .modal-backdrop, #tacMapOverlay, #payModal { position: fixed; inset: 0; z-index: 80; display: none; align-items: center; justify-content: center; padding: 8px; background: rgba(5,10,6,0.88); backdrop-filter: blur(8px); }
               #payModal { z-index: 100; }
               #matchmakingOverlay.open, .modal-backdrop.open, #tacMapOverlay.open, #payModal.open { display: flex; }
               .mm-card { padding: 20px 26px; border-radius: 18px; text-align: center; max-width: 340px; width: 88%; }
@@ -374,44 +374,59 @@ jobs:
               @keyframes spin { to { transform: rotate(360deg); } }
 
               .modal-box {
-                width: 100%; max-width: 820px; height: 90vh; max-height: 90vh; border-radius: 18px;
+                width: 100%; max-width: 860px; height: 92vh; max-height: 92vh; border-radius: 18px;
                 display: flex; flex-direction: column; overflow: hidden;
-                background: linear-gradient(165deg, rgba(16,27,17,0.99), rgba(9,15,10,0.99));
+                background: linear-gradient(165deg, rgba(14,24,18,0.99), rgba(8,13,10,0.99));
                 border: 1px solid rgba(168,222,128,0.34);
               }
               .modal-head {
-                flex-shrink: 0; position: relative; z-index: 10;
-                display: flex; align-items: center; justify-content: space-between;
-                padding: 10px 14px; background: #0d170e; border-bottom: 1px solid rgba(255,255,255,0.1);
+                flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+                padding: 8px 14px; background: #0c160e; border-bottom: 1px solid rgba(255,255,255,0.1);
               }
-              .modal-title { font-size: 13.5px; font-weight: 900; letter-spacing: 1.3px; text-transform: uppercase; color: var(--gold); }
-              .close-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; font-size: 15px; cursor: pointer; }
+              .modal-title { font-size: 13px; font-weight: 900; letter-spacing: 1.2px; text-transform: uppercase; color: var(--gold); }
+              .close-btn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; font-size: 14px; cursor: pointer; }
               .modal-tabs {
-                flex-shrink: 0; position: relative; z-index: 10;
-                display: flex; gap: 6px; padding: 8px 12px; background: #0a120b;
+                flex-shrink: 0; display: flex; gap: 6px; padding: 7px 12px; background: #09110a;
                 border-bottom: 1px solid rgba(255,255,255,0.08); overflow-x: auto;
               }
-              .tab-btn { padding: 7px 13px; border-radius: 9px; border: 1px solid transparent; background: rgba(255,255,255,0.06); color: var(--text-muted); font-size: 10.5px; font-weight: 800; text-transform: uppercase; white-space: nowrap; cursor: pointer; }
+              .tab-btn { padding: 6px 12px; border-radius: 9px; border: 1px solid transparent; background: rgba(255,255,255,0.06); color: var(--text-muted); font-size: 10.5px; font-weight: 800; text-transform: uppercase; white-space: nowrap; cursor: pointer; }
               .tab-btn.active { background: rgba(246,196,69,0.22); border-color: var(--gold); color: #fff; }
-              .modal-body {
-                flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
-                padding: 12px 14px; position: relative; z-index: 1;
-              }
-              .tab-pane { display: none; }
+              .modal-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 10px 12px; }
+              .tab-pane { display: none; height: 100%; }
               .tab-pane.active { display: block; }
+
+              /* SPLIT WORKSHOP LAYOUT FOR SNAKES PAGE */
+              .workshop-split { display: flex; gap: 10px; height: 100%; min-height: 0; }
+              .ws-preview {
+                width: 215px; flex-shrink: 0; border-radius: 14px; padding: 10px;
+                background: radial-gradient(circle at 50% 40%, rgba(28,58,36,0.65), rgba(8,14,10,0.95));
+                border: 1px solid rgba(164,224,124,0.3); display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 6px;
+              }
+              #wsPreviewCanvas { width: 100%; flex: 1; min-height: 120px; border-radius: 10px; display: block; }
+              .ws-grid-wrap { flex: 1; min-width: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-right: 2px; }
+              .ws-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(122px, 1fr)); gap: 8px; }
+              .snake-card {
+                padding: 7px 6px; border-radius: 12px; background: rgba(255,255,255,0.05);
+                border: 2px solid rgba(255,255,255,0.12); display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; text-align: center;
+              }
+              .snake-card.selected { border-color: var(--gold); background: rgba(246,196,69,0.14); }
+              .snake-card.mythic { border-color: rgba(97,228,255,0.4); background: linear-gradient(155deg, rgba(32,16,56,0.7), rgba(10,24,30,0.78)); }
+              .snake-card.mythic.selected { border-color: var(--diamond); }
+              .snake-thumb { width: 68px; height: 68px; border-radius: 10px; background: rgba(0,0,0,0.32); display: block; }
+              .sc-name { font-size: 10.5px; font-weight: 900; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+              .sc-price { font-size: 10px; font-weight: 900; padding: 2px 8px; border-radius: 6px; background: rgba(0,0,0,0.45); width: 100%; }
+
               .section-lbl { font-size: 10px; font-weight: 800; letter-spacing: 1.1px; text-transform: uppercase; color: var(--text-muted); margin: 8px 0 6px; }
               .text-input { width: 100%; padding: 7px 10px; border-radius: 9px; border: 1px solid rgba(168,222,128,0.36); background: rgba(6,12,7,0.85); color: #fff; font-size: 13px; font-weight: 800; outline: none; }
               .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
               .chip { padding: 5px 10px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.06); color: #dcead7; font-size: 11px; font-weight: 700; cursor: pointer; }
               .chip.selected { border-color: var(--gold); background: rgba(246,196,69,0.24); color: #fff; }
               .armory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: 9px; }
-              .card-item { padding: 10px; border-radius: 13px; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.12); display: flex; flex-direction: column; gap: 6px; cursor: pointer; position: relative; }
+              .card-item { padding: 10px; border-radius: 13px; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.12); display: flex; flex-direction: column; gap: 6px; cursor: pointer; }
               .card-item.selected { border-color: var(--gold); background: rgba(246,196,69,0.12); }
               .card-item.mythic { border-color: rgba(97,228,255,0.42); background: linear-gradient(150deg, rgba(30,18,52,0.68), rgba(10,22,28,0.75)); }
-              .card-item.mythic.selected { border-color: var(--diamond); }
               .card-item.inr-card { border-color: rgba(124,232,70,0.48); background: linear-gradient(150deg, rgba(16,44,24,0.72), rgba(8,18,14,0.8)); }
               .tier-badge { font-size: 8px; font-weight: 900; padding: 2px 6px; border-radius: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
-              .price-line { font-size: 10.5px; font-weight: 900; color: #ffe47a; text-align: center; }
               .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; margin-bottom: 10px; }
               .stat-box { padding: 8px; border-radius: 11px; background: rgba(0,0,0,0.34); border: 1px solid rgba(255,255,255,0.08); text-align: center; }
               .stat-val { font-size: 16px; font-weight: 900; color: var(--green); }
@@ -511,16 +526,16 @@ jobs:
                   </svg>
                 </div>
                 <div class="splash-title">SERPENT WILD: APEX</div>
-                <div class="splash-subtitle">24 UNIQUE SERPENTS • 5 FREE • ₹10 SHOP</div>
+                <div class="splash-subtitle">ULTRA PRO MAX • 24 SERPENTS • WORKSHOP</div>
               </div>
               <div id="tapEnterWrap">
                 <button class="btn-gold" id="btnTapEnter" type="button">TAP TO ENTER JUNGLE</button>
-                <div style="font-size:10.5px;color:var(--text-muted);text-align:center;">Realistic Thick Tail • 24 Unique Designs • 12KM Map</div>
+                <div style="font-size:10.5px;color:var(--text-muted);text-align:center;">Press the button above to enter</div>
               </div>
               <div id="loaderWrap">
-                <div class="loader-row"><span id="loaderStatus">Sculpting 24 Unique Realistic Serpents...</span><span id="loaderPct">0%</span></div>
+                <div class="loader-row"><span id="loaderStatus">Loading 24 Unique Serpents &amp; Workshop...</span><span id="loaderPct">0%</span></div>
                 <div class="loader-bar"><div id="loaderFill"></div></div>
-                <div id="loaderTip">Tip: First 5 Snakes are FREE! Unlock Glowing Mythic Dragons in Snakes Page!</div>
+                <div id="loaderTip">Tip: Upgrade Magnet &amp; Speed in the Upgrades tab to dominate the 12KM Arena!</div>
               </div>
             </div>
 
@@ -544,6 +559,7 @@ jobs:
               <div id="lobbyRail">
                 <button class="rail-item glass shop-hl" type="button" data-open-prof="tabShop"><span>🛒</span><span>Shop</span></button>
                 <button class="rail-item glass" type="button" data-open-prof="tabSnakes"><span>🐉</span><span>Snakes (24)</span></button>
+                <button class="rail-item glass" type="button" data-open-prof="tabUpgrades"><span>⚡</span><span>Upgrades</span></button>
                 <button class="rail-item glass" type="button" data-open-prof="tabBiomes"><span>🗺️</span><span>Biomes</span></button>
                 <button class="rail-item glass" type="button" data-open-prof="tabProfile"><span>👤</span><span>Profile</span></button>
               </div>
@@ -568,11 +584,11 @@ jobs:
               </div>
             </div>
 
-            <!-- CLEAN ZERO-OVERLAP MODAL (SHOP = ONLY GOLD & DIAMONDS, SNAKES = ONLY 24 SNAKES) -->
+            <!-- WORKSHOP & SHOP MODAL -->
             <div class="modal-backdrop" id="profileModal">
               <div class="modal-box">
                 <div class="modal-head">
-                  <div class="modal-title" id="modalMainTitle">Apex Shop &amp; Armory</div>
+                  <div class="modal-title">Apex Workshop &amp; Store</div>
                   <div style="display:flex;align-items:center;gap:8px;">
                     <span style="font-size:11px;font-weight:900;color:#ffe47a;">🪙 <span id="mCoins">2,500</span></span>
                     <span style="font-size:11px;font-weight:900;color:#8cf0ff;">💎 <span id="mDias">50</span></span>
@@ -580,25 +596,46 @@ jobs:
                   </div>
                 </div>
                 <div class="modal-tabs" id="profileTabs">
-                  <button class="tab-btn active" type="button" data-tab="tabShop">🛒 Gold &amp; Diamond Shop</button>
-                  <button class="tab-btn" type="button" data-tab="tabSnakes">🐉 Snakes (24)</button>
+                  <button class="tab-btn active" type="button" data-tab="tabSnakes">🐉 Snakes (24)</button>
+                  <button class="tab-btn" type="button" data-tab="tabUpgrades">⚡ Upgrades</button>
+                  <button class="tab-btn" type="button" data-tab="tabShop">🛒 Gold &amp; Diamond Shop</button>
                   <button class="tab-btn" type="button" data-tab="tabBiomes">🗺️ Biomes</button>
                   <button class="tab-btn" type="button" data-tab="tabProfile">👤 Profile</button>
                 </div>
                 <div class="modal-body">
-                  <!-- TAB 1: SHOP (ONLY GOLD & DIAMONDS) -->
-                  <div class="tab-pane active" id="tabShop">
+                  <!-- TAB: SNAKES (VIDEO 2 SPLIT WORKSHOP: LIVE PREVIEW LEFT + VISUAL HEAD CARDS RIGHT!) -->
+                  <div class="tab-pane active" id="tabSnakes">
+                    <div class="workshop-split">
+                      <div class="ws-preview">
+                        <div style="text-align:center;width:100%;">
+                          <div id="wsName" style="font-size:13px;font-weight:900;color:var(--gold);text-transform:uppercase;">King Cobra</div>
+                          <div id="wsTier" style="font-size:9px;font-weight:900;color:#95f54c;text-transform:uppercase;margin-top:2px;">FREE • CLASSIC</div>
+                        </div>
+                        <canvas id="wsPreviewCanvas" width="200" height="220"></canvas>
+                        <div id="wsTrait" style="font-size:9.5px;color:#b8d4b4;text-align:center;line-height:1.25;">Spectacle Hood • Venom Slow+</div>
+                        <button type="button" id="wsActionBtn" class="btn-gold" style="width:100%;padding:9px;font-size:11.5px;">EQUIPPED</button>
+                      </div>
+                      <div class="ws-grid-wrap"><div class="ws-grid" id="snakesGrid"></div></div>
+                    </div>
+                  </div>
+
+                  <!-- TAB: UPGRADES (MAGNET, SPEED, AGILITY, BOOST) -->
+                  <div class="tab-pane" id="tabUpgrades">
+                    <div class="section-lbl">Permanent Serpent Upgrades (Buy With Gold Coins)</div>
+                    <div class="armory-grid" id="upgradesGrid"></div>
+                  </div>
+
+                  <!-- TAB: SHOP (ONLY GOLD & DIAMONDS) -->
+                  <div class="tab-pane" id="tabShop">
                     <div class="shop-banner">
                       <div>
                         <div style="font-size:12.5px;font-weight:900;color:#9cf4ff;">💎 GOLD &amp; DIAMOND TOP-UP STORE</div>
-                        <div style="font-size:10px;color:#b8d4c8;">500 Diamonds = ₹10 • 10,000 Coins = ₹10 • Claim Free Daily Bonus!</div>
+                        <div style="font-size:10px;color:#b8d4c8;">500 Diamonds = ₹10 • 10,000 Coins = ₹10 • Free Daily Bonus!</div>
                       </div>
                       <button class="btn-gold" id="btnDailyBonus" type="button" style="padding:7px 13px;font-size:10.5px;">🎁 +1000 🪙 &amp; +25 💎</button>
                     </div>
-
                     <div class="section-lbl">Buy Diamonds &amp; Gold Packs (₹ INR)</div>
                     <div class="armory-grid" id="storeGrid" style="margin-bottom:14px;"></div>
-
                     <div class="section-lbl">Exchange Gold Coins → Diamonds</div>
                     <div class="armory-grid">
                       <div class="card-item mythic">
@@ -614,13 +651,10 @@ jobs:
                     </div>
                   </div>
 
-                  <!-- TAB 2: SNAKES (ONLY 24 UNIQUE SNAKES — FIRST 5 FREE, MOST GLOWING AT END) -->
-                  <div class="tab-pane" id="tabSnakes"><div class="armory-grid" id="snakesGrid"></div></div>
-
-                  <!-- TAB 3: BIOMES -->
+                  <!-- TAB: BIOMES -->
                   <div class="tab-pane" id="tabBiomes"><div class="armory-grid" id="biomeGrid"></div></div>
 
-                  <!-- TAB 4: PROFILE -->
+                  <!-- TAB: PROFILE -->
                   <div class="tab-pane" id="tabProfile">
                     <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:10px;border-radius:12px;background:rgba(255,255,255,0.04);margin-bottom:10px;">
                       <div class="avatar-box" style="width:48px;height:48px;font-size:24px;"><span id="prAv">🐍</span><span class="lvl-tag" id="prLv">LV.1</span></div>
@@ -640,7 +674,6 @@ jobs:
               </div>
             </div>
 
-            <!-- STORE CHECKOUT POPUP -->
             <div id="payModal">
               <div class="mm-card glass" style="max-width:360px;">
                 <div style="font-size:15px;font-weight:900;color:var(--gold);margin-bottom:6px;" id="payTitle">500 DIAMONDS PACK</div>
@@ -653,7 +686,6 @@ jobs:
               </div>
             </div>
 
-            <!-- SETTINGS MODAL -->
             <div class="modal-backdrop" id="settingsModal">
               <div class="modal-box" style="max-width:520px;height:auto;max-height:90vh;">
                 <div class="modal-head">
@@ -697,7 +729,6 @@ jobs:
               </div>
             </div>
 
-            <!-- 3. IN-GAME HUD -->
             <div id="hud">
               <div id="stormVignette"></div>
               <div id="hudTopLeft">
@@ -782,7 +813,6 @@ jobs:
                 </div>
               </div>
             </div>
-
             <script>
               (() => {
                 'use strict';
@@ -809,7 +839,6 @@ jobs:
                   { lv: 6, name: 'Gold Python' }, { lv: 10, name: 'Platinum Mamba' }, { lv: 15, name: 'Apex Dragon' }
                 ];
 
-                // SHOP: ONLY GOLD & DIAMOND PACKS
                 const STORE_PACKS = [
                   { id: 'dia500',  title: '💎 500 Diamonds',  desc: 'Special ₹10 Diamond Pack!',   inr: 10, coins: 0,     dias: 500 },
                   { id: 'coin10k', title: '🪙 10,000 Coins',  desc: 'Special ₹10 Gold Pack!',      inr: 10, coins: 10000, dias: 0 },
@@ -818,36 +847,34 @@ jobs:
                   { id: 'mega',    title: '👑 Apex Mega Pack',desc: '5,000 💎 + 50,000 🪙 Bundle', inr: 79, coins: 50000, dias: 5000 }
                 ];
 
-                // 24 COMPLETELY DISTINCT SNAKES: FIRST 5 SIMPLE FREE -> ESCALATING PRICE -> MOST GLOWING MYTHICS AT END
+                const UPGRADE_LIST = [
+                  { id: 'magnet',  name: 'Prey Magnet',   icon: '🧲', desc: 'Pull nearby prey & meat orbs towards your mouth', max: 5, baseCost: 800 },
+                  { id: 'speed',   name: 'Slither Speed', icon: '⚡', desc: 'Increase base movement speed in all terrains',     max: 5, baseCost: 1000 },
+                  { id: 'agility', name: 'Turn Agility',  icon: '🌀', desc: 'Sharper turns to cut off rival snakes faster',     max: 5, baseCost: 900 },
+                  { id: 'stamina', name: 'Boost Stamina', icon: '🔥', desc: 'Longer boost duration & faster stamina recharge',  max: 5, baseCost: 1100 }
+                ];
+
+                // 24 UNIQUE SERPENTS (FIRST 5 FREE -> COINS -> GLOWING MYTHIC DRAGONS AT END)
                 const SPECIES = [
-                  // 1-5: FREE SIMPLE REALISTIC SNAKES
                   { id: 'cobra',     name: 'King Cobra',          tier: 'Free',      pat: 'cobra',     hood: true,  rattle: false, horns: false, dragon: false, glow: null,      base: '#59632b', mid: '#3e471a', dark: '#1a1f0a', accent: '#dec66f', belly: '#c9bd7e', eye: '#ffb924', speed: 84, turn: 86, girth: 1.0,  trait: 'Spectacle Hood • Venom Slow+',     curr: 'free', price: 0 },
                   { id: 'boa',       name: 'Emerald Tree Boa',    tier: 'Free',      pat: 'boa',       hood: false, rattle: false, horns: false, dragon: false, glow: null,      base: '#1a8f43', mid: '#10662e', dark: '#052e13', accent: '#f2ffed', belly: '#b8e055', eye: '#ffde38', speed: 80, turn: 90, girth: 1.1,  trait: 'White Saddles • Longer Camo',      curr: 'free', price: 0 },
                   { id: 'viper',     name: 'Desert Horned Viper', tier: 'Free',      pat: 'viper',     hood: false, rattle: true,  horns: true,  dragon: false, glow: null,      base: '#c79b63', mid: '#9e723d', dark: '#4a2e10', accent: '#5c3310', belly: '#ebd8b3', eye: '#ff771c', speed: 92, turn: 92, girth: 1.06, trait: 'Brow Horns & Rattle Tail',         curr: 'free', price: 0 },
                   { id: 'python',    name: 'Reticulated Python',  tier: 'Free',      pat: 'python',    hood: false, rattle: false, horns: false, dragon: false, glow: null,      base: '#574632', mid: '#362a1d', dark: '#140f0a', accent: '#d6b372', belly: '#b5a284', eye: '#ff9d3b', speed: 82, turn: 84, girth: 1.12, trait: 'Natural Retic Net • +20% Mass',    curr: 'free', price: 0 },
                   { id: 'anaconda',  name: 'Green Anaconda',      tier: 'Free',      pat: 'anaconda',  hood: false, rattle: false, horns: false, dragon: false, glow: null,      base: '#6e7329', mid: '#4e541a', dark: '#212408', accent: '#1c1a0a', belly: '#b8b062', eye: '#f2ad24', speed: 80, turn: 80, girth: 1.22, trait: 'Swamp Giant • Fast Swimmer',       curr: 'free', price: 0 },
-
-                  // 6-9: RARE COINS (5,000 - 15,000)
                   { id: 'corn',      name: 'Golden Corn Snake',   tier: 'Rare',      pat: 'corn',      hood: false, rattle: false, horns: false, dragon: false, glow: null,      base: '#d96b27', mid: '#a34410', dark: '#3d1503', accent: '#ffd06b', belly: '#ffe8a8', eye: '#ff4824', speed: 86, turn: 88, girth: 1.0,  trait: 'Rounded Amber Blotches',           curr: 'coin', price: 5000 },
                   { id: 'krait',     name: 'Crimson Krait',       tier: 'Rare',      pat: 'krait',     hood: false, rattle: false, horns: false, dragon: false, glow: null,      base: '#c41d1d', mid: '#871111', dark: '#110f12', accent: '#f5d44c', belly: '#ebe0c5', eye: '#ffe647', speed: 88, turn: 88, girth: 0.96, trait: 'Curved Tri-Bands • Fast Venom',    curr: 'coin', price: 8000 },
                   { id: 'albino',    name: 'Albino Burmese',      tier: 'Rare',      pat: 'albino',    hood: false, rattle: false, horns: false, dragon: false, glow: '#fff2b0', base: '#fff3cf', mid: '#e8c868', dark: '#8c6e26', accent: '#fffae0', belly: '#ffffff', eye: '#ff2b2b', speed: 85, turn: 86, girth: 1.15, trait: 'Radiant Ivory & Gold Rings',       curr: 'coin', price: 12000 },
                   { id: 'mamba',     name: 'Black Mamba',         tier: 'Rare',      pat: 'mamba',     hood: false, rattle: false, horns: false, dragon: false, glow: null,      base: '#34383d', mid: '#1e2124', dark: '#08090a', accent: '#7c8591', belly: '#697078', eye: '#ff3b30', speed: 97, turn: 94, girth: 0.94, trait: 'Coffin Skull • Fastest Speed',     curr: 'coin', price: 15000 },
-
-                  // 10-14: EPIC COINS (25,000 - 50,000)
                   { id: 'coral',     name: 'Coral Reef Viper',    tier: 'Epic',      pat: 'coral',     hood: false, rattle: false, horns: false, dragon: false, glow: '#ff5e7e', base: '#ff3864', mid: '#9e1438', dark: '#1c0610', accent: '#ffe96b', belly: '#ffd1dc', eye: '#59f4ff', speed: 90, turn: 90, girth: 1.0,  trait: 'Wavy Reef Stripes & Finlets',      curr: 'coin', price: 25000 },
                   { id: 'obsidian',  name: 'Obsidian Adder',      tier: 'Epic',      pat: 'obsidian',  hood: false, rattle: false, horns: true,  dragon: false, glow: '#b46bff', base: '#241b36', mid: '#140e21', dark: '#06040a', accent: '#c075ff', belly: '#564278', eye: '#d98cff', speed: 92, turn: 91, girth: 1.06, trait: 'Jagged Crystal Spine Shards',      curr: 'coin', price: 32000 },
                   { id: 'bushmaster',name: 'Toxic Bushmaster',    tier: 'Epic',      pat: 'bush',      hood: false, rattle: false, horns: false, dragon: false, glow: '#6eff3b', base: '#2e6e18', mid: '#173d0a', dark: '#071703', accent: '#8cff42', belly: '#a8eb6b', eye: '#d9ff38', speed: 91, turn: 90, girth: 1.12, trait: 'Spiky Venom Chevrons & Aura',      curr: 'coin', price: 38000 },
                   { id: 'taipan',    name: 'Sunburst Taipan',     tier: 'Epic',      pat: 'taipan',    hood: true,  rattle: false, horns: false, dragon: false, glow: '#ffaa24', base: '#d98218', mid: '#8f4708', dark: '#301402', accent: '#fff08a', belly: '#ffe08a', eye: '#ffffff', speed: 96, turn: 92, girth: 1.02, trait: 'Solar Flare Hood & Sun-Rays',      curr: 'coin', price: 45000 },
                   { id: 'gaboon',    name: 'Royal Gaboon Viper',  tier: 'Epic',      pat: 'gaboon',    hood: false, rattle: false, horns: true,  dragon: false, glow: '#f6c445', base: '#7d5b42', mid: '#453022', dark: '#1a100a', accent: '#f6c445', belly: '#d9c4a3', eye: '#ffe45c', speed: 88, turn: 90, girth: 1.24, trait: 'Leaf-Camo Triangles & Nose Horns', curr: 'coin', price: 50000 },
-
-                  // 15-19: LEGENDARY GLOWING (500 - 1,000 DIAMONDS)
                   { id: 'frost',     name: 'Frost Ice Viper',     tier: 'Legendary', pat: 'frost',     hood: false, rattle: false, horns: true,  dragon: false, glow: '#59ecff', base: '#7ae3fa', mid: '#2c93b8', dark: '#0a2d3d', accent: '#ffffff', belly: '#c7f5ff', eye: '#00f2ff', speed: 92, turn: 92, girth: 1.06, trait: 'Ice-Spike Ridge & Glacier Glow',   curr: 'dia',  price: 500 },
                   { id: 'titanoboa', name: 'Titanoboa',           tier: 'Legendary', pat: 'titan',     hood: false, rattle: false, horns: false, dragon: false, glow: '#ffaa33', base: '#6e4e2e', mid: '#473019', dark: '#1a1007', accent: '#e0ad58', belly: '#997a54', eye: '#ffaa1d', speed: 86, turn: 84, girth: 1.32, trait: 'Prehistoric Colossal Bone Armor',  curr: 'dia',  price: 650 },
                   { id: 'plasma',    name: 'Plasma Cyber-Boa',    tier: 'Legendary', pat: 'plasma',    hood: false, rattle: false, horns: false, dragon: false, glow: '#ff38d4', base: '#331247', mid: '#1a0726', dark: '#09020f', accent: '#ff47de', belly: '#75299e', eye: '#00f7ff', speed: 94, turn: 94, girth: 1.1,  trait: 'Neon Cyber Nodes & Energy Fins',   curr: 'dia',  price: 750 },
                   { id: 'phoenix',   name: 'Solar Phoenix Viper', tier: 'Legendary', pat: 'phoenix',   hood: true,  rattle: false, horns: true,  dragon: false, glow: '#ff771c', base: '#e04212', mid: '#8c1c06', dark: '#290602', accent: '#ffee63', belly: '#ffa834', eye: '#fff899', speed: 96, turn: 93, girth: 1.08, trait: 'Flame-Feather Hood & Ember Crest', curr: 'dia',  price: 850 },
                   { id: 'basilisk',  name: 'Emerald Basilisk',    tier: 'Legendary', pat: 'basilisk',  hood: false, rattle: false, horns: true,  dragon: false, glow: '#38ff7a', base: '#128c45', mid: '#084f25', dark: '#021f0d', accent: '#75ff9c', belly: '#69d988', eye: '#ffee38', speed: 94, turn: 92, girth: 1.18, trait: '3-Point Royal Crown & Spine',      curr: 'dia',  price: 1000 },
-
-                  // 20-24: MYTHIC ULTRA-GLOWING DRAGONS (1,500 - 2,500 DIAMONDS — MOST EXPENSIVE AT END)
                   { id: 'inferno',   name: 'Inferno Dragon',      tier: 'Mythic',    pat: 'd_fire',    hood: false, rattle: false, horns: true,  dragon: true,  glow: '#ff511c', base: '#bd2211', mid: '#6e0e05', dark: '#1c0402', accent: '#ffba26', belly: '#ff6a1a', eye: '#ffee38', speed: 96, turn: 92, girth: 1.18, trait: 'Devil Horns & Blazing Magma Aura', curr: 'dia',  price: 1500 },
                   { id: 'jade',      name: 'Jade Imperial Dragon',tier: 'Mythic',    pat: 'd_jade',    hood: false, rattle: false, horns: true,  dragon: true,  glow: '#38ffad', base: '#109468', mid: '#07543a', dark: '#021f15', accent: '#ffe052', belly: '#75f0c0', eye: '#ffe44d', speed: 95, turn: 95, girth: 1.16, trait: 'Golden Antlers & Flowing Whiskers',curr: 'dia',  price: 1800 },
                   { id: 'leviathan', name: 'Shadow Leviathan',    tier: 'Mythic',    pat: 'd_sea',     hood: true,  rattle: false, horns: true,  dragon: true,  glow: '#38e8ff', base: '#1b1d3b', mid: '#0e1024', dark: '#04050d', accent: '#45f0ff', belly: '#375878', eye: '#59f4ff', speed: 97, turn: 94, girth: 1.2,  trait: 'Abyssal Fins & Bioluminescent',    curr: 'dia',  price: 2000 },
@@ -877,6 +904,7 @@ jobs:
                   name: 'ApexHunter', avatar: '🐍', title: 'Apex Predator',
                   level: 1, xp: 0, coins: 2500, diamonds: 50, lastDaily: 0,
                   ownedSnakes: ['cobra', 'boa', 'viper', 'python', 'anaconda'],
+                  upgrades: { magnet: 0, speed: 0, agility: 0, stamina: 0 },
                   selectedSnake: 'cobra', selectedBiome: 'amazon', selectedMode: 'br',
                   settings: { gfx: 'high', zoom: 0.86, joyMode: 'floating', lookSens: 1.3, autoCenter: true, vib: true, showFps: false, sfxVol: 0.8, muted: false },
                   stats: { matches: 0, wins: 0, bestLength: 0, kills: 0, prey: 0 }
@@ -884,16 +912,21 @@ jobs:
 
                 let profile = (() => {
                   try {
-                    const raw = localStorage.getItem('serpent_wild_v7');
+                    const raw = localStorage.getItem('serpent_wild_v8');
                     if (!raw) return JSON.parse(JSON.stringify(DEFAULT_PROFILE));
                     const d = JSON.parse(raw);
-                    const merged = { ...JSON.parse(JSON.stringify(DEFAULT_PROFILE)), ...d, settings: { ...DEFAULT_PROFILE.settings, ...(d.settings || {}) }, stats: { ...DEFAULT_PROFILE.stats, ...(d.stats || {}) } };
+                    const merged = {
+                      ...JSON.parse(JSON.stringify(DEFAULT_PROFILE)), ...d,
+                      upgrades: { ...DEFAULT_PROFILE.upgrades, ...(d.upgrades || {}) },
+                      settings: { ...DEFAULT_PROFILE.settings, ...(d.settings || {}) },
+                      stats: { ...DEFAULT_PROFILE.stats, ...(d.stats || {}) }
+                    };
                     ['cobra','boa','viper','python','anaconda'].forEach(id => { if (!merged.ownedSnakes.includes(id)) merged.ownedSnakes.push(id); });
                     return merged;
                   } catch (e) { return JSON.parse(JSON.stringify(DEFAULT_PROFILE)); }
                 })();
 
-                const saveProfile = () => { try { localStorage.setItem('serpent_wild_v7', JSON.stringify(profile)); } catch (e) {} };
+                const saveProfile = () => { try { localStorage.setItem('serpent_wild_v8', JSON.stringify(profile)); } catch (e) {} };
                 const getRank = lv => { let n = RANK_TIERS[0].name; for (const r of RANK_TIERS) if (lv >= r.lv) n = r.name; return n; };
                 const getXpNeed = lv => 180 + (lv - 1) * 90;
 
@@ -941,10 +974,14 @@ jobs:
                 const miniCtx = miniCanvas.getContext('2d');
                 const tacCanvas = document.getElementById('tacMapCanvas');
                 const tacCtx = tacCanvas.getContext('2d');
+                const wsCanvas = document.getElementById('wsPreviewCanvas');
+                const wsCtx = wsCanvas.getContext('2d');
 
                 let appW = window.innerWidth, appH = window.innerHeight, dpr = 1;
                 let screenState = 'splash';
                 let splashEntered = false, tacMapOpen = false, pendingPack = null;
+                let previewSnakeId = profile.selectedSnake;
+                let previewSnake = null;
                 let groundPattern = null;
 
                 let waterZones = [], lilyPads = [], mudZones = [], worldProps = [], trees = [], tracks = [], ripples = [];
@@ -1163,7 +1200,133 @@ jobs:
                   c.restore();
                 }
 
-                // -------------------- 24 UNIQUE REALISTIC SERPENTS (THICKER NATURAL TAIL) --------------------
+                // SHARED REALISTIC HEAD RENDERER (USED IN GAME + WORKSHOP THUMBNAILS!)
+                function drawSpeciesHead(c, sp, hr, alpha = 1, tongueExt = 0, jawOpen = 0) {
+                  const pat = sp.pat;
+                  if (jawOpen > 0.12) {
+                    const ext = jawOpen * hr * 0.42;
+                    c.fillStyle = pat === 'mamba' ? '#12101a' : '#6e1620';
+                    c.beginPath(); c.ellipse(hr * 0.95 + ext * 0.4, 0, hr * 0.44, hr * 0.38, 0, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = '#fffdf5';
+                    for (const s of [-1, 1]) {
+                      c.beginPath(); c.moveTo(hr * 1.06, s * hr * 0.25); c.lineTo(hr * 1.42 + ext, s * hr * 0.16); c.lineTo(hr * 1.04, s * hr * 0.1); c.closePath(); c.fill();
+                    }
+                  }
+                  if (tongueExt > 0.05 && jawOpen < 0.2) {
+                    const tl = hr * 1.1 + tongueExt * hr * 1.12;
+                    c.strokeStyle = sp.id === 'frost' ? '#70f3ff' : '#e82534'; c.lineWidth = Math.max(1.4, hr * 0.1); c.lineCap = 'round';
+                    c.beginPath(); c.moveTo(hr * 0.95, 0); c.lineTo(tl, 0);
+                    c.lineTo(tl + hr * 0.35, -hr * 0.25); c.moveTo(tl, 0); c.lineTo(tl + hr * 0.35, hr * 0.25); c.stroke();
+                  }
+
+                  // SPECIES-UNIQUE CRESTS / HORNS / ANTLERS / FINS
+                  if (pat === 'd_jade') {
+                    c.strokeStyle = '#ffd84d'; c.lineWidth = Math.max(1.8, hr * 0.13); c.lineCap = 'round';
+                    for (const s of [-1, 1]) {
+                      c.beginPath(); c.moveTo(-hr * 0.2, s * hr * 0.55); c.lineTo(-hr * 1.22, s * hr * 1.15); c.moveTo(-hr * 0.72, s * hr * 0.85); c.lineTo(-hr * 1.02, s * hr * 1.38); c.stroke();
+                      const ww = Math.sin(globalTime * 7) * hr * 0.12;
+                      c.lineWidth = Math.max(1.2, hr * 0.08);
+                      c.beginPath(); c.moveTo(hr * 0.88, s * hr * 0.34); c.quadraticCurveTo(hr * 0.45, s * hr * 1.15 + ww, -hr * 0.3, s * hr * 1.38 - ww); c.stroke();
+                      c.lineWidth = Math.max(1.8, hr * 0.13);
+                    }
+                  } else if (pat === 'd_sea' || pat === 'plasma') {
+                    c.fillStyle = pat === 'plasma' ? 'rgba(255, 71, 222, 0.55)' : 'rgba(69, 240, 255, 0.55)';
+                    c.strokeStyle = sp.accent; c.lineWidth = 1.3;
+                    for (const s of [-1, 1]) {
+                      c.beginPath(); c.moveTo(hr * 0.1, s * hr * 0.8); c.lineTo(-hr * 0.85, s * hr * 1.45); c.lineTo(-hr * 1.1, s * hr * 0.6); c.closePath(); c.fill(); c.stroke();
+                    }
+                  } else if (pat === 'basilisk') {
+                    c.fillStyle = '#ffe45c';
+                    c.beginPath(); c.moveTo(-hr * 0.3, -hr * 0.65); c.lineTo(-hr * 1.05, -hr * 0.95); c.lineTo(-hr * 0.6, -hr * 0.25);
+                    c.lineTo(-hr * 1.2, 0); c.lineTo(-hr * 0.6, hr * 0.25); c.lineTo(-hr * 1.05, hr * 0.95); c.lineTo(-hr * 0.3, hr * 0.65); c.closePath(); c.fill();
+                  } else if (sp.dragon) {
+                    c.fillStyle = sp.dark; c.strokeStyle = sp.accent; c.lineWidth = 1.4;
+                    for (const s of [-1, 1]) {
+                      c.beginPath(); c.moveTo(-hr * 0.15, s * hr * 0.6); c.quadraticCurveTo(-hr * 0.95, s * hr * 1.28, -hr * 1.55, s * hr * 1.08);
+                      c.quadraticCurveTo(-hr * 0.9, s * hr * 0.88, -hr * 0.55, s * hr * 0.42); c.closePath(); c.fill(); c.stroke();
+                    }
+                  }
+                  const hg = c.createRadialGradient(hr * 0.22, -hr * 0.2, 1, 0, 0, hr * 1.45);
+                  hg.addColorStop(0, sp.base); hg.addColorStop(0.68, sp.mid); hg.addColorStop(1, sp.dark);
+                  c.fillStyle = hg;
+                  c.beginPath();
+                  if (pat === 'viper' || pat === 'gaboon' || pat === 'obsidian' || pat === 'frost') {
+                    c.moveTo(hr * 1.4, 0);
+                    c.quadraticCurveTo(hr * 0.8, -hr * 0.78, hr * 0.05, -hr * 1.12);
+                    c.quadraticCurveTo(-hr * 0.75, -hr * 1.04, -hr * 0.92, -hr * 0.74);
+                    c.quadraticCurveTo(-hr * 1.05, 0, -hr * 0.92, hr * 0.74);
+                    c.quadraticCurveTo(-hr * 0.75, hr * 1.04, hr * 0.05, hr * 1.12);
+                    c.quadraticCurveTo(hr * 0.8, hr * 0.78, hr * 1.4, 0);
+                  } else if (sp.dragon || pat === 'titan') {
+                    c.moveTo(hr * 1.48, -hr * 0.2);
+                    c.quadraticCurveTo(hr * 1.62, 0, hr * 1.48, hr * 0.2);
+                    c.lineTo(hr * 0.62, hr * 0.74);
+                    c.quadraticCurveTo(-hr * 0.2, hr * 1.08, -hr * 0.88, hr * 0.82);
+                    c.quadraticCurveTo(-hr * 1.08, 0, -hr * 0.88, -hr * 0.82);
+                    c.quadraticCurveTo(-hr * 0.2, -hr * 1.08, hr * 0.62, -hr * 0.74);
+                  } else if (pat === 'mamba') {
+                    c.moveTo(hr * 1.5, 0); c.lineTo(hr * 0.7, -hr * 0.66); c.lineTo(-hr * 0.45, -hr * 0.9);
+                    c.lineTo(-hr * 0.95, -hr * 0.65); c.lineTo(-hr * 0.95, hr * 0.65); c.lineTo(-hr * 0.45, hr * 0.9); c.lineTo(hr * 0.7, hr * 0.66);
+                  } else {
+                    c.moveTo(hr * 1.42, 0);
+                    c.quadraticCurveTo(hr * 0.9, -hr * 0.64, hr * 0.15, -hr * 0.92);
+                    c.quadraticCurveTo(-hr * 0.72, -hr * 0.96, -hr * 0.9, -hr * 0.76);
+                    c.quadraticCurveTo(-hr * 1.04, 0, -hr * 0.9, hr * 0.76);
+                    c.quadraticCurveTo(-hr * 0.72, hr * 0.96, hr * 0.15, hr * 0.92);
+                    c.quadraticCurveTo(hr * 0.9, hr * 0.64, hr * 1.42, 0);
+                  }
+                  c.closePath();
+                  c.fill();
+                  c.strokeStyle = 'rgba(0,0,0,0.52)'; c.lineWidth = 1.2; c.stroke();
+
+                  // Upper & Lower Lip Crease + Labial Rim
+                  for (const s of [-1, 1]) {
+                    c.strokeStyle = 'rgba(15, 8, 5, 0.75)'; c.lineWidth = Math.max(1.1, hr * 0.08);
+                    c.beginPath(); c.moveTo(hr * 1.36, s * hr * 0.08); c.quadraticCurveTo(hr * 0.82, s * hr * 0.54, hr * 0.05, s * hr * 0.8); c.stroke();
+                    c.strokeStyle = sp.belly; c.lineWidth = Math.max(0.9, hr * 0.06); c.globalAlpha = alpha * 0.5;
+                    c.beginPath(); c.moveTo(hr * 1.3, s * hr * 0.14); c.quadraticCurveTo(hr * 0.78, s * hr * 0.6, hr * 0.08, s * hr * 0.84); c.stroke();
+                    c.globalAlpha = alpha;
+                  }
+
+                  if (!sp.dragon && sp.horns) {
+                    c.fillStyle = sp.accent;
+                    for (const s of [-1, 1]) {
+                      c.beginPath(); c.moveTo(hr * 0.36, s * hr * 0.54); c.lineTo(hr * 0.02, s * hr * 1.16); c.lineTo(-hr * 0.14, s * hr * 0.54); c.closePath(); c.fill();
+                    }
+                  }
+
+                  c.fillStyle = 'rgba(255,255,245,0.16)';
+                  c.beginPath(); c.ellipse(hr * 0.42, -hr * 0.14, hr * 0.52, hr * 0.2, -0.1, 0, Math.PI * 2); c.fill();
+                  c.fillStyle = 'rgba(0,0,0,0.82)';
+                  c.beginPath(); c.arc(hr * 1.1, -hr * 0.2, Math.max(1.2, hr * 0.08), 0, Math.PI * 2); c.arc(hr * 1.1, hr * 0.2, Math.max(1.2, hr * 0.08), 0, Math.PI * 2); c.fill();
+
+                  for (const s of [-1, 1]) {
+                    c.fillStyle = 'rgba(0,0,0,0.6)';
+                    c.beginPath(); c.ellipse(hr * 0.42, s * hr * 0.52, hr * 0.3, hr * 0.21, s * 0.24, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = sp.eye;
+                    c.beginPath(); c.ellipse(hr * 0.45, s * hr * 0.5, hr * 0.24, hr * 0.17, s * 0.24, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = '#050505';
+                    c.beginPath(); c.ellipse(hr * 0.49, s * hr * 0.5, hr * 0.055, hr * 0.15, 0, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = 'rgba(255,255,255,0.92)';
+                    c.beginPath(); c.arc(hr * 0.39, s * hr * 0.45, hr * 0.06, 0, Math.PI * 2); c.fill();
+                  }
+                }
+
+                // DRAW INDIVIDUAL SNAKE FACE THUMBNAIL FOR EACH CARD IN SNAKES PAGE!
+                function drawSnakeCardThumb(thumbCanvas, sp) {
+                  const tc = thumbCanvas.getContext('2d');
+                  const w = thumbCanvas.width, h = thumbCanvas.height;
+                  tc.clearRect(0, 0, w, h);
+                  tc.save();
+                  tc.translate(w * 0.46, h * 0.5);
+                  if (sp.glow) { tc.shadowColor = sp.glow; tc.shadowBlur = 12; }
+                  // Neck stub behind head
+                  tc.fillStyle = sp.mid;
+                  tc.beginPath(); tc.ellipse(-18, 0, 16, 11, 0, 0, Math.PI * 2); tc.fill();
+                  drawSpeciesHead(tc, sp, 16, 1, 0.5, 0);
+                  tc.restore();
+                }
+
                 class Snake {
                   constructor({ name, species, x, y, isPlayer = false, mass = 30 }) {
                     this.name = name; this.species = species; this.isPlayer = isPlayer; this.alive = true;
@@ -1187,7 +1350,6 @@ jobs:
                   getLen() { return Math.floor(this.mass * 4.5); }
                   isCamo() { return this.camoTimer > 0 || this.inBush; }
 
-                  // THICKER REALISTIC MUSCULAR TAIL (0.28 at end instead of thin 0.08 needle!)
                   getHalfWidth(i, len, baseR) {
                     const t = i / Math.max(1, len - 1);
                     let pw = t < 0.08 ? lerp(0.82, 0.98, t / 0.08)
@@ -1234,7 +1396,6 @@ jobs:
                       this.targetAngle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x);
                       this.boosting = false; return;
                     }
-
                     const rivals = queryGrid(snakeGrid, this.x, this.y, 260);
                     let avX = 0, avY = 0, danger = false;
                     for (const o of rivals) {
@@ -1243,44 +1404,25 @@ jobs:
                       for (let k = 0; k < o.segments.length; k += step) {
                         const sg = o.segments[k];
                         const d2 = distSq(this.x, this.y, sg.x, sg.y);
-                        if (d2 < 145 * 145) {
-                          const d = Math.sqrt(d2) || 1;
-                          avX += (this.x - sg.x) / d; avY += (this.y - sg.y) / d;
-                          danger = true;
-                        }
+                        if (d2 < 145 * 145) { const d = Math.sqrt(d2) || 1; avX += (this.x - sg.x) / d; avY += (this.y - sg.y) / d; danger = true; }
                       }
                       if (this.venomCd <= 0 && distSq(this.x, this.y, o.x, o.y) < 300 * 300) {
                         const toA = Math.atan2(o.y - this.y, o.x - this.x);
                         if (Math.abs(angleDiff(toA, this.angle)) < 0.28 && Math.random() < 0.04) this.activateVenom();
                       }
                     }
-                    if (danger) {
-                      this.targetAngle = Math.atan2(avY, avX);
-                      this.boosting = this.stamina > 40;
-                      return;
-                    }
-
+                    if (danger) { this.targetAngle = Math.atan2(avY, avX); this.boosting = this.stamina > 40; return; }
                     if (this.aiTimer <= 0) {
                       this.aiTimer = near ? rand(0.3, 0.6) : rand(0.7, 1.3);
                       this.aiWander += rand(-1.0, 1.0);
                       this.targetAngle = this.aiWander;
                       let bestX = null, bestY = null, bestD = 380 * 380;
-                      for (const m of meatList) {
-                        const d2 = distSq(this.x, this.y, m.x, m.y);
-                        if (d2 < bestD) { bestD = d2; bestX = m.x; bestY = m.y; }
-                      }
+                      for (const m of meatList) { const d2 = distSq(this.x, this.y, m.x, m.y); if (d2 < bestD) { bestD = d2; bestX = m.x; bestY = m.y; } }
                       if (bestX === null) {
                         const pIdxs = queryGrid(preyGrid, this.x, this.y, 340);
-                        for (const idx of pIdxs) {
-                          const p = preyList[idx]; if (!p) continue;
-                          const d2 = distSq(this.x, this.y, p.x, p.y);
-                          if (d2 < bestD) { bestD = d2; bestX = p.x; bestY = p.y; }
-                        }
+                        for (const idx of pIdxs) { const p = preyList[idx]; if (!p) continue; const d2 = distSq(this.x, this.y, p.x, p.y); if (d2 < bestD) { bestD = d2; bestX = p.x; bestY = p.y; } }
                       }
-                      if (bestX !== null) {
-                        this.targetAngle = Math.atan2(bestY - this.y, bestX - this.x);
-                        if (bestD < 160 * 160 && this.stamina > 55 && Math.random() < 0.25) this.aiBoost = 0.45;
-                      }
+                      if (bestX !== null) { this.targetAngle = Math.atan2(bestY - this.y, bestX - this.x); if (bestD < 160 * 160 && this.stamina > 55 && Math.random() < 0.25) this.aiBoost = 0.45; }
                     }
                     this.boosting = this.aiBoost > 0 && this.stamina > 20;
                   }
@@ -1300,17 +1442,21 @@ jobs:
 
                     this.terrain = getTerrainAt(this.x, this.y);
                     this.inBush = isUnderTree(this.x, this.y);
-                    const canBoost = this.boosting && this.stamina > 5 && this.mass > 14 && this.slowTimer <= 0;
-                    if (canBoost) { this.stamina = Math.max(0, this.stamina - dt * 26); this.mass = Math.max(14, this.mass - dt * 1.1); }
-                    else this.stamina = Math.min(100, this.stamina + dt * 19);
 
-                    let spd = 176 + this.species.speed * 0.3;
+                    const stBonus = this.isPlayer ? profile.upgrades.stamina : 0;
+                    const canBoost = this.boosting && this.stamina > 5 && this.mass > 14 && this.slowTimer <= 0;
+                    if (canBoost) { this.stamina = Math.max(0, this.stamina - dt * (26 - stBonus * 2.2)); this.mass = Math.max(14, this.mass - dt * 1.1); }
+                    else this.stamina = Math.min(100, this.stamina + dt * (19 + stBonus * 2.5));
+
+                    const spdBonus = this.isPlayer ? profile.upgrades.speed * 7 : 0;
+                    let spd = 176 + this.species.speed * 0.3 + spdBonus;
                     if (canBoost) spd *= 1.6;
                     if (this.terrain === 'water') spd *= (this.species.id === 'anaconda' || this.species.id === 'leviathan' ? 1.35 : 1.18);
                     else if (this.terrain === 'mud') spd *= 0.72;
                     if (this.slowTimer > 0) spd *= 0.55;
 
-                    const turnRate = 4.4 + this.species.turn * 0.015;
+                    const agBonus = this.isPlayer ? profile.upgrades.agility * 0.25 : 0;
+                    const turnRate = 4.4 + this.species.turn * 0.015 + agBonus;
                     this.angle += clamp(angleDiff(this.targetAngle, this.angle), -turnRate * dt, turnRate * dt);
                     this.slitherPhase += dt * (canBoost ? 14 : 9.2);
                     const sAng = this.angle + Math.sin(this.slitherPhase) * 0.09;
@@ -1318,9 +1464,7 @@ jobs:
                     this.y += Math.sin(sAng) * spd * dt;
 
                     const r = this.getRadius();
-                    const dC = dist(this.x, this.y, WORLD_CENTER, WORLD_CENTER);
-                    if (dC + r > ARENA_RADIUS) { killSnake(this, null, 'Jungle Cliff'); return; }
-
+                    if (dist(this.x, this.y, WORLD_CENTER, WORLD_CENTER) + r > ARENA_RADIUS) { killSnake(this, null, 'Jungle Cliff'); return; }
                     if (safeZone.active && dist(this.x, this.y, safeZone.cx, safeZone.cy) > safeZone.r) {
                       this.mass -= (4.2 + (safeZone.stage - 1) * 1.8) * dt;
                       if (this.mass < 12) { killSnake(this, null, 'Storm Zone'); return; }
@@ -1331,10 +1475,8 @@ jobs:
                     for (let i = 1; i < this.segments.length; i++) {
                       const p = this.segments[i - 1], c = this.segments[i];
                       if (i === 1) {
-                        const idealX = p.x - Math.cos(this.angle) * spc;
-                        const idealY = p.y - Math.sin(this.angle) * spc;
-                        c.x = lerp(c.x, idealX, clamp(dt * 12, 0, 0.55));
-                        c.y = lerp(c.y, idealY, clamp(dt * 12, 0, 0.55));
+                        c.x = lerp(c.x, p.x - Math.cos(this.angle) * spc, clamp(dt * 12, 0, 0.55));
+                        c.y = lerp(c.y, p.y - Math.sin(this.angle) * spc, clamp(dt * 12, 0, 0.55));
                       }
                       const dx = c.x - p.x, dy = c.y - p.y, d = Math.hypot(dx, dy) || 0.001;
                       if (d > spc) { const rt = spc / d; c.x = p.x + dx * rt; c.y = p.y + dy * rt; }
@@ -1354,20 +1496,11 @@ jobs:
                       } else this.tongueExt = 0;
 
                       this.rippleCd -= dt;
-                      if (this.terrain === 'water' && this.rippleCd <= 0 && ripples.length < 36) {
-                        ripples.push({ x: this.x, y: this.y, r: r * 0.7, maxR: r * 3.0, life: 0.7, maxLife: 0.7 });
-                        this.rippleCd = 0.18;
-                      }
+                      if (this.terrain === 'water' && this.rippleCd <= 0 && ripples.length < 36) { ripples.push({ x: this.x, y: this.y, r: r * 0.7, maxR: r * 3.0, life: 0.7, maxLife: 0.7 }); this.rippleCd = 0.18; }
                       this.trackCd -= dt;
-                      if (this.terrain === 'mud' && this.trackCd <= 0 && tracks.length < 70) {
-                        tracks.push({ x: this.segments[3].x, y: this.segments[3].y, r: r * 0.85, ang: this.angle, life: 3.0, maxLife: 3.0 });
-                        this.trackCd = 0.12;
-                      }
+                      if (this.terrain === 'mud' && this.trackCd <= 0 && tracks.length < 70) { tracks.push({ x: this.segments[3].x, y: this.segments[3].y, r: r * 0.85, ang: this.angle, life: 3.0, maxLife: 3.0 }); this.trackCd = 0.12; }
                       this.trailCd -= dt;
-                      if (canBoost && this.trailCd <= 0) {
-                        spawnParticles(this.segments[Math.min(5, this.segments.length - 1)].x, this.segments[Math.min(5, this.segments.length - 1)].y, this.species.glow || this.species.accent, 2, 55);
-                        this.trailCd = 0.08;
-                      }
+                      if (canBoost && this.trailCd <= 0) { spawnParticles(this.segments[Math.min(5, this.segments.length - 1)].x, this.segments[Math.min(5, this.segments.length - 1)].y, this.species.glow || this.species.accent, 2, 55); this.trailCd = 0.08; }
                     }
                   }
 
@@ -1388,7 +1521,6 @@ jobs:
                       pts[i] = { x: seg.x + nx * wave, y: seg.y + ny * wave, ang, nx, ny, w: this.getHalfWidth(i, len, baseR) };
                     }
 
-                    // Smooth Rounded Muscular Tail Tip (NOT a needle!)
                     const traceBody = (ox = 0, oy = 0, sw = 1) => {
                       c.beginPath();
                       const p0 = pts[0];
@@ -1417,7 +1549,6 @@ jobs:
                     c.save();
                     c.globalAlpha = alpha;
 
-                    // GLOWING AURA (Stronger for Mythic/Legendary!)
                     if (this.species.glow && detail) {
                       c.save();
                       traceBody(0, 0, this.species.tier === 'Mythic' ? 1.24 : 1.15);
@@ -1430,41 +1561,22 @@ jobs:
                       c.restore();
                     }
 
-                    // 1. Ground Drop Shadow
-                    if (detail) {
-                      traceBody(5, 8, 1.05);
-                      c.fillStyle = 'rgba(0,0,0,0.42)';
-                      c.fill();
-                    }
+                    if (detail) { traceBody(5, 8, 1.05); c.fillStyle = 'rgba(0,0,0,0.42)'; c.fill(); }
 
-                    // 2. Cylindrical 3D Body + 24 UNIQUE SPECIES PATTERNS
                     c.save();
-                    traceBody(0, 0, 1.0);
-                    c.fillStyle = this.species.dark;
-                    c.fill();
-                    c.clip();
-
-                    traceBody(0, 0, 0.92);
-                    c.fillStyle = this.species.mid;
-                    c.fill();
-
-                    traceBody(-1.2, -1.2, 0.78);
-                    c.fillStyle = this.species.base;
-                    c.fill();
+                    traceBody(0, 0, 1.0); c.fillStyle = this.species.dark; c.fill(); c.clip();
+                    traceBody(0, 0, 0.92); c.fillStyle = this.species.mid; c.fill();
+                    traceBody(-1.2, -1.2, 0.78); c.fillStyle = this.species.base; c.fill();
 
                     const pat = this.species.pat;
                     const step = ultra ? 2 : 3;
-
                     for (let i = 2; i < len - 1; i++) {
                       const p = pts[i];
                       const doMark = (i % 3 === 0 || i % 4 === 0);
                       const doScale = detail && (i % step === 0) && p.w > 4.5;
                       if (!doMark && !doScale && !(this.species.hood && i === 4)) continue;
 
-                      c.save();
-                      c.translate(p.x, p.y);
-                      c.rotate(p.ang);
-
+                      c.save(); c.translate(p.x, p.y); c.rotate(p.ang);
                       if (pat === 'cobra' || pat === 'taipan' || pat === 'phoenix') {
                         if (i === 4 && this.hoodFlare > 0.25) {
                           c.strokeStyle = this.species.accent; c.lineWidth = Math.max(2, p.w * 0.12);
@@ -1472,16 +1584,11 @@ jobs:
                           c.beginPath(); c.arc(0, p.w * 0.4, p.w * 0.21, 0, Math.PI * 2); c.stroke();
                         } else if (i > 7 && i % 4 === 0) {
                           c.strokeStyle = this.species.accent; c.lineWidth = Math.max(1.8, p.w * 0.16);
-                          if (pat === 'phoenix') {
-                            c.fillStyle = this.species.accent;
-                            c.beginPath(); c.moveTo(p.w * 0.4, 0); c.lineTo(-p.w * 0.3, -p.w * 0.65); c.lineTo(-p.w * 0.1, 0); c.lineTo(-p.w * 0.3, p.w * 0.65); c.closePath(); c.fill();
-                          } else {
-                            c.beginPath(); c.moveTo(-p.w * 0.12, -p.w * 0.98); c.quadraticCurveTo(p.w * 0.28, 0, -p.w * 0.12, p.w * 0.98); c.stroke();
-                          }
+                          if (pat === 'phoenix') { c.fillStyle = this.species.accent; c.beginPath(); c.moveTo(p.w * 0.4, 0); c.lineTo(-p.w * 0.3, -p.w * 0.65); c.lineTo(-p.w * 0.1, 0); c.lineTo(-p.w * 0.3, p.w * 0.65); c.closePath(); c.fill(); }
+                          else { c.beginPath(); c.moveTo(-p.w * 0.12, -p.w * 0.98); c.quadraticCurveTo(p.w * 0.28, 0, -p.w * 0.12, p.w * 0.98); c.stroke(); }
                         }
                       } else if (pat === 'boa' && i % 4 === 0) {
-                        c.fillStyle = this.species.accent;
-                        c.beginPath(); c.moveTo(p.w * 0.32, 0); c.lineTo(0, -p.w * 0.76); c.lineTo(-p.w * 0.34, 0); c.lineTo(0, p.w * 0.76); c.closePath(); c.fill();
+                        c.fillStyle = this.species.accent; c.beginPath(); c.moveTo(p.w * 0.32, 0); c.lineTo(0, -p.w * 0.76); c.lineTo(-p.w * 0.34, 0); c.lineTo(0, p.w * 0.76); c.closePath(); c.fill();
                       } else if (pat === 'viper' && i % 3 === 0) {
                         c.fillStyle = this.species.accent; c.strokeStyle = this.species.belly; c.lineWidth = 1.1;
                         c.beginPath(); c.moveTo(p.w * 0.56, 0); c.lineTo(0, -p.w * 0.58); c.lineTo(-p.w * 0.56, 0); c.lineTo(0, p.w * 0.58); c.closePath(); c.fill(); c.stroke();
@@ -1491,62 +1598,41 @@ jobs:
                         c.fillStyle = this.species.belly; c.beginPath(); c.arc(0, -p.w * 0.74, p.w * 0.17, 0, Math.PI * 2); c.arc(0, p.w * 0.74, p.w * 0.17, 0, Math.PI * 2); c.fill();
                       } else if (pat === 'anaconda' && i % 3 === 0) {
                         const sgn = i % 6 === 0 ? -1 : 1;
-                        c.fillStyle = this.species.accent;
-                        c.beginPath(); c.ellipse(0, sgn * p.w * 0.28, p.w * 0.48, p.w * 0.34, sgn * 0.2, 0, Math.PI * 2); c.fill();
+                        c.fillStyle = this.species.accent; c.beginPath(); c.ellipse(0, sgn * p.w * 0.28, p.w * 0.48, p.w * 0.34, sgn * 0.2, 0, Math.PI * 2); c.fill();
                         c.fillStyle = this.species.belly; c.beginPath(); c.arc(-p.w * 0.1, -sgn * p.w * 0.66, p.w * 0.18, 0, Math.PI * 2); c.fill();
                       } else if (pat === 'corn' && i % 4 === 0) {
-                        c.fillStyle = '#9e2608'; c.strokeStyle = '#1f0802'; c.lineWidth = 1.5;
-                        c.beginPath(); c.ellipse(0, 0, p.w * 0.42, p.w * 0.62, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+                        c.fillStyle = '#9e2608'; c.strokeStyle = '#1f0802'; c.lineWidth = 1.5; c.beginPath(); c.ellipse(0, 0, p.w * 0.42, p.w * 0.62, 0, 0, Math.PI * 2); c.fill(); c.stroke();
                       } else if (pat === 'krait' && i % 4 === 0) {
-                        c.strokeStyle = this.species.dark; c.lineWidth = p.w * 0.72;
-                        c.beginPath(); c.moveTo(-p.w * 0.15, -p.w * 1.1); c.quadraticCurveTo(p.w * 0.22, 0, -p.w * 0.15, p.w * 1.1); c.stroke();
-                        c.strokeStyle = this.species.accent; c.lineWidth = p.w * 0.22;
-                        c.beginPath(); c.moveTo(p.w * 0.36, -p.w * 1.1); c.quadraticCurveTo(p.w * 0.72, 0, p.w * 0.36, p.w * 1.1); c.stroke();
+                        c.strokeStyle = this.species.dark; c.lineWidth = p.w * 0.72; c.beginPath(); c.moveTo(-p.w * 0.15, -p.w * 1.1); c.quadraticCurveTo(p.w * 0.22, 0, -p.w * 0.15, p.w * 1.1); c.stroke();
+                        c.strokeStyle = this.species.accent; c.lineWidth = p.w * 0.22; c.beginPath(); c.moveTo(p.w * 0.36, -p.w * 1.1); c.quadraticCurveTo(p.w * 0.72, 0, p.w * 0.36, p.w * 1.1); c.stroke();
                       } else if (pat === 'albino' && i % 4 === 0) {
-                        c.strokeStyle = '#e0b338'; c.lineWidth = p.w * 0.28;
-                        c.beginPath(); c.arc(0, 0, p.w * 0.56, 0, Math.PI * 2); c.stroke();
+                        c.strokeStyle = '#e0b338'; c.lineWidth = p.w * 0.28; c.beginPath(); c.arc(0, 0, p.w * 0.56, 0, Math.PI * 2); c.stroke();
                       } else if (pat === 'mamba' && i % 4 === 0) {
-                        c.strokeStyle = 'rgba(170,185,205,0.28)'; c.lineWidth = 1.6;
-                        c.beginPath(); c.moveTo(-p.w * 0.2, -p.w * 0.85); c.lineTo(p.w * 0.25, 0); c.lineTo(-p.w * 0.2, p.w * 0.85); c.stroke();
+                        c.strokeStyle = 'rgba(170,185,205,0.28)'; c.lineWidth = 1.6; c.beginPath(); c.moveTo(-p.w * 0.2, -p.w * 0.85); c.lineTo(p.w * 0.25, 0); c.lineTo(-p.w * 0.2, p.w * 0.85); c.stroke();
                       } else if (pat === 'coral' && i % 3 === 0) {
-                        c.strokeStyle = this.species.accent; c.lineWidth = 2.2;
-                        c.beginPath(); c.moveTo(-p.w * 0.3, -p.w * 0.95); c.bezierCurveTo(p.w * 0.3, -p.w * 0.3, -p.w * 0.3, p.w * 0.3, p.w * 0.3, p.w * 0.95); c.stroke();
+                        c.strokeStyle = this.species.accent; c.lineWidth = 2.2; c.beginPath(); c.moveTo(-p.w * 0.3, -p.w * 0.95); c.bezierCurveTo(p.w * 0.3, -p.w * 0.3, -p.w * 0.3, p.w * 0.3, p.w * 0.3, p.w * 0.95); c.stroke();
                       } else if ((pat === 'obsidian' || pat === 'frost') && i % 3 === 0) {
-                        // Jagged Crystal / Ice Shards along spine!
-                        c.fillStyle = this.species.accent;
-                        c.beginPath(); c.moveTo(p.w * 0.52, 0); c.lineTo(-p.w * 0.1, -p.w * 0.42); c.lineTo(-p.w * 0.5, 0); c.lineTo(-p.w * 0.1, p.w * 0.42); c.closePath(); c.fill();
-                        c.strokeStyle = '#ffffff'; c.lineWidth = 0.8; c.stroke();
+                        c.fillStyle = this.species.accent; c.beginPath(); c.moveTo(p.w * 0.52, 0); c.lineTo(-p.w * 0.1, -p.w * 0.42); c.lineTo(-p.w * 0.5, 0); c.lineTo(-p.w * 0.1, p.w * 0.42); c.closePath(); c.fill();
                       } else if (pat === 'bush' && i % 3 === 0) {
-                        c.fillStyle = this.species.accent;
-                        c.beginPath(); c.moveTo(p.w * 0.4, 0); c.lineTo(-p.w * 0.35, -p.w * 0.72); c.lineTo(-p.w * 0.15, 0); c.lineTo(-p.w * 0.35, p.w * 0.72); c.closePath(); c.fill();
+                        c.fillStyle = this.species.accent; c.beginPath(); c.moveTo(p.w * 0.4, 0); c.lineTo(-p.w * 0.35, -p.w * 0.72); c.lineTo(-p.w * 0.15, 0); c.lineTo(-p.w * 0.35, p.w * 0.72); c.closePath(); c.fill();
                       } else if (pat === 'gaboon' && i % 4 === 0) {
-                        // Bold Geometric Leaf-Camo Triangles
                         c.fillStyle = '#1f140d'; c.beginPath(); c.moveTo(0, -p.w * 0.85); c.lineTo(p.w * 0.5, 0); c.lineTo(0, p.w * 0.85); c.lineTo(-p.w * 0.5, 0); c.closePath(); c.fill();
                         c.fillStyle = this.species.accent; c.fillRect(-p.w * 0.16, -p.w * 0.42, p.w * 0.32, p.w * 0.84);
                       } else if (pat === 'titan' && i % 3 === 0) {
                         c.fillStyle = this.species.dark; c.strokeStyle = this.species.accent; c.lineWidth = 1.4;
                         c.beginPath(); c.moveTo(p.w * 0.45, 0); c.lineTo(0, -p.w * 0.74); c.lineTo(-p.w * 0.45, -p.w * 0.45); c.lineTo(-p.w * 0.45, p.w * 0.45); c.lineTo(0, p.w * 0.74); c.closePath(); c.fill(); c.stroke();
                       } else if (pat === 'plasma' && i % 3 === 0) {
-                        // Cyber Hex Nodes + glowing side circuits
-                        c.strokeStyle = '#00f7ff'; c.lineWidth = 1.6;
-                        c.beginPath(); c.arc(0, 0, p.w * 0.42, 0, Math.PI * 2); c.stroke();
+                        c.strokeStyle = '#00f7ff'; c.lineWidth = 1.6; c.beginPath(); c.arc(0, 0, p.w * 0.42, 0, Math.PI * 2); c.stroke();
                         c.fillStyle = this.species.accent; c.beginPath(); c.arc(0, 0, p.w * 0.22, 0, Math.PI * 2); c.fill();
                       } else if (pat === 'basilisk' && i % 3 === 0) {
-                        c.fillStyle = '#75ff9c';
-                        c.beginPath(); c.moveTo(p.w * 0.5, 0); c.lineTo(-p.w * 0.3, -p.w * 0.35); c.lineTo(-p.w * 0.3, p.w * 0.35); c.closePath(); c.fill();
+                        c.fillStyle = '#75ff9c'; c.beginPath(); c.moveTo(p.w * 0.5, 0); c.lineTo(-p.w * 0.3, -p.w * 0.35); c.lineTo(-p.w * 0.3, p.w * 0.35); c.closePath(); c.fill();
                       } else if (pat === 'd_thunder' && i % 3 === 0) {
-                        // Jagged Electric Lightning Bolts
-                        c.strokeStyle = '#ffea54'; c.lineWidth = 2.2;
-                        c.beginPath(); c.moveTo(p.w * 0.5, -p.w * 0.5); c.lineTo(0, 0); c.lineTo(p.w * 0.25, p.w * 0.2); c.lineTo(-p.w * 0.45, p.w * 0.65); c.stroke();
+                        c.strokeStyle = '#ffea54'; c.lineWidth = 2.2; c.beginPath(); c.moveTo(p.w * 0.5, -p.w * 0.5); c.lineTo(0, 0); c.lineTo(p.w * 0.25, p.w * 0.2); c.lineTo(-p.w * 0.45, p.w * 0.65); c.stroke();
                       } else if (pat === 'd_void' && i % 3 === 0) {
-                        // Cosmic Starlight Runes
-                        c.fillStyle = '#ffffff';
-                        c.beginPath(); c.arc(0, 0, p.w * 0.22, 0, Math.PI * 2); c.fill();
-                        c.strokeStyle = '#e08cff'; c.lineWidth = 1.4;
-                        c.beginPath(); c.arc(0, 0, p.w * 0.52, 0, Math.PI * 2); c.stroke();
+                        c.fillStyle = '#ffffff'; c.beginPath(); c.arc(0, 0, p.w * 0.22, 0, Math.PI * 2); c.fill();
+                        c.strokeStyle = '#e08cff'; c.lineWidth = 1.4; c.beginPath(); c.arc(0, 0, p.w * 0.52, 0, Math.PI * 2); c.stroke();
                       } else if (this.species.dragon && i % 3 === 0) {
-                        c.fillStyle = this.species.accent;
-                        c.beginPath(); c.moveTo(p.w * 0.48, 0); c.lineTo(-p.w * 0.25, -p.w * 0.34); c.lineTo(-p.w * 0.45, 0); c.lineTo(-p.w * 0.25, p.w * 0.34); c.closePath(); c.fill();
+                        c.fillStyle = this.species.accent; c.beginPath(); c.moveTo(p.w * 0.48, 0); c.lineTo(-p.w * 0.25, -p.w * 0.34); c.lineTo(-p.w * 0.45, 0); c.lineTo(-p.w * 0.25, p.w * 0.34); c.closePath(); c.fill();
                       }
 
                       if (doScale) {
@@ -1574,129 +1660,14 @@ jobs:
                       c.restore();
                     }
 
-                    // 3. PERFECTLY PROPORTIONED, NECK-ALIGNED REALISTIC HEAD!
                     const neckAng = pts[0].ang;
                     const headAng = neckAng + angleDiff(this.angle, neckAng) * 0.55;
                     const hr = baseR * this.species.girth * 1.04;
-
                     c.save();
                     c.translate(pts[0].x, pts[0].y);
                     c.rotate(headAng);
-
-                    if (detail) {
-                      c.fillStyle = 'rgba(0,0,0,0.34)';
-                      c.beginPath(); c.ellipse(4, 6, hr * 1.25, hr * 0.9, 0, 0, Math.PI * 2); c.fill();
-                    }
-
-                    if (this.jawOpen > 0.12 || this.boosting) {
-                      const openAmt = Math.max(this.jawOpen, this.boosting ? 0.28 : 0);
-                      const ext = openAmt * hr * 0.45;
-                      c.fillStyle = pat === 'mamba' ? '#12101a' : '#6e1620';
-                      c.beginPath(); c.ellipse(hr * 0.95 + ext * 0.4, 0, hr * 0.45, hr * 0.4, 0, 0, Math.PI * 2); c.fill();
-                      c.fillStyle = '#fffdf5';
-                      for (const s of [-1, 1]) {
-                        c.beginPath(); c.moveTo(hr * 1.08, s * hr * 0.26); c.lineTo(hr * 1.44 + ext, s * hr * 0.16); c.lineTo(hr * 1.06, s * hr * 0.1); c.closePath(); c.fill();
-                      }
-                    }
-
-                    if (this.tongueExt > 0.05 && this.jawOpen < 0.2) {
-                      const tl = hr * 1.1 + this.tongueExt * hr * 1.15;
-                      c.strokeStyle = this.species.id === 'frost' ? '#70f3ff' : '#e82534'; c.lineWidth = 1.8; c.lineCap = 'round';
-                      c.beginPath(); c.moveTo(hr * 0.95, 0); c.lineTo(tl, 0);
-                      c.lineTo(tl + 6, -4.5); c.moveTo(tl, 0); c.lineTo(tl + 6, 4.5); c.stroke();
-                    }
-
-                    // SPECIES-UNIQUE HEAD CRESTS, HORNS, ANTLERS, FINS & CROWNS
-                    if (pat === 'd_jade') {
-                      c.strokeStyle = '#ffd84d'; c.lineWidth = 2.4; c.lineCap = 'round';
-                      for (const s of [-1, 1]) {
-                        c.beginPath(); c.moveTo(-hr * 0.2, s * hr * 0.55); c.lineTo(-hr * 1.25, s * hr * 1.15); c.moveTo(-hr * 0.75, s * hr * 0.85); c.lineTo(-hr * 1.05, s * hr * 1.38); c.stroke();
-                        const ww = Math.sin(globalTime * 7) * hr * 0.14;
-                        c.lineWidth = 1.6;
-                        c.beginPath(); c.moveTo(hr * 0.9, s * hr * 0.34); c.quadraticCurveTo(hr * 0.48, s * hr * 1.15 + ww, -hr * 0.3, s * hr * 1.4 - ww); c.stroke();
-                        c.lineWidth = 2.4;
-                      }
-                    } else if (pat === 'd_sea' || pat === 'plasma') {
-                      c.fillStyle = pat === 'plasma' ? 'rgba(255, 71, 222, 0.5)' : 'rgba(69, 240, 255, 0.5)';
-                      c.strokeStyle = this.species.accent; c.lineWidth = 1.4;
-                      for (const s of [-1, 1]) {
-                        c.beginPath(); c.moveTo(hr * 0.1, s * hr * 0.8); c.lineTo(-hr * 0.85, s * hr * 1.45); c.lineTo(-hr * 1.1, s * hr * 0.6); c.closePath(); c.fill(); c.stroke();
-                      }
-                    } else if (pat === 'basilisk') {
-                      // 3-Point Royal Crown Crest
-                      c.fillStyle = '#ffe45c';
-                      c.beginPath(); c.moveTo(-hr * 0.3, -hr * 0.65); c.lineTo(-hr * 1.05, -hr * 0.95); c.lineTo(-hr * 0.6, -hr * 0.25);
-                      c.lineTo(-hr * 1.2, 0); c.lineTo(-hr * 0.6, hr * 0.25); c.lineTo(-hr * 1.05, hr * 0.95); c.lineTo(-hr * 0.3, hr * 0.65); c.closePath(); c.fill();
-                    } else if (this.species.dragon) {
-                      c.fillStyle = this.species.dark; c.strokeStyle = this.species.accent; c.lineWidth = 1.4;
-                      for (const s of [-1, 1]) {
-                        c.beginPath(); c.moveTo(-hr * 0.15, s * hr * 0.6); c.quadraticCurveTo(-hr * 0.95, s * hr * 1.28, -hr * 1.55, s * hr * 1.08);
-                        c.quadraticCurveTo(-hr * 0.9, s * hr * 0.88, -hr * 0.55, s * hr * 0.42); c.closePath(); c.fill(); c.stroke();
-                      }
-                    }
-
-                    const hg = c.createRadialGradient(hr * 0.22, -hr * 0.2, 2, 0, 0, hr * 1.45);
-                    hg.addColorStop(0, this.species.base); hg.addColorStop(0.68, this.species.mid); hg.addColorStop(1, this.species.dark);
-                    c.fillStyle = hg;
-                    c.beginPath();
-                    if (pat === 'viper' || pat === 'gaboon' || pat === 'obsidian' || pat === 'frost') {
-                      c.moveTo(hr * 1.4, 0);
-                      c.quadraticCurveTo(hr * 0.8, -hr * 0.78, hr * 0.05, -hr * 1.12);
-                      c.quadraticCurveTo(-hr * 0.75, -hr * 1.04, -hr * 0.92, -hr * 0.74);
-                      c.quadraticCurveTo(-hr * 1.05, 0, -hr * 0.92, hr * 0.74);
-                      c.quadraticCurveTo(-hr * 0.75, hr * 1.04, hr * 0.05, hr * 1.12);
-                      c.quadraticCurveTo(hr * 0.8, hr * 0.78, hr * 1.4, 0);
-                    } else if (this.species.dragon || pat === 'titan') {
-                      c.moveTo(hr * 1.48, -hr * 0.2);
-                      c.quadraticCurveTo(hr * 1.62, 0, hr * 1.48, hr * 0.2);
-                      c.lineTo(hr * 0.62, hr * 0.74);
-                      c.quadraticCurveTo(-hr * 0.2, hr * 1.08, -hr * 0.88, hr * 0.82);
-                      c.quadraticCurveTo(-hr * 1.08, 0, -hr * 0.88, -hr * 0.82);
-                      c.quadraticCurveTo(-hr * 0.2, -hr * 1.08, hr * 0.62, -hr * 0.74);
-                    } else {
-                      c.moveTo(hr * 1.42, 0);
-                      c.quadraticCurveTo(hr * 0.9, -hr * 0.64, hr * 0.15, -hr * 0.92);
-                      c.quadraticCurveTo(-hr * 0.72, -hr * 0.96, -hr * 0.9, -hr * 0.76);
-                      c.quadraticCurveTo(-hr * 1.04, 0, -hr * 0.9, hr * 0.76);
-                      c.quadraticCurveTo(-hr * 0.72, hr * 0.96, hr * 0.15, hr * 0.92);
-                      c.quadraticCurveTo(hr * 0.9, hr * 0.64, hr * 1.42, 0);
-                    }
-                    c.closePath();
-                    c.fill();
-                    c.strokeStyle = 'rgba(0,0,0,0.52)'; c.lineWidth = 1.2; c.stroke();
-
-                    // Lip Line & Labial Rim
-                    for (const s of [-1, 1]) {
-                      c.strokeStyle = 'rgba(15, 8, 5, 0.72)'; c.lineWidth = 1.4;
-                      c.beginPath(); c.moveTo(hr * 1.36, s * hr * 0.08); c.quadraticCurveTo(hr * 0.82, s * hr * 0.54, hr * 0.05, s * hr * 0.8); c.stroke();
-                      c.strokeStyle = this.species.belly; c.lineWidth = 1.1; c.globalAlpha = alpha * 0.5;
-                      c.beginPath(); c.moveTo(hr * 1.3, s * hr * 0.14); c.quadraticCurveTo(hr * 0.78, s * hr * 0.6, hr * 0.08, s * hr * 0.84); c.stroke();
-                      c.globalAlpha = alpha;
-                    }
-
-                    if (!this.species.dragon && this.species.horns) {
-                      c.fillStyle = this.species.accent;
-                      for (const s of [-1, 1]) {
-                        c.beginPath(); c.moveTo(hr * 0.36, s * hr * 0.54); c.lineTo(hr * 0.02, s * hr * 1.16); c.lineTo(-hr * 0.14, s * hr * 0.54); c.closePath(); c.fill();
-                      }
-                    }
-
-                    c.fillStyle = 'rgba(255,255,245,0.15)';
-                    c.beginPath(); c.ellipse(hr * 0.42, -hr * 0.14, hr * 0.52, hr * 0.2, -0.1, 0, Math.PI * 2); c.fill();
-                    c.fillStyle = 'rgba(0,0,0,0.8)';
-                    c.beginPath(); c.arc(hr * 1.1, -hr * 0.2, 1.5, 0, Math.PI * 2); c.arc(hr * 1.1, hr * 0.2, 1.5, 0, Math.PI * 2); c.fill();
-
-                    for (const s of [-1, 1]) {
-                      c.fillStyle = 'rgba(0,0,0,0.6)';
-                      c.beginPath(); c.ellipse(hr * 0.42, s * hr * 0.52, hr * 0.3, hr * 0.21, s * 0.24, 0, Math.PI * 2); c.fill();
-                      c.fillStyle = this.species.eye;
-                      c.beginPath(); c.ellipse(hr * 0.45, s * hr * 0.5, hr * 0.24, hr * 0.17, s * 0.24, 0, Math.PI * 2); c.fill();
-                      c.fillStyle = '#050505';
-                      c.beginPath(); c.ellipse(hr * 0.49, s * hr * 0.5, hr * 0.055, hr * 0.15, 0, 0, Math.PI * 2); c.fill();
-                      c.fillStyle = 'rgba(255,255,255,0.92)';
-                      c.beginPath(); c.arc(hr * 0.39, s * hr * 0.45, hr * 0.06, 0, Math.PI * 2); c.fill();
-                    }
-
+                    if (detail) { c.fillStyle = 'rgba(0,0,0,0.34)'; c.beginPath(); c.ellipse(4, 6, hr * 1.25, hr * 0.9, 0, 0, Math.PI * 2); c.fill(); }
+                    drawSpeciesHead(c, this.species, hr, alpha, this.tongueExt, Math.max(this.jawOpen, this.boosting ? 0.28 : 0));
                     if (this.spawnShield > 0) {
                       c.strokeStyle = 'rgba(77, 226, 240, 0.85)'; c.lineWidth = 2.5;
                       c.beginPath(); c.arc(0, 0, hr * 1.85, 0, Math.PI * 2); c.stroke();
@@ -1712,22 +1683,17 @@ jobs:
                   }
                 }
 
-                // -------------------- GAME LOGIC --------------------
                 function killSnake(victim, killer, cause) {
                   if (!victim.alive) return;
                   victim.alive = false;
                   spawnParticles(victim.x, victim.y, victim.species.glow || victim.species.accent, 18, 160);
                   for (let i = 0; i < victim.segments.length; i += 3) {
-                    meatList.push({
-                      x: victim.segments[i].x + rand(-10, 10), y: victim.segments[i].y + rand(-10, 10),
-                      r: rand(9, 13), mass: 5.5, col: victim.species.glow || victim.species.accent, life: 28
-                    });
+                    meatList.push({ x: victim.segments[i].x + rand(-10, 10), y: victim.segments[i].y + rand(-10, 10), r: rand(9, 13), mass: 5.5, col: victim.species.glow || victim.species.accent, life: 28 });
                   }
                   if (killer && killer !== victim) {
                     killer.kills++;
                     if (killer.isPlayer) {
-                      matchStats.kills++;
-                      Sound.kill(); vibrate(60);
+                      matchStats.kills++; Sound.kill(); vibrate(60);
                       floatTexts.push({ x: victim.x, y: victim.y - 20, text: `KILL! +150 🪙 +5 💎`, color: '#ffe45c', life: 1.3, maxLife: 1.3 });
                     }
                     pushKillFeed(`${killer.name} [${cause}] ${victim.name}`);
@@ -1840,8 +1806,7 @@ jobs:
                   generateWorld(profile.selectedBiome);
                   const sp = SPECIES.find(s => s.id === profile.selectedSnake) || SPECIES[0];
                   lobbySnake = new Snake({ name: profile.name, species: sp, x: appW * 0.5, y: appH * 0.5, isPlayer: true, mass: 38 });
-                  lobbySnake.spawnShield = 0;
-                  lobbySnake.hoodFlare = sp.hood ? 0.9 : 0;
+                  lobbySnake.spawnShield = 0; lobbySnake.hoodFlare = sp.hood ? 0.9 : 0;
                   refreshLobbyUI();
                 }
 
@@ -1889,9 +1854,7 @@ jobs:
                         if (distSq(s.x, s.y, o.segments[k].x, o.segments[k].y) < (hr + oR) ** 2) { crashed = true; break; }
                       }
                       if (crashed) { killSnake(s, o, 'Cut-Off'); break; }
-                      if (distSq(s.x, s.y, o.x, o.y) < (hr + oR) ** 2 && s.mass < o.mass) {
-                        killSnake(s, o, 'Head Clash'); break;
-                      }
+                      if (distSq(s.x, s.y, o.x, o.y) < (hr + oR) ** 2 && s.mass < o.mass) { killSnake(s, o, 'Head Clash'); break; }
                     }
                   }
 
@@ -1902,14 +1865,15 @@ jobs:
                     for (const s of nearS) {
                       if (!s.alive) continue;
                       if (distSq(s.x, s.y, f.x, f.y) < (s.getRadius() + f.r) ** 2) {
-                        s.mass += 28;
-                        spawnParticles(f.x, f.y, '#ffe45c', 18, 150);
+                        s.mass += 28; spawnParticles(f.x, f.y, '#ffe45c', 18, 150);
                         if (s.isPlayer) { Sound.win(); vibrate(40); profile.diamonds += 10; saveProfile(); floatTexts.push({ x: f.x, y: f.y - 20, text: '+28 MASS • +10 💎', color: '#9cf4ff', life: 1.3, maxLife: 1.3 }); }
                         pushKillFeed(`${s.name} claimed Golden Feast!`);
                         feastDrops.splice(i, 1); break;
                       }
                     }
                   }
+
+                  const magR = player && player.alive ? (45 + profile.upgrades.magnet * 28) : 0;
 
                   for (let i = preyList.length - 1; i >= 0; i--) {
                     const p = preyList[i];
@@ -1918,6 +1882,9 @@ jobs:
                       if (p.timer <= 0) { p.angle += rand(-1.3, 1.3); p.timer = rand(0.8, 2.2); }
                       p.x += Math.cos(p.angle) * p.speed * dt; p.y += Math.sin(p.angle) * p.speed * dt;
                       if (dist(p.x, p.y, WORLD_CENTER, WORLD_CENTER) > ARENA_RADIUS - 180) p.angle = Math.atan2(WORLD_CENTER - p.y, WORLD_CENTER - p.x);
+                    }
+                    if (magR > 50 && player && player.alive && distSq(player.x, player.y, p.x, p.y) < magR * magR) {
+                      p.x = lerp(p.x, player.x, dt * 6); p.y = lerp(p.y, player.y, dt * 6);
                     }
                     const nearS = queryGrid(snakeGrid, p.x, p.y, 50);
                     for (const s of nearS) {
@@ -1935,6 +1902,9 @@ jobs:
                   for (let i = meatList.length - 1; i >= 0; i--) {
                     const m = meatList[i]; m.life -= dt;
                     if (m.life <= 0) { meatList.splice(i, 1); continue; }
+                    if (magR > 50 && player && player.alive && distSq(player.x, player.y, m.x, m.y) < magR * magR) {
+                      m.x = lerp(m.x, player.x, dt * 7); m.y = lerp(m.y, player.y, dt * 7);
+                    }
                     const nearS = queryGrid(snakeGrid, m.x, m.y, 50);
                     for (const s of nearS) {
                       if (!s.alive) continue;
@@ -1953,8 +1923,7 @@ jobs:
                     for (const s of nearS) {
                       if (!s.alive || s === pr.owner || s.spawnShield > 0) continue;
                       if (distSq(pr.x, pr.y, s.x, s.y) < (s.getRadius() * 1.2 + pr.r) ** 2) {
-                        s.slowTimer = pr.slowDur;
-                        spawnParticles(s.x, s.y, pr.col, 10, 110);
+                        s.slowTimer = pr.slowDur; spawnParticles(s.x, s.y, pr.col, 10, 110);
                         if (pr.owner.isPlayer || s.isPlayer) floatTexts.push({ x: s.x, y: s.y - 24, text: 'SLOWED!', color: pr.col, life: 0.9, maxLife: 0.9 });
                         projectiles.splice(i, 1); break;
                       }
@@ -1962,28 +1931,16 @@ jobs:
                   }
 
                   for (let i = tracks.length - 1; i >= 0; i--) { tracks[i].life -= dt; if (tracks[i].life <= 0) tracks.splice(i, 1); }
-                  for (let i = ripples.length - 1; i >= 0; i--) {
-                    const rp = ripples[i]; rp.life -= dt; rp.r = lerp(rp.r, rp.maxR, dt * 3.5);
-                    if (rp.life <= 0) ripples.splice(i, 1);
-                  }
-                  for (let i = particles.length - 1; i >= 0; i--) {
-                    const pt = particles[i]; pt.x += pt.vx * dt; pt.y += pt.vy * dt; pt.life -= dt;
-                    if (pt.life <= 0) particles.splice(i, 1);
-                  }
-                  for (let i = floatTexts.length - 1; i >= 0; i--) {
-                    const ft = floatTexts[i]; ft.y -= 28 * dt; ft.life -= dt;
-                    if (ft.life <= 0) floatTexts.splice(i, 1);
-                  }
+                  for (let i = ripples.length - 1; i >= 0; i--) { const rp = ripples[i]; rp.life -= dt; rp.r = lerp(rp.r, rp.maxR, dt * 3.5); if (rp.life <= 0) ripples.splice(i, 1); }
+                  for (let i = particles.length - 1; i >= 0; i--) { const pt = particles[i]; pt.x += pt.vx * dt; pt.y += pt.vy * dt; pt.life -= dt; if (pt.life <= 0) particles.splice(i, 1); }
+                  for (let i = floatTexts.length - 1; i >= 0; i--) { const ft = floatTexts[i]; ft.y -= 28 * dt; ft.life -= dt; if (ft.life <= 0) floatTexts.splice(i, 1); }
 
                   if (camera.shake > 0) camera.shake = Math.max(0, camera.shake - dt * 24);
                   if (player && player.alive) {
                     camera.x = lerp(camera.x, player.x, clamp(dt * 8, 0, 1));
                     camera.y = lerp(camera.y, player.y, clamp(dt * 8, 0, 1));
                     camera.zoom = lerp(camera.zoom, profile.settings.zoom, clamp(dt * 5, 0, 1));
-                    if (!ctrl.lookActive && profile.settings.autoCenter) {
-                      camera.lookX = lerp(camera.lookX, 0, clamp(dt * 7, 0, 1));
-                      camera.lookY = lerp(camera.lookY, 0, clamp(dt * 7, 0, 1));
-                    }
+                    if (!ctrl.lookActive && profile.settings.autoCenter) { camera.lookX = lerp(camera.lookX, 0, clamp(dt * 7, 0, 1)); camera.lookY = lerp(camera.lookY, 0, clamp(dt * 7, 0, 1)); }
                     document.getElementById('btnRecenter').style.display = Math.hypot(camera.lookX, camera.lookY) > 35 ? 'flex' : 'none';
                   }
 
@@ -2030,46 +1987,40 @@ jobs:
                   const sc = (w * 0.45) / ARENA_RADIUS, cx = w / 2, cy = h / 2;
                   rc.clearRect(0, 0, w, h);
                   rc.fillStyle = '#0c180d'; rc.fillRect(0, 0, w, h);
-
-                  for (const r of REGIONS) {
-                    const rx = cx + (r.x - WORLD_CENTER) * sc, ry = cy + (r.y - WORLD_CENTER) * sc;
-                    rc.fillStyle = r.col; rc.beginPath(); rc.arc(rx, ry, r.r * sc, 0, Math.PI * 2); rc.fill();
-                  }
+                  for (const r of REGIONS) { const rx = cx + (r.x - WORLD_CENTER) * sc, ry = cy + (r.y - WORLD_CENTER) * sc; rc.fillStyle = r.col; rc.beginPath(); rc.arc(rx, ry, r.r * sc, 0, Math.PI * 2); rc.fill(); }
                   rc.fillStyle = 'rgba(38,165,180,0.45)';
-                  for (const wv of waterZones) {
-                    rc.beginPath(); rc.arc(cx + (wv.x - WORLD_CENTER) * sc, cy + (wv.y - WORLD_CENTER) * sc, Math.max(2, wv.r * sc), 0, Math.PI * 2); rc.fill();
-                  }
-                  rc.strokeStyle = 'rgba(255,75,58,0.5)'; rc.lineWidth = showLabels ? 2.5 : 1.5;
-                  rc.beginPath(); rc.arc(cx, cy, ARENA_RADIUS * sc, 0, Math.PI * 2); rc.stroke();
-                  if (safeZone.active) {
-                    rc.strokeStyle = '#4de2f0'; rc.lineWidth = showLabels ? 3 : 2;
-                    rc.beginPath(); rc.arc(cx + (safeZone.cx - WORLD_CENTER) * sc, cy + (safeZone.cy - WORLD_CENTER) * sc, safeZone.r * sc, 0, Math.PI * 2); rc.stroke();
-                  }
-                  if (showLabels) {
-                    rc.font = 'bold 10px sans-serif'; rc.textAlign = 'center'; rc.fillStyle = 'rgba(255,235,160,0.88)';
-                    for (const r of REGIONS) rc.fillText(r.name.toUpperCase(), cx + (r.x - WORLD_CENTER) * sc, cy + (r.y - WORLD_CENTER) * sc);
-                  }
+                  for (const wv of waterZones) { rc.beginPath(); rc.arc(cx + (wv.x - WORLD_CENTER) * sc, cy + (wv.y - WORLD_CENTER) * sc, Math.max(2, wv.r * sc), 0, Math.PI * 2); rc.fill(); }
+                  rc.strokeStyle = 'rgba(255,75,58,0.5)'; rc.lineWidth = showLabels ? 2.5 : 1.5; rc.beginPath(); rc.arc(cx, cy, ARENA_RADIUS * sc, 0, Math.PI * 2); rc.stroke();
+                  if (safeZone.active) { rc.strokeStyle = '#4de2f0'; rc.lineWidth = showLabels ? 3 : 2; rc.beginPath(); rc.arc(cx + (safeZone.cx - WORLD_CENTER) * sc, cy + (safeZone.cy - WORLD_CENTER) * sc, safeZone.r * sc, 0, Math.PI * 2); rc.stroke(); }
+                  if (showLabels) { rc.font = 'bold 10px sans-serif'; rc.textAlign = 'center'; rc.fillStyle = 'rgba(255,235,160,0.88)'; for (const r of REGIONS) rc.fillText(r.name.toUpperCase(), cx + (r.x - WORLD_CENTER) * sc, cy + (r.y - WORLD_CENTER) * sc); }
                   rc.fillStyle = '#ffe44d';
-                  for (const f of feastDrops) {
-                    rc.beginPath(); rc.arc(cx + (f.x - WORLD_CENTER) * sc, cy + (f.y - WORLD_CENTER) * sc, showLabels ? 5 : 3.5, 0, Math.PI * 2); rc.fill();
-                  }
+                  for (const f of feastDrops) { rc.beginPath(); rc.arc(cx + (f.x - WORLD_CENTER) * sc, cy + (f.y - WORLD_CENTER) * sc, showLabels ? 5 : 3.5, 0, Math.PI * 2); rc.fill(); }
                   rc.fillStyle = 'rgba(255,90,78,0.85)';
-                  for (const s of snakes) {
-                    if (!s.alive || s.isPlayer || s.isCamo()) continue;
-                    const sx = cx + (s.x - WORLD_CENTER) * sc, sy = cy + (s.y - WORLD_CENTER) * sc;
-                    rc.beginPath(); rc.arc(sx, sy, showLabels ? 3 : 1.7, 0, Math.PI * 2); rc.fill();
-                  }
-                  if (player && player.alive) {
-                    const px = cx + (player.x - WORLD_CENTER) * sc, py = cy + (player.y - WORLD_CENTER) * sc;
-                    rc.fillStyle = '#7ce846';
-                    rc.beginPath(); rc.arc(px, py, showLabels ? 6 : 4, 0, Math.PI * 2); rc.fill();
-                    rc.strokeStyle = '#fff'; rc.lineWidth = 1.5; rc.stroke();
-                  }
+                  for (const s of snakes) { if (!s.alive || s.isPlayer || s.isCamo()) continue; rc.beginPath(); rc.arc(cx + (s.x - WORLD_CENTER) * sc, cy + (s.y - WORLD_CENTER) * sc, showLabels ? 3 : 1.7, 0, Math.PI * 2); rc.fill(); }
+                  if (player && player.alive) { const px = cx + (player.x - WORLD_CENTER) * sc, py = cy + (player.y - WORLD_CENTER) * sc; rc.fillStyle = '#7ce846'; rc.beginPath(); rc.arc(px, py, showLabels ? 6 : 4, 0, Math.PI * 2); rc.fill(); rc.strokeStyle = '#fff'; rc.lineWidth = 1.5; rc.stroke(); }
                 }
 
                 function renderGame(dt) {
                   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
                   ctx.fillStyle = '#060b07'; ctx.fillRect(0, 0, appW, appH);
+
+                  // LIVE ANIMATED WORKSHOP PREVIEW (LEFT PANEL IN SNAKES PAGE)
+                  if (document.getElementById('profileModal').classList.contains('open') && document.getElementById('tabSnakes').classList.contains('active') && previewSnake) {
+                    const pw = wsCanvas.width, ph = wsCanvas.height;
+                    wsCtx.clearRect(0, 0, pw, ph);
+                    previewSnake.slitherPhase += dt * 7;
+                    const t = globalTime * 1.1;
+                    const nx = pw * 0.5 + Math.cos(t) * 52;
+                    const ny = ph * 0.5 + Math.sin(t) * 56;
+                    previewSnake.angle = Math.atan2(ny - previewSnake.y, nx - previewSnake.x);
+                    previewSnake.x = nx; previewSnake.y = ny;
+                    previewSnake.segments[0].x = nx; previewSnake.segments[0].y = ny;
+                    for (let i = 1; i < previewSnake.segments.length; i++) {
+                      const p = previewSnake.segments[i - 1], c = previewSnake.segments[i], dx = c.x - p.x, dy = c.y - p.y, d = Math.hypot(dx, dy) || 1;
+                      if (d > 6.5) { c.x = p.x + (dx / d) * 6.5; c.y = p.y + (dy / d) * 6.5; }
+                    }
+                    previewSnake.draw(wsCtx, false);
+                  }
 
                   if (screenState !== 'playing') {
                     if (groundPattern) { ctx.fillStyle = groundPattern; ctx.fillRect(0, 0, appW, appH); }
@@ -2082,11 +2033,9 @@ jobs:
                       lobbySnake.slitherPhase += dt * 7.5;
                       const rx = Math.min(appW * 0.25, 190), ry = Math.min(appH * 0.22, 95);
                       const t = globalTime * 0.82;
-                      const nx = appW * 0.5 + Math.cos(t) * rx;
-                      const ny = appH * 0.48 + Math.sin(t) * ry;
+                      const nx = appW * 0.5 + Math.cos(t) * rx, ny = appH * 0.48 + Math.sin(t) * ry;
                       lobbySnake.angle = Math.atan2(ny - lobbySnake.y, nx - lobbySnake.x);
-                      lobbySnake.x = nx; lobbySnake.y = ny;
-                      lobbySnake.segments[0].x = nx; lobbySnake.segments[0].y = ny;
+                      lobbySnake.x = nx; lobbySnake.y = ny; lobbySnake.segments[0].x = nx; lobbySnake.segments[0].y = ny;
                       const spc = lobbySnake.getRadius() * 0.52;
                       for (let i = 1; i < lobbySnake.segments.length; i++) {
                         const p = lobbySnake.segments[i - 1], c = lobbySnake.segments[i], dx = c.x - p.x, dy = c.y - p.y, d = Math.hypot(dx, dy) || 1;
@@ -2096,8 +2045,7 @@ jobs:
                     }
                     for (const ff of fireflies) {
                       ff.x = (ff.x + ff.vx * dt + appW) % appW; ff.y = (ff.y + ff.vy * dt + appH) % appH;
-                      const al = 0.2 + 0.5 * (0.5 + 0.5 * Math.sin(globalTime * 3.5 + ff.ph));
-                      ctx.fillStyle = `rgba(190, 255, 120, ${al})`;
+                      ctx.fillStyle = `rgba(190, 255, 120, ${0.2 + 0.5 * (0.5 + 0.5 * Math.sin(globalTime * 3.5 + ff.ph))})`;
                       ctx.beginPath(); ctx.arc(ff.x, ff.y, 2, 0, Math.PI * 2); ctx.fill();
                     }
                     return;
@@ -2113,21 +2061,9 @@ jobs:
                   ctx.translate(-(camera.x + camera.lookX), -(camera.y + camera.lookY));
 
                   if (groundPattern) { ctx.fillStyle = groundPattern; ctx.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE); }
-
-                  for (const r of REGIONS) {
-                    if (!isNearCam(r.x, r.y, r.r)) continue;
-                    ctx.fillStyle = r.col; ctx.beginPath(); ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2); ctx.fill();
-                  }
-
-                  for (const m of mudZones) {
-                    if (!isNearCam(m.x, m.y, m.r + 80)) continue;
-                    ctx.fillStyle = biome.mud; ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2); ctx.fill();
-                  }
-
-                  for (const w of waterZones) {
-                    if (!isNearCam(w.x, w.y, w.r + 100)) continue;
-                    ctx.fillStyle = biome.shore; ctx.beginPath(); ctx.arc(w.x, w.y, w.r + 16, 0, Math.PI * 2); ctx.fill();
-                  }
+                  for (const r of REGIONS) { if (!isNearCam(r.x, r.y, r.r)) continue; ctx.fillStyle = r.col; ctx.beginPath(); ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2); ctx.fill(); }
+                  for (const m of mudZones) { if (!isNearCam(m.x, m.y, m.r + 80)) continue; ctx.fillStyle = biome.mud; ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2); ctx.fill(); }
+                  for (const w of waterZones) { if (!isNearCam(w.x, w.y, w.r + 100)) continue; ctx.fillStyle = biome.shore; ctx.beginPath(); ctx.arc(w.x, w.y, w.r + 16, 0, Math.PI * 2); ctx.fill(); }
                   for (const w of waterZones) {
                     if (!isNearCam(w.x, w.y, w.r + 100)) continue;
                     ctx.fillStyle = biome.water; ctx.beginPath(); ctx.arc(w.x, w.y, w.r, 0, Math.PI * 2); ctx.fill();
@@ -2136,29 +2072,19 @@ jobs:
                   for (const lp of lilyPads) {
                     if (!isNearCam(lp.x, lp.y, 50)) continue;
                     ctx.save(); ctx.translate(lp.x, lp.y); ctx.rotate(lp.rot);
-                    ctx.fillStyle = '#2d7a2d';
-                    ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, lp.r, 0.25, Math.PI * 2 - 0.25); ctx.closePath(); ctx.fill();
-                    if (lp.lotus) {
-                      ctx.fillStyle = '#ff85b3';
-                      for (let p = 0; p < 5; p++) { ctx.rotate((Math.PI * 2) / 5); ctx.beginPath(); ctx.ellipse(4, 0, 5, 2.5, 0, 0, Math.PI * 2); ctx.fill(); }
-                      ctx.fillStyle = '#ffe552'; ctx.beginPath(); ctx.arc(0, 0, 2.2, 0, Math.PI * 2); ctx.fill();
-                    }
+                    ctx.fillStyle = '#2d7a2d'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, lp.r, 0.25, Math.PI * 2 - 0.25); ctx.closePath(); ctx.fill();
+                    if (lp.lotus) { ctx.fillStyle = '#ff85b3'; for (let p = 0; p < 5; p++) { ctx.rotate((Math.PI * 2) / 5); ctx.beginPath(); ctx.ellipse(4, 0, 5, 2.5, 0, 0, Math.PI * 2); ctx.fill(); } ctx.fillStyle = '#ffe552'; ctx.beginPath(); ctx.arc(0, 0, 2.2, 0, Math.PI * 2); ctx.fill(); }
                     ctx.restore();
                   }
-
                   for (const tr of tracks) {
                     if (!isNearCam(tr.x, tr.y, 40)) continue;
-                    ctx.save(); ctx.translate(tr.x, tr.y); ctx.rotate(tr.ang);
-                    ctx.globalAlpha = clamp(tr.life / tr.maxLife, 0, 1) * 0.42;
-                    ctx.fillStyle = '#170d05'; ctx.beginPath(); ctx.ellipse(0, 0, tr.r * 0.5, tr.r * 0.9, 0, 0, Math.PI * 2); ctx.fill();
-                    ctx.restore();
+                    ctx.save(); ctx.translate(tr.x, tr.y); ctx.rotate(tr.ang); ctx.globalAlpha = clamp(tr.life / tr.maxLife, 0, 1) * 0.42;
+                    ctx.fillStyle = '#170d05'; ctx.beginPath(); ctx.ellipse(0, 0, tr.r * 0.5, tr.r * 0.9, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
                   }
                   for (const rp of ripples) {
                     if (!isNearCam(rp.x, rp.y, rp.maxR)) continue;
-                    ctx.strokeStyle = `rgba(195, 245, 255, ${(rp.life / rp.maxLife) * 0.42})`; ctx.lineWidth = 1.8;
-                    ctx.beginPath(); ctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2); ctx.stroke();
+                    ctx.strokeStyle = `rgba(195, 245, 255, ${(rp.life / rp.maxLife) * 0.42})`; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2); ctx.stroke();
                   }
-
                   for (const pr of worldProps) {
                     if (!isNearCam(pr.x, pr.y, pr.sz + 50)) continue;
                     ctx.save(); ctx.translate(pr.x, pr.y); ctx.rotate(pr.rot);
@@ -2168,13 +2094,8 @@ jobs:
                       ctx.fillStyle = 'rgba(76,138,44,0.72)'; ctx.beginPath(); ctx.ellipse(-pr.sz * 0.2, -3, pr.sz * 0.36, pr.sz * 0.19, 0.2, 0, Math.PI * 2); ctx.fill();
                     } else if (pr.kind === 'rock') {
                       ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(4, 6, pr.sz * 0.78, pr.sz * 0.62, 0, 0, Math.PI * 2); ctx.fill();
-                      ctx.fillStyle = '#5c6358';
-                      ctx.beginPath();
-                      ctx.moveTo(pr.sz * 0.75, 0); ctx.lineTo(pr.sz * 0.42, -pr.sz * 0.56); ctx.lineTo(-pr.sz * 0.38, -pr.sz * 0.52);
-                      ctx.lineTo(-pr.sz * 0.76, -pr.sz * 0.08); ctx.lineTo(-pr.sz * 0.46, pr.sz * 0.54); ctx.lineTo(pr.sz * 0.36, pr.sz * 0.5);
-                      ctx.closePath(); ctx.fill();
-                      ctx.strokeStyle = 'rgba(22,26,20,0.6)'; ctx.lineWidth = 1.2;
-                      ctx.beginPath(); ctx.moveTo(-pr.sz * 0.3, -pr.sz * 0.15); ctx.lineTo(pr.sz * 0.1, pr.sz * 0.05); ctx.lineTo(pr.sz * 0.35, -pr.sz * 0.2); ctx.stroke();
+                      ctx.fillStyle = '#5c6358'; ctx.beginPath(); ctx.moveTo(pr.sz * 0.75, 0); ctx.lineTo(pr.sz * 0.42, -pr.sz * 0.56); ctx.lineTo(-pr.sz * 0.38, -pr.sz * 0.52); ctx.lineTo(-pr.sz * 0.76, -pr.sz * 0.08); ctx.lineTo(-pr.sz * 0.46, pr.sz * 0.54); ctx.lineTo(pr.sz * 0.36, pr.sz * 0.5); ctx.closePath(); ctx.fill();
+                      ctx.strokeStyle = 'rgba(22,26,20,0.6)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(-pr.sz * 0.3, -pr.sz * 0.15); ctx.lineTo(pr.sz * 0.1, pr.sz * 0.05); ctx.lineTo(pr.sz * 0.35, -pr.sz * 0.2); ctx.stroke();
                       ctx.fillStyle = 'rgba(68,122,42,0.62)'; ctx.beginPath(); ctx.arc(-pr.sz * 0.24, -pr.sz * 0.2, pr.sz * 0.28, 0, Math.PI * 2); ctx.fill();
                     } else if (pr.kind === 'ruin') {
                       ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(-pr.sz * 0.8 + 5, -pr.sz * 0.55 + 6, pr.sz * 1.6, pr.sz * 1.1);
@@ -2182,20 +2103,13 @@ jobs:
                       ctx.strokeStyle = 'rgba(28,32,26,0.72)'; ctx.lineWidth = 2; ctx.strokeRect(-pr.sz * 0.68, -pr.sz * 0.44, pr.sz * 1.36, pr.sz * 0.88);
                       ctx.fillStyle = 'rgba(64,116,40,0.68)'; ctx.beginPath(); ctx.arc(-pr.sz * 0.45, -pr.sz * 0.3, pr.sz * 0.28, 0, Math.PI * 2); ctx.fill();
                     } else {
-                      for (let f = 0; f < 6; f++) {
-                        ctx.rotate(Math.PI / 3); ctx.fillStyle = f % 2 === 0 ? '#2b6e24' : '#3d8c30';
-                        ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(pr.sz * 0.45, -pr.sz * 0.22, pr.sz * 0.85, 0); ctx.quadraticCurveTo(pr.sz * 0.45, pr.sz * 0.22, 0, 0); ctx.fill();
-                      }
+                      for (let f = 0; f < 6; f++) { ctx.rotate(Math.PI / 3); ctx.fillStyle = f % 2 === 0 ? '#2b6e24' : '#3d8c30'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(pr.sz * 0.45, -pr.sz * 0.22, pr.sz * 0.85, 0); ctx.quadraticCurveTo(pr.sz * 0.45, pr.sz * 0.22, 0, 0); ctx.fill(); }
                     }
                     ctx.restore();
                   }
 
-                  ctx.strokeStyle = 'rgba(255,75,58,0.6)'; ctx.lineWidth = 18;
-                  ctx.beginPath(); ctx.arc(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 0, Math.PI * 2); ctx.stroke();
-                  if (safeZone.active) {
-                    ctx.strokeStyle = 'rgba(77,226,240,0.88)'; ctx.lineWidth = 10;
-                    ctx.beginPath(); ctx.arc(safeZone.cx, safeZone.cy, safeZone.r, 0, Math.PI * 2); ctx.stroke();
-                  }
+                  ctx.strokeStyle = 'rgba(255,75,58,0.6)'; ctx.lineWidth = 18; ctx.beginPath(); ctx.arc(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 0, Math.PI * 2); ctx.stroke();
+                  if (safeZone.active) { ctx.strokeStyle = 'rgba(77,226,240,0.88)'; ctx.lineWidth = 10; ctx.beginPath(); ctx.arc(safeZone.cx, safeZone.cy, safeZone.r, 0, Math.PI * 2); ctx.stroke(); }
 
                   for (const f of feastDrops) {
                     if (!isNearCam(f.x, f.y, 120)) continue;
@@ -2203,56 +2117,31 @@ jobs:
                     ctx.fillStyle = 'rgba(255,224,82,0.28)'; ctx.beginPath(); ctx.arc(f.x, f.y, 38 * pulse, 0, Math.PI * 2); ctx.fill();
                     ctx.fillStyle = '#ffe052'; ctx.beginPath(); ctx.arc(f.x, f.y, 14, 0, Math.PI * 2); ctx.fill();
                   }
-
                   for (const p of preyList) { if (isNearCam(p.x, p.y, 50)) drawPrey(ctx, p); }
                   for (const m of meatList) {
                     if (!isNearCam(m.x, m.y, 40)) continue;
                     ctx.fillStyle = m.col || '#ff9d3b'; ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2); ctx.fill();
                     ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.beginPath(); ctx.arc(m.x - 2.5, m.y - 2.5, m.r * 0.32, 0, Math.PI * 2); ctx.fill();
                   }
-
-                  for (const s of snakes) {
-                    if (!s.alive || (!s.isPlayer && !isNearCam(s.x, s.y, 260))) continue;
-                    s.draw(ctx, true);
-                  }
+                  for (const s of snakes) { if (!s.alive || (!s.isPlayer && !isNearCam(s.x, s.y, 260))) continue; s.draw(ctx, true); }
 
                   if (player && player.alive && safeZone.active && dist(player.x, player.y, safeZone.cx, safeZone.cy) > safeZone.r - 120) {
                     const za = Math.atan2(safeZone.cy - player.y, safeZone.cx - player.x);
                     ctx.save(); ctx.translate(player.x + Math.cos(za) * 58, player.y + Math.sin(za) * 58); ctx.rotate(za);
-                    ctx.fillStyle = '#4de2f0'; ctx.beginPath(); ctx.moveTo(12, 0); ctx.lineTo(-6, -8); ctx.lineTo(-3, 0); ctx.lineTo(-6, 8); ctx.closePath(); ctx.fill();
-                    ctx.restore();
+                    ctx.fillStyle = '#4de2f0'; ctx.beginPath(); ctx.moveTo(12, 0); ctx.lineTo(-6, -8); ctx.lineTo(-3, 0); ctx.lineTo(-6, 8); ctx.closePath(); ctx.fill(); ctx.restore();
                   }
-
-                  for (const pr of projectiles) {
-                    ctx.fillStyle = pr.col || '#84ff3b'; ctx.beginPath(); ctx.arc(pr.x, pr.y, pr.r, 0, Math.PI * 2); ctx.fill();
-                  }
-
+                  for (const pr of projectiles) { ctx.fillStyle = pr.col || '#84ff3b'; ctx.beginPath(); ctx.arc(pr.x, pr.y, pr.r, 0, Math.PI * 2); ctx.fill(); }
                   for (const tr of trees) {
                     if (!isNearCam(tr.x, tr.y, tr.r + 40)) continue;
                     const pUnder = player && player.alive && distSq(player.x, player.y, tr.x, tr.y) < (tr.r * 0.95) ** 2;
-                    ctx.save();
-                    ctx.translate(tr.x + Math.sin(globalTime * 1.3 + tr.ph) * 3, tr.y);
-                    ctx.globalAlpha = pUnder ? 0.34 : 0.76;
+                    ctx.save(); ctx.translate(tr.x + Math.sin(globalTime * 1.3 + tr.ph) * 3, tr.y); ctx.globalAlpha = pUnder ? 0.34 : 0.76;
                     ctx.fillStyle = 'rgba(0,0,0,0.32)'; ctx.beginPath(); ctx.arc(12, 16, tr.r * 0.9, 0, Math.PI * 2); ctx.fill();
-                    for (let l = 0; l < 5; l++) {
-                      const a = (l / 5) * Math.PI * 2 + tr.ph;
-                      ctx.fillStyle = l % 2 === 0 ? '#1b521a' : '#266b22';
-                      ctx.beginPath(); ctx.arc(Math.cos(a) * tr.r * 0.36, Math.sin(a) * tr.r * 0.36, tr.r * 0.56, 0, Math.PI * 2); ctx.fill();
-                    }
-                    ctx.fillStyle = '#36852c'; ctx.beginPath(); ctx.arc(-tr.r * 0.1, -tr.r * 0.1, tr.r * 0.42, 0, Math.PI * 2); ctx.fill();
-                    ctx.restore();
+                    for (let l = 0; l < 5; l++) { const a = (l / 5) * Math.PI * 2 + tr.ph; ctx.fillStyle = l % 2 === 0 ? '#1b521a' : '#266b22'; ctx.beginPath(); ctx.arc(Math.cos(a) * tr.r * 0.36, Math.sin(a) * tr.r * 0.36, tr.r * 0.56, 0, Math.PI * 2); ctx.fill(); }
+                    ctx.fillStyle = '#36852c'; ctx.beginPath(); ctx.arc(-tr.r * 0.1, -tr.r * 0.1, tr.r * 0.42, 0, Math.PI * 2); ctx.fill(); ctx.restore();
                   }
-
-                  for (const pt of particles) {
-                    ctx.globalAlpha = clamp(pt.life / pt.maxLife, 0, 1);
-                    ctx.fillStyle = pt.color; ctx.beginPath(); ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2); ctx.fill();
-                  }
-                  ctx.globalAlpha = 1;
-                  ctx.font = '900 13px sans-serif'; ctx.textAlign = 'center';
-                  for (const ft of floatTexts) {
-                    ctx.globalAlpha = clamp(ft.life / ft.maxLife, 0, 1);
-                    ctx.fillStyle = ft.color; ctx.fillText(ft.text, ft.x, ft.y);
-                  }
+                  for (const pt of particles) { ctx.globalAlpha = clamp(pt.life / pt.maxLife, 0, 1); ctx.fillStyle = pt.color; ctx.beginPath(); ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2); ctx.fill(); }
+                  ctx.globalAlpha = 1; ctx.font = '900 13px sans-serif'; ctx.textAlign = 'center';
+                  for (const ft of floatTexts) { ctx.globalAlpha = clamp(ft.life / ft.maxLife, 0, 1); ctx.fillStyle = ft.color; ctx.fillText(ft.text, ft.x, ft.y); }
                   ctx.restore();
 
                   if (dayCycle >= 48) {
@@ -2262,13 +2151,8 @@ jobs:
                     if (night > 0.02) { ctx.fillStyle = `rgba(6, 14, 30, ${night * 0.32})`; ctx.fillRect(0, 0, appW, appH); }
                   }
                   if (profile.settings.gfx !== 'low' && weatherRain) {
-                    ctx.strokeStyle = 'rgba(180, 225, 255, 0.25)'; ctx.lineWidth = 1.2;
-                    ctx.beginPath();
-                    for (const rd of rainDrops) {
-                      rd.x -= rd.v * 0.2 * dt; rd.y += rd.v * dt;
-                      if (rd.y > appH) { rd.y = -20; rd.x = rand(0, appW + 100); }
-                      ctx.moveTo(rd.x, rd.y); ctx.lineTo(rd.x - 4, rd.y + rd.l);
-                    }
+                    ctx.strokeStyle = 'rgba(180, 225, 255, 0.25)'; ctx.lineWidth = 1.2; ctx.beginPath();
+                    for (const rd of rainDrops) { rd.x -= rd.v * 0.2 * dt; rd.y += rd.v * dt; if (rd.y > appH) { rd.y = -20; rd.x = rand(0, appW + 100); } ctx.moveTo(rd.x, rd.y); ctx.lineTo(rd.x - 4, rd.y + rd.l); }
                     ctx.stroke();
                   }
                 }
@@ -2283,7 +2167,7 @@ jobs:
                   requestAnimationFrame(mainLoop);
                 }
 
-                // -------------------- UI, SHOP & 24-SNAKE PAGE WIRING --------------------
+                // -------------------- WORKSHOP, UPGRADES & SHOP WIRING --------------------
                 function refreshLobbyUI() {
                   document.getElementById('lbAvatar').textContent = profile.avatar;
                   document.getElementById('lbLvl').textContent = `LV.${profile.level}`;
@@ -2304,33 +2188,49 @@ jobs:
                   document.getElementById('hudAudioBtn').textContent = muteIcon;
                 }
 
+                function selectWorkshopPreview(spId) {
+                  previewSnakeId = spId;
+                  const sp = SPECIES.find(s => s.id === spId) || SPECIES[0];
+                  previewSnake = new Snake({ name: sp.name, species: sp, x: 100, y: 110, isPlayer: true, mass: 22 });
+                  previewSnake.spawnShield = 0; previewSnake.hoodFlare = sp.hood ? 0.9 : 0;
+
+                  const owned = profile.ownedSnakes.includes(sp.id) || sp.curr === 'free';
+                  const eq = profile.selectedSnake === sp.id;
+                  document.getElementById('wsName').textContent = sp.name;
+                  document.getElementById('wsTier').textContent = `${sp.tier} • ${sp.curr === 'free' ? 'FREE' : sp.price.toLocaleString() + (sp.curr === 'dia' ? ' 💎' : ' 🪙')}`;
+                  document.getElementById('wsTrait').textContent = sp.trait;
+
+                  const btn = document.getElementById('wsActionBtn');
+                  btn.className = (!owned && sp.curr === 'dia') ? 'btn-dia' : 'btn-gold';
+                  btn.textContent = eq ? 'EQUIPPED ✅' : (owned ? 'EQUIP SNAKE' : `BUY ${sp.price.toLocaleString()} ${sp.curr === 'dia' ? '💎' : '🪙'}`);
+                  btn.onclick = () => {
+                    if (owned) profile.selectedSnake = sp.id;
+                    else if (sp.curr === 'coin' && profile.coins >= sp.price) { profile.coins -= sp.price; profile.ownedSnakes.push(sp.id); profile.selectedSnake = sp.id; Sound.buy(); }
+                    else if (sp.curr === 'dia' && profile.diamonds >= sp.price) { profile.diamonds -= sp.price; profile.ownedSnakes.push(sp.id); profile.selectedSnake = sp.id; Sound.buy(); }
+                    else { Sound.over(); return; }
+                    saveProfile(); Sound.click(); renderProfileModal(); enterLobby();
+                  };
+                }
+
                 function applySettingsToDOM() {
                   document.getElementById('setZoom').value = Math.round(profile.settings.zoom * 100);
                   document.getElementById('setSens').value = Math.round(profile.settings.lookSens * 100);
                   document.getElementById('setSfxVol').value = Math.round(profile.settings.sfxVol * 100);
-                  const ac = document.getElementById('btnAutoCenter');
-                  ac.textContent = profile.settings.autoCenter ? 'ON' : 'OFF'; ac.classList.toggle('selected', profile.settings.autoCenter);
-                  const vb = document.getElementById('btnVib');
-                  vb.textContent = profile.settings.vib ? 'ON' : 'OFF'; vb.classList.toggle('selected', profile.settings.vib);
-                  const fp = document.getElementById('btnFps');
-                  fp.textContent = profile.settings.showFps ? 'ON' : 'OFF'; fp.classList.toggle('selected', profile.settings.showFps);
+                  const ac = document.getElementById('btnAutoCenter'); ac.textContent = profile.settings.autoCenter ? 'ON' : 'OFF'; ac.classList.toggle('selected', profile.settings.autoCenter);
+                  const vb = document.getElementById('btnVib'); vb.textContent = profile.settings.vib ? 'ON' : 'OFF'; vb.classList.toggle('selected', profile.settings.vib);
+                  const fp = document.getElementById('btnFps'); fp.textContent = profile.settings.showFps ? 'ON' : 'OFF'; fp.classList.toggle('selected', profile.settings.showFps);
                   document.getElementById('fpsPill').style.display = profile.settings.showFps ? 'block' : 'none';
                   document.getElementById('floatingJoy').classList.toggle('fixed-mode', profile.settings.joyMode === 'fixed');
 
                   const gr = document.getElementById('setGfxRow'); gr.innerHTML = '';
                   ['low', 'high', 'ultra'].forEach(q => {
                     const b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (profile.settings.gfx === q ? ' selected' : '');
-                    b.textContent = q.toUpperCase();
-                    b.onclick = () => { profile.settings.gfx = q; saveProfile(); resizeCanvas(); applySettingsToDOM(); Sound.click(); };
-                    gr.appendChild(b);
+                    b.textContent = q.toUpperCase(); b.onclick = () => { profile.settings.gfx = q; saveProfile(); resizeCanvas(); applySettingsToDOM(); Sound.click(); }; gr.appendChild(b);
                   });
-
                   const jr = document.getElementById('setJoyRow'); jr.innerHTML = '';
                   ['floating', 'fixed'].forEach(m => {
                     const b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (profile.settings.joyMode === m ? ' selected' : '');
-                    b.textContent = m.toUpperCase();
-                    b.onclick = () => { profile.settings.joyMode = m; saveProfile(); applySettingsToDOM(); Sound.click(); };
-                    jr.appendChild(b);
+                    b.textContent = m.toUpperCase(); b.onclick = () => { profile.settings.joyMode = m; saveProfile(); applySettingsToDOM(); Sound.click(); }; jr.appendChild(b);
                   });
                 }
 
@@ -2347,8 +2247,7 @@ jobs:
                   const avWrap = document.getElementById('avatarChips'); avWrap.innerHTML = '';
                   AVATARS.forEach(a => {
                     const b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (profile.avatar === a ? ' selected' : '');
-                    b.textContent = a; b.onclick = () => { profile.avatar = a; saveProfile(); renderProfileModal(); Sound.click(); };
-                    avWrap.appendChild(b);
+                    b.textContent = a; b.onclick = () => { profile.avatar = a; saveProfile(); renderProfileModal(); Sound.click(); }; avWrap.appendChild(b);
                   });
 
                   document.getElementById('careerGrid').innerHTML = `
@@ -2357,57 +2256,61 @@ jobs:
                     <div class="stat-box"><div class="stat-val">${profile.stats.kills}</div><div class="stat-lbl">Kills</div></div>
                     <div class="stat-box"><div class="stat-val">${profile.stats.bestLength}</div><div class="stat-lbl">Max Len</div></div>`;
 
+                  // UPGRADES TAB
+                  const ug = document.getElementById('upgradesGrid'); ug.innerHTML = '';
+                  UPGRADE_LIST.forEach(u => {
+                    const lv = profile.upgrades[u.id] || 0;
+                    const cost = u.baseCost * (lv + 1);
+                    const card = document.createElement('div'); card.className = 'card-item';
+                    card.innerHTML = `
+                      <div style="display:flex;justify-content:space-between;align-items:center;"><strong style="color:var(--gold);">${u.icon} ${u.name}</strong><span class="tier-badge" style="background:rgba(124,232,70,0.2);color:#95f54c;">LV ${lv}/${u.max}</span></div>
+                      <div style="font-size:10px;color:#b8d1b4;">${u.desc}</div>
+                      <button type="button" class="btn-gold" style="padding:7px;font-size:10.5px;">${lv >= u.max ? 'MAX LEVEL ✅' : `UPGRADE ${cost.toLocaleString()} 🪙`}</button>`;
+                    card.onclick = () => {
+                      if (lv >= u.max || profile.coins < cost) { Sound.over(); return; }
+                      profile.coins -= cost; profile.upgrades[u.id] = lv + 1;
+                      saveProfile(); Sound.buy(); renderProfileModal();
+                    };
+                    ug.appendChild(card);
+                  });
+
                   // SHOP: ONLY GOLD & DIAMOND PACKS
                   const stg = document.getElementById('storeGrid'); stg.innerHTML = '';
                   STORE_PACKS.forEach(pk => {
                     const card = document.createElement('div'); card.className = 'card-item inr-card';
-                    card.innerHTML = `
-                      <strong style="color:#a8ff8a;font-size:13px;">${pk.title}</strong>
-                      <div style="font-size:10px;color:#c2dbb8;">${pk.desc}</div>
-                      <button type="button" class="btn-inr">BUY ₹${pk.inr}</button>`;
+                    card.innerHTML = `<strong style="color:#a8ff8a;font-size:13px;">${pk.title}</strong><div style="font-size:10px;color:#c2dbb8;">${pk.desc}</div><button type="button" class="btn-inr">BUY ₹${pk.inr}</button>`;
                     card.onclick = () => {
                       pendingPack = pk;
                       document.getElementById('payTitle').textContent = pk.title;
                       document.getElementById('payPrice').textContent = `₹${pk.inr}`;
                       document.getElementById('btnPayConfirm').textContent = `PAY ₹${pk.inr}`;
-                      document.getElementById('payModal').classList.add('open');
-                      Sound.click();
+                      document.getElementById('payModal').classList.add('open'); Sound.click();
                     };
                     stg.appendChild(card);
                   });
 
-                  // SNAKES PAGE: FIRST 5 FREE, THEN ESCALATING PRICE, MOST GLOWING MYTHICS AT END
+                  // SNAKES WORKSHOP GRID: VISUAL SNAKE HEAD + EXACT PRICE ON EVERY CARD!
                   const sg = document.getElementById('snakesGrid'); sg.innerHTML = '';
                   SPECIES.forEach(s => {
                     const owned = profile.ownedSnakes.includes(s.id) || s.curr === 'free';
-                    const sel = profile.selectedSnake === s.id;
+                    const sel = previewSnakeId === s.id;
                     const isMythic = s.tier === 'Mythic' || s.tier === 'Legendary';
                     const card = document.createElement('div');
-                    card.className = 'card-item' + (isMythic ? ' mythic' : '') + (sel ? ' selected' : '');
-                    const btnCls = (!owned && s.curr === 'dia') ? 'btn-dia' : 'btn-gold';
-                    const priceLabel = s.curr === 'free' ? 'FREE' : `${s.price.toLocaleString()} ${s.curr === 'dia' ? '💎' : '🪙'}`;
-                    const btnTxt = sel ? 'EQUIPPED' : (owned ? 'SELECT' : `BUY ${priceLabel}`);
-                    const glowStyle = s.glow ? `box-shadow:0 0 12px ${s.glow};` : '';
-                    card.innerHTML = `
-                      <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;">
-                        <strong style="color:${isMythic ? '#9cf4ff' : '#ffe47a'};font-size:12px;">${s.name}</strong>
-                        <span class="tier-badge" style="background:${s.curr === 'free' ? 'rgba(124,232,70,0.22)' : (isMythic ? 'rgba(97,228,255,0.2)' : 'rgba(246,196,69,0.18)')};color:${s.curr === 'free' ? '#95f54c' : (isMythic ? '#9cf4ff' : '#ffe47a')};">${s.tier}</span>
-                      </div>
-                      <div style="display:flex;align-items:center;gap:6px;">
-                        <span style="width:16px;height:16px;border-radius:50%;background:${s.base};border:2px solid ${s.accent};flex-shrink:0;${glowStyle}"></span>
-                        <span style="font-size:10px;color:#b8d1b4;">${s.trait}</span>
-                      </div>
-                      <div class="price-line" style="color:${s.curr === 'free' ? '#8cff6e' : (s.curr === 'dia' ? '#9cf4ff' : '#ffe47a')};">${priceLabel}</div>
-                      <button type="button" class="${btnCls}" style="padding:7px;font-size:10.5px;">${btnTxt}</button>`;
-                    card.onclick = () => {
-                      if (owned) profile.selectedSnake = s.id;
-                      else if (s.curr === 'coin' && profile.coins >= s.price) { profile.coins -= s.price; profile.ownedSnakes.push(s.id); profile.selectedSnake = s.id; Sound.buy(); }
-                      else if (s.curr === 'dia' && profile.diamonds >= s.price) { profile.diamonds -= s.price; profile.ownedSnakes.push(s.id); profile.selectedSnake = s.id; Sound.buy(); }
-                      else { Sound.over(); return; }
-                      saveProfile(); Sound.click(); renderProfileModal(); enterLobby();
-                    };
+                    card.className = 'snake-card' + (isMythic ? ' mythic' : '') + (sel ? ' selected' : '');
+                    const priceText = profile.selectedSnake === s.id ? 'EQUIPPED ✅' : (owned ? (s.curr === 'free' ? 'FREE' : 'OWNED') : `${s.price.toLocaleString()} ${s.curr === 'dia' ? '💎' : '🪙'}`);
+                    const priceCol = s.curr === 'free' || owned ? '#8cff6e' : (s.curr === 'dia' ? '#9cf4ff' : '#ffe47a');
+
+                    const thumb = document.createElement('canvas');
+                    thumb.className = 'snake-thumb'; thumb.width = 76; thumb.height = 76;
+                    drawSnakeCardThumb(thumb, s);
+
+                    const nm = document.createElement('div'); nm.className = 'sc-name'; nm.textContent = s.name;
+                    const pr = document.createElement('div'); pr.className = 'sc-price'; pr.style.color = priceCol; pr.textContent = priceText;
+                    card.appendChild(thumb); card.appendChild(nm); card.appendChild(pr);
+                    card.onclick = () => { Sound.click(); selectWorkshopPreview(s.id); document.querySelectorAll('.snake-card').forEach(el => el.classList.remove('selected')); card.classList.add('selected'); };
                     sg.appendChild(card);
                   });
+                  selectWorkshopPreview(previewSnakeId);
 
                   const bg = document.getElementById('biomeGrid'); bg.innerHTML = '';
                   BIOMES.forEach(b => {
@@ -2420,6 +2323,7 @@ jobs:
                 }
 
                 function openProfileModal(tabId) {
+                  previewSnakeId = profile.selectedSnake;
                   renderProfileModal();
                   document.querySelectorAll('#profileTabs .tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
                   document.querySelectorAll('#profileModal .tab-pane').forEach(p => p.classList.toggle('active', p.id === tabId));
@@ -2432,8 +2336,7 @@ jobs:
                 document.getElementById('btnPayConfirm').addEventListener('click', () => {
                   if (!pendingPack) return;
                   profile.coins += pendingPack.coins; profile.diamonds += pendingPack.dias;
-                  pendingPack = null;
-                  document.getElementById('payModal').classList.remove('open');
+                  pendingPack = null; document.getElementById('payModal').classList.remove('open');
                   saveProfile(); Sound.buy(); renderProfileModal();
                 });
 
@@ -2452,8 +2355,9 @@ jobs:
                   saveProfile(); Sound.buy(); renderProfileModal();
                 });
 
-                function handleSplashEnter(e) {
-                  if (e) e.stopPropagation();
+                // BUTTON-ONLY SPLASH ENTRY (Tapping anywhere else does nothing!)
+                document.getElementById('btnTapEnter').addEventListener('click', e => {
+                  e.stopPropagation();
                   if (splashEntered) return;
                   splashEntered = true;
                   Sound.init(); Sound.click();
@@ -2471,10 +2375,8 @@ jobs:
                       setTimeout(() => { sp.style.display = 'none'; enterLobby(); }, 300);
                     }
                   }, 80);
-                }
+                });
 
-                document.getElementById('btnTapEnter').addEventListener('click', handleSplashEnter);
-                document.getElementById('splashScreen').addEventListener('click', handleSplashEnter);
                 document.getElementById('profileBadge').addEventListener('click', () => openProfileModal('tabProfile'));
                 document.getElementById('showcasePill').addEventListener('click', () => openProfileModal('tabSnakes'));
                 document.getElementById('btnCoinShop').addEventListener('click', () => openProfileModal('tabShop'));
@@ -2483,11 +2385,7 @@ jobs:
                 document.querySelectorAll('#profileTabs .tab-btn').forEach(b => b.addEventListener('click', () => openProfileModal(b.dataset.tab)));
                 document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => { document.getElementById(b.dataset.close).classList.remove('open'); Sound.click(); }));
                 document.getElementById('prNameIn').addEventListener('input', e => { profile.name = e.target.value.trim() || 'ApexHunter'; saveProfile(); refreshLobbyUI(); });
-
-                document.getElementById('modePill').addEventListener('click', () => {
-                  profile.selectedMode = profile.selectedMode === 'br' ? 'endless' : 'br';
-                  saveProfile(); refreshLobbyUI(); Sound.click();
-                });
+                document.getElementById('modePill').addEventListener('click', () => { profile.selectedMode = profile.selectedMode === 'br' ? 'endless' : 'br'; saveProfile(); refreshLobbyUI(); Sound.click(); });
 
                 document.getElementById('btnStartMatch').addEventListener('click', () => {
                   Sound.init(); Sound.click();
@@ -2501,12 +2399,7 @@ jobs:
                   }, 110);
                 });
 
-                document.getElementById('minimapBox').addEventListener('click', () => {
-                  tacMapOpen = true;
-                  document.getElementById('tacMapOverlay').classList.add('open');
-                  drawRadar(tacCtx, tacCanvas.width, tacCanvas.height, true);
-                  Sound.click();
-                });
+                document.getElementById('minimapBox').addEventListener('click', () => { tacMapOpen = true; document.getElementById('tacMapOverlay').classList.add('open'); drawRadar(tacCtx, tacCanvas.width, tacCanvas.height, true); Sound.click(); });
                 const closeTacMap = () => { tacMapOpen = false; document.getElementById('tacMapOverlay').classList.remove('open'); };
                 document.getElementById('btnCloseTacMap').addEventListener('click', closeTacMap);
                 document.getElementById('tacMapOverlay').addEventListener('click', e => { if (e.target.id === 'tacMapOverlay') closeTacMap(); });
@@ -2542,14 +2435,9 @@ jobs:
                   for (const t of e.changedTouches) {
                     if (t.clientX < appW * 0.5 && ctrl.joyTouchId === null) {
                       ctrl.joyTouchId = t.identifier; ctrl.joyActive = true;
-                      if (profile.settings.joyMode === 'fixed') {
-                        ctrl.joyOx = 82; ctrl.joyOy = appH - 82;
-                      } else {
-                        ctrl.joyOx = t.clientX; ctrl.joyOy = t.clientY;
-                        joyEl.style.left = `${t.clientX}px`; joyEl.style.top = `${t.clientY}px`;
-                      }
-                      joyEl.classList.add('visible');
-                      updateJoyVisual(t.clientX, t.clientY);
+                      if (profile.settings.joyMode === 'fixed') { ctrl.joyOx = 82; ctrl.joyOy = appH - 82; }
+                      else { ctrl.joyOx = t.clientX; ctrl.joyOy = t.clientY; joyEl.style.left = `${t.clientX}px`; joyEl.style.top = `${t.clientY}px`; }
+                      joyEl.classList.add('visible'); updateJoyVisual(t.clientX, t.clientY);
                     } else if (t.clientX >= appW * 0.5 && ctrl.lookTouchId === null) {
                       ctrl.lookTouchId = t.identifier; ctrl.lookActive = true; ctrl.lookLastX = t.clientX; ctrl.lookLastY = t.clientY;
                     }
@@ -2572,22 +2460,14 @@ jobs:
 
                 const endTouch = e => {
                   for (const t of e.changedTouches) {
-                    if (t.identifier === ctrl.joyTouchId) {
-                      ctrl.joyTouchId = null; ctrl.joyActive = false; ctrl.joyMag = 0;
-                      joyEl.classList.remove('visible');
-                      joyKnob.style.transform = 'translate(-50%,-50%)';
-                    }
+                    if (t.identifier === ctrl.joyTouchId) { ctrl.joyTouchId = null; ctrl.joyActive = false; ctrl.joyMag = 0; joyEl.classList.remove('visible'); joyKnob.style.transform = 'translate(-50%,-50%)'; }
                     if (t.identifier === ctrl.lookTouchId) { ctrl.lookTouchId = null; ctrl.lookActive = false; }
                   }
                 };
                 canvas.addEventListener('touchend', endTouch);
                 canvas.addEventListener('touchcancel', endTouch);
 
-                canvas.addEventListener('mousedown', e => {
-                  if (screenState !== 'playing') return;
-                  ctrl.joyMouse = true; ctrl.joyActive = true; ctrl.joyOx = appW / 2; ctrl.joyOy = appH / 2;
-                  updateJoyVisual(e.clientX, e.clientY);
-                });
+                canvas.addEventListener('mousedown', e => { if (screenState !== 'playing') return; ctrl.joyMouse = true; ctrl.joyActive = true; ctrl.joyOx = appW / 2; ctrl.joyOy = appH / 2; updateJoyVisual(e.clientX, e.clientY); });
                 window.addEventListener('mousemove', e => { if (ctrl.joyMouse && screenState === 'playing') updateJoyVisual(e.clientX, e.clientY); });
                 window.addEventListener('mouseup', () => { ctrl.joyMouse = false; ctrl.joyActive = false; ctrl.joyMag = 0; });
 
@@ -2624,8 +2504,7 @@ jobs:
                 generateWorld(profile.selectedBiome);
                 const initSpec = SPECIES.find(s => s.id === profile.selectedSnake) || SPECIES[0];
                 lobbySnake = new Snake({ name: profile.name, species: initSpec, x: appW * 0.5, y: appH * 0.48, isPlayer: true, mass: 38 });
-                lobbySnake.spawnShield = 0;
-                lobbySnake.hoodFlare = initSpec.hood ? 0.9 : 0;
+                lobbySnake.spawnShield = 0; lobbySnake.hoodFlare = initSpec.hood ? 0.9 : 0;
                 requestAnimationFrame(mainLoop);
               })();
             </script>
