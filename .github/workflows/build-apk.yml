@@ -1,4 +1,4 @@
-name: Build Serpent-Wild v16 Clean Audio & 47-FX APK
+name: Build Serpent-Wild v17 Clean Audio & Skin-Emit FX APK
 
 on:
   push:
@@ -29,7 +29,7 @@ jobs:
             yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null 2>&1 || true
           fi
 
-      - name: Generate Serpent-Wild v16 Android Project
+      - name: Generate Serpent-Wild v17 Android Project
         run: |
           mkdir -p app/src/main/java/com/apexwild/serpent app/src/main/assets app/src/main/res/values
 
@@ -76,8 +76,8 @@ jobs:
                   applicationId = "com.apexwild.serpent.royale"
                   minSdk = 26
                   targetSdk = 35
-                  versionCode = 16
-                  versionName = "16.0.0"
+                  versionCode = 17
+                  versionName = "17.0.0"
               }
               signingConfigs {
                   create("release") {
@@ -235,8 +235,14 @@ jobs:
 
               override fun onPause() {
                   super.onPause()
+                  webView.evaluateJavascript("window.pauseGameAudio && window.pauseGameAudio();", null)
                   webView.onPause()
                   webView.pauseTimers()
+              }
+
+              override fun onStop() {
+                  super.onStop()
+                  webView.evaluateJavascript("window.pauseGameAudio && window.pauseGameAudio();", null)
               }
 
               override fun onResume() {
@@ -244,9 +250,11 @@ jobs:
                   hideSystemBars()
                   webView.resumeTimers()
                   webView.onResume()
+                  webView.evaluateJavascript("window.resumeGameAudio && window.resumeGameAudio();", null)
               }
 
               override fun onDestroy() {
+                  webView.evaluateJavascript("window.pauseGameAudio && window.pauseGameAudio();", null)
                   webView.destroy()
                   super.onDestroy()
               }
@@ -255,6 +263,7 @@ jobs:
               override fun onBackPressed() {
                   val now = System.currentTimeMillis()
                   if (now - lastBackPressMs < 2000L) {
+                      webView.evaluateJavascript("window.pauseGameAudio && window.pauseGameAudio();", null)
                       super.onBackPressed()
                   } else {
                       lastBackPressMs = now
@@ -270,7 +279,7 @@ jobs:
           <head>
             <meta charset="UTF-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-            <title>SERPENT WILD: APEX — v16 Clean Audio &amp; 47-FX</title>
+            <title>SERPENT WILD: APEX — v17 Clean Audio &amp; Skin-Emit FX</title>
             <style>
               :root {
                 --bg-dark: #060b07;
@@ -541,16 +550,16 @@ jobs:
                   </svg>
                 </div>
                 <div class="splash-title">SERPENT WILD: APEX</div>
-                <div class="splash-subtitle">v16 • STUDIO AUDIO • 47 UNIQUE GLOW FX</div>
+                <div class="splash-subtitle">v17 • CLEAN AUDIO • SKIN-EMITTING FX</div>
               </div>
               <div id="tapEnterWrap">
                 <button class="btn-gold" id="btnTapEnter" type="button">TAP TO ENTER JUNGLE</button>
                 <div style="font-size:10.5px;color:var(--text-muted);text-align:center;">Press the button above to enter</div>
               </div>
               <div id="loaderWrap">
-                <div class="loader-row"><span id="loaderStatus">Loading Studio Audio &amp; 47 Unique Glow Animations...</span><span id="loaderPct">0%</span></div>
+                <div class="loader-row"><span id="loaderStatus">Loading Clean Audio &amp; Skin-Emitting FX...</span><span id="loaderPct">0%</span></div>
                 <div class="loader-bar"><div id="loaderFill"></div></div>
-                <div id="loaderTip">Tip: Higher price beasts unlock stronger, multi-layer glowing animations!</div>
+                <div id="loaderTip">Tip: Every paid beast radiates unique energy directly from its skin!</div>
               </div>
             </div>
 
@@ -716,11 +725,11 @@ jobs:
                 </div>
                 <div class="modal-body">
                   <div class="setting-row">
-                    <div><div style="font-size:12.5px;font-weight:800;">Background Music (Song)</div><div style="font-size:9.5px;color:var(--text-muted);">Pre-rendered studio audio (Zero Crackle)</div></div>
+                    <div><div style="font-size:12.5px;font-weight:800;">Background Music (Song)</div><div style="font-size:9.5px;color:var(--text-muted);">Clean zero-crackle audio (Auto-pauses on exit)</div></div>
                     <button class="chip selected" id="btnBgm" type="button">ON</button>
                   </div>
                   <div class="setting-row">
-                    <div><div style="font-size:12.5px;font-weight:800;">Graphics Quality</div><div style="font-size:9.5px;color:var(--text-muted);">High/Ultra enables 47 unique glow FX &amp; rain</div></div>
+                    <div><div style="font-size:12.5px;font-weight:800;">Graphics Quality</div><div style="font-size:9.5px;color:var(--text-muted);">High/Ultra enables skin-emitting glow FX &amp; rain</div></div>
                     <div class="chip-row" id="setGfxRow" style="margin:0;"></div>
                   </div>
                   <div class="setting-row">
@@ -907,61 +916,60 @@ jobs:
                   { id: 'w1',   name: 'Jungle Champion', desc: 'Win 1 Classic Royale match',   stat: 'wins',       goal: 1,    coins: 1000, dias: 12 }
                 ];
 
-                // 50 ANIMALS: 3 FREE NATURAL + 47 PAID WITH UNIQUE PRICE-SCALED GLOW ANIMATIONS!
+                // 50 ANIMALS: 3 FREE NATURAL + 47 PAID WITH OUTWARD SKIN-EMITTING FX!
                 const RAW_SPECIES = [
                   ['cobra',     'King Cobra',          'Free',      'cobra',    'slit',   'fang',  0, 'none',   null,      '#5e7328','#3d4f16','#172108','#f0d46c','#d9cc82','#ffc424', 84,86,1.04, 'free', 0,     'Royal Spectacle Hood'],
                   ['tiger',     'Bengal Tiger',        'Free',      'cat',      'round',  'whisk', 0, 'none',   null,      '#f07b1d','#b84f08','#240e02','#121010','#fff2d6','#ffe038', 88,90,1.10, 'free', 0,     'Tiger Ears & Stripes'],
                   ['wolf',      'Alpha Wolf',          'Free',      'canine',   'angry',  'snout', 0, 'none',   null,      '#6f7c8a','#444e59','#1a2026','#dbe6f2','#cfdbe8','#59e8ff', 90,92,1.08, 'free', 0,     'Pointed Wolf Ears'],
-                  ['panda',     'Giant Panda',         'Rare',      'bear',     'panda',  'cute',  1, 'ice',    '#b8e8ff', '#f2f5f7','#c8d1d9','#14171a','#121417','#ffffff','#24292e', 83,86,1.16, 'coin', 2000,  'Black Ears & Frost Glint'],
-                  ['fox',       'Red Fox',             'Rare',      'fox',      'slit',   'snout', 1, 'fire',   '#ff9447', '#e35d1e','#a3380a','#2e0d02','#fff7eb','#fff5e6','#ffd838', 92,94,1.02, 'coin', 3000,  'Sharp Ears & Ember Sparks'],
-                  ['bear',      'Grizzly Bear',        'Rare',      'bear',     'round',  'snout', 1, 'royal',  '#e8a864', '#7a4b2a','#4d2c15','#1f1006','#c99e75','#d9b693','#ffb838', 84,84,1.22, 'coin', 4000,  'Heavy Jaw & Amber Wave'],
-                  ['deer',      'Forest Stag',         'Rare',      'antler',   'round',  'snout', 1, 'helix',  '#a8ff6e', '#9c6838','#69421f','#2b1808','#e8d2a6','#f2e4c9','#ffd86b', 91,92,1.06, 'coin', 5000,  'Nature Helix Antlers'],
-                  ['boar',      'Wild Boar',           'Rare',      'tusk',     'angry',  'tusk',  1, 'rings',  '#ff7b47', '#594338','#382820','#170f0b','#f5ecd7','#997f70','#ff5733', 88,86,1.18, 'coin', 6000,  'Ivory Tusks & Pulse Rings'],
+                  ['panda',     'Giant Panda',         'Rare',      'bear',     'panda',  'cute',  1, 'ice',    '#b8e8ff', '#f2f5f7','#c8d1d9','#14171a','#121417','#ffffff','#24292e', 83,86,1.16, 'coin', 2000,  'Black Ears & Frost Mist'],
+                  ['fox',       'Red Fox',             'Rare',      'fox',      'slit',   'snout', 1, 'fire',   '#ff9447', '#e35d1e','#a3380a','#2e0d02','#fff7eb','#fff5e6','#ffd838', 92,94,1.02, 'coin', 3000,  'Sharp Ears & Ember Aura'],
+                  ['bear',      'Grizzly Bear',        'Rare',      'bear',     'round',  'snout', 1, 'royal',  '#e8a864', '#7a4b2a','#4d2c15','#1f1006','#c99e75','#d9b693','#ffb838', 84,84,1.22, 'coin', 4000,  'Heavy Jaw & Amber Rays'],
+                  ['deer',      'Forest Stag',         'Rare',      'antler',   'round',  'snout', 1, 'helix',  '#a8ff6e', '#9c6838','#69421f','#2b1808','#e8d2a6','#f2e4c9','#ffd86b', 91,92,1.06, 'coin', 5000,  'Nature Energy Ribbons'],
+                  ['boar',      'Wild Boar',           'Rare',      'tusk',     'angry',  'tusk',  1, 'rings',  '#ff7b47', '#594338','#382820','#170f0b','#f5ecd7','#997f70','#ff5733', 88,86,1.18, 'coin', 6000,  'Ivory Tusks & Shock Rings'],
                   ['hyena',     'Spotted Hyena',       'Rare',      'canine',   'angry',  'fang',  1, 'orbit',  '#ffc454', '#b59264','#7d5f39','#2e2010','#2b2118','#e3cba8','#ff9924', 90,90,1.08, 'coin', 7000,  'Orbiting Savanna Sparks'],
-                  ['owl',       'Barn Owl',            'Rare',      'bird',     'big',    'beak',  1, 'royal',  '#fff099', '#d9cbb8','#9e8e78','#383026','#ffffff','#f5efe6','#ffe047', 93,94,1.04, 'coin', 8000,  'Night Eyes & Moon Sheen'],
-                  ['penguin',   'Emperor Penguin',     'Rare',      'bird',     'round',  'beak',  1, 'ice',    '#70e8ff', '#1e242e','#0f131a','#05070a','#ffffff','#ffd047','#ffffff', 89,92,1.10, 'coin', 9000,  'Frost Crystal Shimmer'],
-                  ['frogking',  'Poison Dart Frog',    'Rare',      'frog',     'big',    'wide',  1, 'bio',    '#4be3ff', '#1a8cff','#0c4fa8','#041b40','#11151c','#75d9ff','#ffe647', 91,95,1.06, 'coin', 10000, 'Neon Toxic Bio-Pulse'],
+                  ['owl',       'Barn Owl',            'Rare',      'bird',     'big',    'beak',  1, 'royal',  '#fff099', '#d9cbb8','#9e8e78','#383026','#ffffff','#f5efe6','#ffe047', 93,94,1.04, 'coin', 8000,  'Night Eyes & Moon Halo'],
+                  ['penguin',   'Emperor Penguin',     'Rare',      'bird',     'round',  'beak',  1, 'ice',    '#70e8ff', '#1e242e','#0f131a','#05070a','#ffffff','#ffd047','#ffffff', 89,92,1.10, 'coin', 9000,  'Frost Crystal Shards'],
+                  ['frogking',  'Poison Dart Frog',    'Rare',      'frog',     'big',    'wide',  1, 'bio',    '#4be3ff', '#1a8cff','#0c4fa8','#041b40','#11151c','#75d9ff','#ffe647', 91,95,1.06, 'coin', 10000, 'Neon Toxic Bio-Mist'],
                   ['bat',       'Vampire Bat',         'Rare',      'bat',      'angry',  'fang',  1, 'cosmic', '#b46bff', '#362645','#1d1329','#08050d','#ff4769','#6d5285','#ff3b30', 95,96,1.00, 'coin', 11000, 'Giant Ears & Night Stars'],
-                  ['croco',     'Swamp Croco',         'Rare',      'croco',    'slit',   'teeth', 1, 'bio',    '#6eff54', '#2c8a38','#175420','#07210b','#a8ff6e','#d9eb8a','#ffea38', 86,88,1.20, 'coin', 12000, 'Alligator Jaws & Acid Wave'],
-                  ['shark',     'Great White Shark',   'Rare',      'shark',    'round',  'teeth', 1, 'rings',  '#59d6ff', '#4e7396','#2d4b69','#102030','#e8f4ff','#f0f7ff','#11161c', 93,88,1.18, 'coin', 13000, 'Ocean Sonar Rings & Teeth'],
-                  ['lion',      'Savanna Lion',        'Rare',      'lion',     'angry',  'whisk', 1, 'royal',  '#ffbe38', '#d99829','#9c630f','#381e04','#6e3408','#ffe3a3','#ffea54', 90,90,1.18, 'coin', 14000, 'Royal Mane & Liquid Gold'],
-                  ['leopard',   'Snow Leopard',        'Rare',      'cat',      'slit',   'whisk', 1, 'ice',    '#9cf0ff', '#dce6f0','#9eb0c2','#303b47','#262c33','#ffffff','#59f4ff', 94,95,1.08, 'coin', 14500, 'Frost Diamond Sparkles'],
-                  ['panther',   'Black Panther',       'Rare',      'cat',      'slit',   'fang',  1, 'helix',  '#b46bff', '#1c1b24','#0f0e14','#040408','#7b4dff','#3a354d','#ffe647', 96,96,1.08, 'coin', 15000, 'Shadow Violet Helix'],
-                  ['eagle',     'Golden Eagle',        'Epic',      'bird',     'angry',  'beak',  2, 'royal',  '#ffd84d', '#5e3d1e','#38220d','#170d04','#ffffff','#f2e6cf','#ffe647', 96,94,1.06, 'coin', 18000, 'Hooked Beak & Gold Sheen'],
+                  ['croco',     'Swamp Croco',         'Rare',      'croco',    'slit',   'teeth', 1, 'bio',    '#6eff54', '#2c8a38','#175420','#07210b','#a8ff6e','#d9eb8a','#ffea38', 86,88,1.20, 'coin', 12000, 'Alligator Jaws & Acid Mist'],
+                  ['shark',     'Great White Shark',   'Rare',      'shark',    'round',  'teeth', 1, 'rings',  '#59d6ff', '#4e7396','#2d4b69','#102030','#e8f4ff','#f0f7ff','#11161c', 93,88,1.18, 'coin', 13000, 'Ocean Sonar Waves'],
+                  ['lion',      'Savanna Lion',        'Rare',      'lion',     'angry',  'whisk', 1, 'royal',  '#ffbe38', '#d99829','#9c630f','#381e04','#6e3408','#ffe3a3','#ffea54', 90,90,1.18, 'coin', 14000, 'Royal Mane & Gold Rays'],
+                  ['leopard',   'Snow Leopard',        'Rare',      'cat',      'slit',   'whisk', 1, 'ice',    '#9cf0ff', '#dce6f0','#9eb0c2','#303b47','#262c33','#ffffff','#59f4ff', 94,95,1.08, 'coin', 14500, 'Frost Diamond Shards'],
+                  ['panther',   'Black Panther',       'Rare',      'cat',      'slit',   'fang',  1, 'helix',  '#b46bff', '#1c1b24','#0f0e14','#040408','#7b4dff','#3a354d','#ffe647', 96,96,1.08, 'coin', 15000, 'Shadow Violet Ribbons'],
+                  ['eagle',     'Golden Eagle',        'Epic',      'bird',     'angry',  'beak',  2, 'royal',  '#ffd84d', '#5e3d1e','#38220d','#170d04','#ffffff','#f2e6cf','#ffe647', 96,94,1.06, 'coin', 18000, 'Hooked Beak & Gold Rays'],
                   ['gorilla',   'Silverback Gorilla',  'Epic',      'ape',      'angry',  'wide',  2, 'rings',  '#85d6ff', '#3d424a','#22262b','#0a0c0f','#c7d0db','#6c7582','#ff8c24', 87,86,1.28, 'coin', 20000, 'Colossal Shockwave Rings'],
-                  ['rhino',     'Armored Rhino',       'Epic',      'rhino',    'angry',  'snout', 2, 'fire',   '#ff8547', '#6e757d','#454b52','#1a1e21','#e8e2d0','#9da5ad','#ff5733', 88,84,1.28, 'coin', 22000, 'Giant Horn & Fire Charge'],
+                  ['rhino',     'Armored Rhino',       'Epic',      'rhino',    'angry',  'snout', 2, 'fire',   '#ff8547', '#6e757d','#454b52','#1a1e21','#e8e2d0','#9da5ad','#ff5733', 88,84,1.28, 'coin', 22000, 'Giant Horn & Fire Plumes'],
                   ['hippo',     'River Hippo',         'Epic',      'hippo',    'round',  'tusk',  2, 'orbit',  '#d48cff', '#7d6982','#524257','#211824','#f2e8df','#b099b5','#ffe052', 85,84,1.30, 'coin', 24000, 'Orbiting Amethyst Orbs'],
                   ['bull',      'Raging Bull',         'Epic',      'bull',     'angry',  'ring',  2, 'fire',   '#ff511c', '#4a2618','#2b130a','#0f0603','#ffe45c','#8a523b','#ff3b30', 92,88,1.24, 'coin', 26000, 'Horns & Blazing Flames'],
-                  ['elephant',  'War Elephant',        'Epic',      'eleph',    'round',  'tusk',  2, 'royal',  '#ffcf54', '#7a828c','#4c5259','#1e2124','#fff7e0','#b8c0c9','#ffea54', 84,82,1.34, 'coin', 28000, 'War Tusks & Royal Gold'],
-                  ['octopus',   'Kraken Octopus',      'Epic',      'octo',     'big',    'wide',  2, 'helix',  '#ff47b8', '#a8227a','#630e47','#210317','#ff85d4','#ff9ce0','#ffe647', 91,94,1.16, 'coin', 30000, 'Neon Magenta Double-Helix'],
-                  ['scorpion',  'Venom Scorpion',      'Epic',      'bug',      'angry',  'pinc',  2, 'bio',    '#7eff3b', '#262b21','#141711','#060805','#84ff3b','#48543c','#84ff3b', 94,94,1.10, 'coin', 33000, 'Pincers & Venom Pulse'],
+                  ['elephant',  'War Elephant',        'Epic',      'eleph',    'round',  'tusk',  2, 'royal',  '#ffcf54', '#7a828c','#4c5259','#1e2124','#fff7e0','#b8c0c9','#ffea54', 84,82,1.34, 'coin', 28000, 'War Tusks & Royal Aura'],
+                  ['octopus',   'Kraken Octopus',      'Epic',      'octo',     'big',    'wide',  2, 'helix',  '#ff47b8', '#a8227a','#630e47','#210317','#ff85d4','#ff9ce0','#ffe647', 91,94,1.16, 'coin', 30000, 'Neon Magenta Ribbons'],
+                  ['scorpion',  'Venom Scorpion',      'Epic',      'bug',      'angry',  'pinc',  2, 'bio',    '#7eff3b', '#262b21','#141711','#060805','#84ff3b','#48543c','#84ff3b', 94,94,1.10, 'coin', 33000, 'Pincers & Venom Fumes'],
                   ['viper',     'Desert Horned Viper', 'Epic',      'viper',    'slit',   'fang',  2, 'orbit',  '#ffb024', '#d1a064','#9e6e36','#4a2b0d','#61330e','#f0ddb6','#ff7b1c', 94,94,1.08, 'coin', 36000, 'Solar Orbiting Embers'],
-                  ['dilo',      'Dilophosaurus',       'Epic',      'dilo',     'slit',   'fang',  2, 'bio',    '#ff9524', '#2b9e4b','#16612b','#06240e','#ff6e1a','#ffe052','#ff3b30', 93,93,1.12, 'coin', 39000, 'Jurassic Frill & Bio-Glow'],
-                  ['racer',     'Turbo Racer',         'Epic',      'racer',    'visor',  'none',  2, 'elec',   '#ff4757', '#e82538','#9e1120','#2b0408','#ffffff','#ffd6db','#ffe647', 97,94,1.02, 'coin', 42000, 'Nitro Helmet & Electric Arcs'],
+                  ['dilo',      'Dilophosaurus',       'Epic',      'dilo',     'slit',   'fang',  2, 'bio',    '#ff9524', '#2b9e4b','#16612b','#06240e','#ff6e1a','#ffe052','#ff3b30', 93,93,1.12, 'coin', 39000, 'Jurassic Frill & Bio-Mist'],
+                  ['racer',     'Turbo Racer',         'Epic',      'racer',    'visor',  'none',  2, 'elec',   '#ff4757', '#e82538','#9e1120','#2b0408','#ffffff','#ffd6db','#ffe647', 97,94,1.02, 'coin', 42000, 'Nitro Helmet & Sparks'],
                   ['trex',      'Tyrannosaurus Rex',   'Epic',      'croco',    'angry',  'teeth', 2, 'fire',   '#ff6a1a', '#634d24','#3d2d11','#171005','#ffae24','#bfa36b','#ff3b30', 90,88,1.28, 'coin', 45000, 'Apex Dino Jaws & Fire'],
                   ['tricera',   'Triceratops',         'Epic',      'tricera',  'angry',  'beak',  2, 'rings',  '#54e88a', '#2d7a4f','#164a2d','#061c10','#ffe8b5','#8cd4ab','#ffe047', 88,86,1.26, 'coin', 47000, '3-Horn Frill & Emerald Rings'],
-                  ['mammoth',   'Woolly Mammoth',      'Epic',      'eleph',    'angry',  'tusk',  2, 'ice',    '#70e8ff', '#6b4730','#402718','#170c06','#fff4d6','#a67c5b','#59f4ff', 86,84,1.34, 'coin', 48500, 'Ice Tusks & Crystal Shimmer'],
-                  ['skeleton',  'Bone Skeleton',       'Epic',      'skeleton', 'hollow', 'teeth', 2, 'helix',  '#d9f2ff', '#232830','#14171c','#07080a','#f2f7ff','#b8c4d4','#59f4ff', 95,94,1.08, 'coin', 50000, 'Spectral Soul Helix'],
+                  ['mammoth',   'Woolly Mammoth',      'Epic',      'eleph',    'angry',  'tusk',  2, 'ice',    '#70e8ff', '#6b4730','#402718','#170c06','#fff4d6','#a67c5b','#59f4ff', 86,84,1.34, 'coin', 48500, 'Ice Tusks & Frost Mist'],
+                  ['skeleton',  'Bone Skeleton',       'Epic',      'skeleton', 'hollow', 'teeth', 2, 'helix',  '#d9f2ff', '#232830','#14171c','#07080a','#f2f7ff','#b8c4d4','#59f4ff', 95,94,1.08, 'coin', 50000, 'Spectral Soul Wisps'],
                   ['yeti',      'Frost Yeti',          'Legendary', 'ape',      'glow',   'fang',  3, 'ice',    '#61f0ff', '#d9f7ff','#8cd6eb','#1b5970','#ffffff','#ffffff','#00f2ff', 92,90,1.26, 'dia',  300,   'Glacier Crystals & Ice Aura'],
                   ['frost',     'Glacier Viper',       'Legendary', 'viper',    'glow',   'fang',  3, 'rings',  '#59ecff', '#7ee6ff','#2d9bc2','#092f40','#ffffff','#ccf7ff','#00f2ff', 94,93,1.08, 'dia',  400,   'Diamond Frost Rings'],
-                  ['titanoboa', 'Titanoboa',           'Legendary', 'titan',    'glow',   'fang',  3, 'royal',  '#ffad33', '#755330','#4d331a','#1c1107','#ebb55b','#a6845b','#ffad1d', 90,88,1.32, 'dia',  500,   'Colossal Liquid Bronze'],
-                  ['plasma',    'Plasma Cyber-Bot',    'Legendary', 'plasma',   'visor',  'none',  3, 'elec',   '#ff38d4', '#3d1457','#1e082e','#0a0212','#ff4fe0','#852eb3','#00f7ff', 95,95,1.12, 'dia',  600,   'Live Cyber Lightning Storm'],
-                  ['banshee',   'Spectral Banshee',    'Legendary', 'banshee',  'hollow', 'none',  3, 'helix',  '#40f5ff', '#125a6e','#093442','#03131a','#80fbff','#69e8ff','#ffffff', 96,95,1.12, 'dia',  700,   'Ghostly Double Helix'],
+                  ['titanoboa', 'Titanoboa',           'Legendary', 'titan',    'glow',   'fang',  3, 'royal',  '#ffad33', '#755330','#4d331a','#1c1107','#ebb55b','#a6845b','#ffad1d', 90,88,1.32, 'dia',  500,   'Colossal Bronze Rays'],
+                  ['plasma',    'Plasma Cyber-Bot',    'Legendary', 'plasma',   'visor',  'none',  3, 'elec',   '#ff38d4', '#3d1457','#1e082e','#0a0212','#ff4fe0','#852eb3','#00f7ff', 95,95,1.12, 'dia',  600,   'Live Cyber Lightning Arcs'],
+                  ['banshee',   'Spectral Banshee',    'Legendary', 'banshee',  'hollow', 'none',  3, 'helix',  '#40f5ff', '#125a6e','#093442','#03131a','#80fbff','#69e8ff','#ffffff', 96,95,1.12, 'dia',  700,   'Ghostly Outer Ribbons'],
                   ['phoenix',   'Solar Phoenix',       'Legendary', 'bird',     'glow',   'beak',  3, 'fire',   '#ff6e1a', '#e83814','#9e1a05','#330602','#ffe647','#ffb838','#fff375', 97,95,1.12, 'dia',  800,   'Blazing Phoenix Flames'],
                   ['cerberus',  'Hellhound Cerberus',  'Legendary', 'canine',   'glow',   'fang',  3, 'orbit',  '#ff3b30', '#3b1010','#1f0606','#0a0202','#ff5722','#7a2424','#ffee38', 96,94,1.18, 'dia',  900,   'Infernal Orbiting Fireballs'],
-                  ['kraken',    'Abyssal Kraken',      'Legendary', 'octo',     'glow',   'teeth', 3, 'bio',    '#00ffd5', '#0d4f59','#062b33','#021114','#45ffe0','#69f0ff','#00ffd5', 95,95,1.22, 'dia',  1050,  'Deep-Sea Bio-Pulse'],
+                  ['kraken',    'Abyssal Kraken',      'Legendary', 'octo',     'glow',   'teeth', 3, 'bio',    '#00ffd5', '#0d4f59','#062b33','#021114','#45ffe0','#69f0ff','#00ffd5', 95,95,1.22, 'dia',  1050,  'Deep-Sea Bio-Fumes'],
                   ['waterdrag', 'Water Dragon',        'Legendary', 'd_sea',    'glow',   'fang',  3, 'rings',  '#38e8ff', '#1678b5','#0b4570','#03192e','#75f2ff','#9ceeff','#ffe647', 97,95,1.18, 'dia',  1200,  'Oceanic Neon Rings'],
                   ['inferno',   'Inferno Dragon',      'Mythic',    'd_fire',   'glow',   'fang',  4, 'fire',   '#ff511c', '#c92412','#750e05','#1f0402','#ffbf26','#ff701a','#ffee38', 97,94,1.20, 'dia',  1500,  'Blazing Dragon Inferno'],
-                  ['jade',      'Jade Imperial Dragon','Mythic',    'd_jade',   'glow',   'whisk', 4, 'helix',  '#38ffad', '#11a170','#075c3f','#022417','#ffe354','#7ef5c5','#ffe64d', 97,96,1.18, 'dia',  1750,  'Imperial Jade Helix'],
+                  ['jade',      'Jade Imperial Dragon','Mythic',    'd_jade',   'glow',   'whisk', 4, 'helix',  '#38ffad', '#11a170','#075c3f','#022417','#ffe354','#7ef5c5','#ffe64d', 97,96,1.18, 'dia',  1750,  'Imperial Jade Ribbons'],
                   ['leviathan', 'Shadow Leviathan',    'Mythic',    'd_sea',    'glow',   'fang',  4, 'cosmic', '#8c59ff', '#1e2042','#0f1129','#04050f','#b380ff','#3c6082','#59f4ff', 98,95,1.22, 'dia',  2000,  'Abyssal Starfield Aura'],
-                  ['emperor',   'Emperor Dragon',      'Mythic',    'd_emp',    'glow',   'fang',  4, 'royal',  '#ff9524', '#9e1919','#4a0909','#140202','#ffe047','#ffad33','#fff375', 98,96,1.24, 'dia',  2250,  'Royal Liquid Gold Crown'],
+                  ['emperor',   'Emperor Dragon',      'Mythic',    'd_emp',    'glow',   'fang',  4, 'royal',  '#ff9524', '#9e1919','#4a0909','#140202','#ffe047','#ffad33','#fff375', 98,96,1.24, 'dia',  2250,  'Royal Liquid Gold Rays'],
                   ['raijin',    'Thunder Raijin',      'Mythic',    'd_thunder','glow',   'fang',  4, 'elec',   '#ffe647', '#1b427a','#0d2247','#040b1a','#ffec59','#69c9ff','#fff57d', 99,97,1.20, 'dia',  2500,  'Live Lightning Storm'],
                   ['cosmic',    'Cosmic Void Dragon',  'Mythic',    'd_void',   'glow',   'fang',  4, 'cosmic', '#d959ff', '#2a0d4d','#140529','#06010d','#f09cff','#7a38c9','#ffffff', 99,97,1.22, 'dia',  2800,  'Twinkling Cosmic Void'],
                   ['solar',     'Solar Sun God',       'Mythic',    'd_emp',    'glow',   'fang',  4, 'prism',  '#ffdd38', '#ff7b14','#b83b04','#3d0e02','#fff68f','#ffe066','#ffffff', 100,98,1.24, 'dia',  3100,  'Radiant Solar Prism'],
                   ['galaxy',    'Apex Galaxy Dragon',  'Mythic',    'd_void',   'glow',   'whisk', 5, 'prism',  '#00f7ff', '#111642','#080a26','#02030d','#ff4fe0','#59f4ff','#ffe647', 100,100,1.26,'dia',  3500,  'Ultimate God Prism Aura']
                 ];
 
-                // Assign unique fxSeed + price-scaled glow power (0.35 -> 1.35) to each of the 47 paid animals!
                 const SPECIES = RAW_SPECIES.map((r, idx) => ({
                   id: r[0], name: r[1], tier: r[2], pat: r[3], eyeStyle: r[4], lip: r[5], anim: r[6], fx: r[7], glow: r[8],
                   base: r[9], mid: r[10], dark: r[11], accent: r[12], belly: r[13], eye: r[14],
@@ -1005,7 +1013,7 @@ jobs:
 
                 let profile = (() => {
                   try {
-                    const raw = localStorage.getItem('serpent_wild_v16') || localStorage.getItem('serpent_wild_v15') || localStorage.getItem('serpent_wild_v14') || localStorage.getItem('serpent_wild_v13');
+                    const raw = localStorage.getItem('serpent_wild_v17') || localStorage.getItem('serpent_wild_v16') || localStorage.getItem('serpent_wild_v15') || localStorage.getItem('serpent_wild_v14');
                     if (!raw) return JSON.parse(JSON.stringify(DEFAULT_PROFILE));
                     const d = JSON.parse(raw);
                     const merged = {
@@ -1020,7 +1028,7 @@ jobs:
                   } catch (e) { return JSON.parse(JSON.stringify(DEFAULT_PROFILE)); }
                 })();
 
-                const saveProfile = () => { try { localStorage.setItem('serpent_wild_v16', JSON.stringify(profile)); } catch (e) {} };
+                const saveProfile = () => { try { localStorage.setItem('serpent_wild_v17', JSON.stringify(profile)); } catch (e) {} };
                 const getRank = lv => { let n = RANK_TIERS[0].name; for (const r of RANK_TIERS) if (lv >= r.lv) n = r.name; return n; };
                 const getXpNeed = lv => 1000 + (lv - 1) * 500;
 
@@ -1033,7 +1041,7 @@ jobs:
                 const randInCircle = (cx, cy, r, m = 200) => { const a = rand(0, Math.PI * 2), d = Math.sqrt(Math.random()) * Math.max(40, r - m); return { x: cx + Math.cos(a) * d, y: cy + Math.sin(a) * d }; };
                 const vibrate = ms => { try { if (profile.settings.vib && navigator.vibrate) navigator.vibrate(ms); } catch (e) {} };
 
-                // PRE-RENDERED PCM AUDIOBUFFER ENGINE (ZERO CRACKLE / ZERO DISTORTION ON ANDROID WEBVIEW!)
+                // PHASE-CONTINUOUS ZERO-CRACKLE AUDIO ENGINE + AUTO-PAUSE ON APP EXIT!
                 const Sound = {
                   ctx: null, bgmGain: null, sfxGain: null, bgmSrc: null, bufs: {}, lastEatMs: 0,
                   init() {
@@ -1053,13 +1061,24 @@ jobs:
                       this.updateVol();
                     } catch (e) {}
                   },
-                  makeToneBuf(f1, f2, dur, vol = 0.25) {
+                  pause() {
+                    try {
+                      if (this.bgmGain && this.ctx) this.bgmGain.gain.setValueAtTime(0, this.ctx.currentTime);
+                      if (this.ctx && this.ctx.state === 'running') this.ctx.suspend().catch(() => {});
+                    } catch (e) {}
+                  },
+                  resume() {
+                    try {
+                      if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume().then(() => this.updateVol()).catch(() => {});
+                    } catch (e) {}
+                  },
+                  makeToneBuf(f1, f2, dur, vol = 0.16) {
                     const sr = this.ctx.sampleRate, len = Math.floor(sr * dur);
                     const buf = this.ctx.createBuffer(1, len, sr), ch = buf.getChannelData(0);
                     let ph = 0;
                     for (let i = 0; i < len; i++) {
                       const t = i / len;
-                      const env = Math.sin(Math.PI * Math.min(1, t * 8)) * Math.pow(1 - t, 1.4);
+                      const env = Math.sin(Math.PI * t);
                       const freq = f1 + (f2 - f1) * t;
                       ph += (2 * Math.PI * freq) / sr;
                       ch[i] = Math.sin(ph) * env * vol;
@@ -1067,30 +1086,32 @@ jobs:
                     return buf;
                   },
                   buildBuffers() {
-                    // Pre-render a smooth 6.4-second looping jungle marimba/flute PCM buffer (ZERO runtime oscillators!)
-                    const sr = this.ctx.sampleRate, stepDur = 0.4, notes = [261.63, 293.66, 329.63, 392.0, 329.63, 293.66, 261.63, 220.0, 261.63, 329.63, 392.0, 440.0, 392.0, 329.63, 293.66, 261.63];
+                    // Phase-continuous smooth jungle flute/pad loop (Zero clicks, zero clipping!)
+                    const sr = this.ctx.sampleRate, stepDur = 0.5, notes = [261.63, 293.66, 329.63, 392.0, 329.63, 293.66, 261.63, 220.0, 261.63, 329.63, 392.0, 440.0, 392.0, 329.63, 293.66, 261.63];
                     const bass = [130.81, 146.83, 164.81, 110.0];
                     const totalLen = Math.floor(sr * stepDur * notes.length);
                     const bgmBuf = this.ctx.createBuffer(1, totalLen, sr), ch = bgmBuf.getChannelData(0);
-                    for (let n = 0; n < notes.length; n++) {
-                      const start = Math.floor(n * stepDur * sr), nLen = Math.floor(stepDur * sr);
-                      const f = notes[n], bf = bass[Math.floor(n / 4) % bass.length];
-                      for (let i = 0; i < nLen && start + i < totalLen; i++) {
-                        const t = i / nLen, env = Math.sin(Math.PI * t);
-                        const s1 = Math.sin((2 * Math.PI * f * i) / sr) * 0.14 * env;
-                        const s2 = Math.sin((2 * Math.PI * bf * i) / sr) * 0.1 * Math.sin(Math.PI * t);
-                        ch[start + i] = s1 + s2;
-                      }
+                    let ph1 = 0, ph2 = 0;
+                    for (let i = 0; i < totalLen; i++) {
+                      const pos = i / (sr * stepDur);
+                      const nIdx = Math.min(notes.length - 1, Math.floor(pos));
+                      const frac = pos - nIdx;
+                      const f = notes[nIdx], bf = bass[Math.floor(nIdx / 4) % bass.length];
+                      const env = Math.pow(Math.sin(Math.PI * frac), 0.7);
+                      const loopFade = i < 800 ? i / 800 : (i > totalLen - 800 ? (totalLen - i) / 800 : 1);
+                      ph1 += (2 * Math.PI * f) / sr;
+                      ph2 += (2 * Math.PI * bf) / sr;
+                      ch[i] = (Math.sin(ph1) * 0.08 * env + Math.sin(ph2) * 0.06) * loopFade;
                     }
                     this.bufs.bgm = bgmBuf;
-                    this.bufs.click  = this.makeToneBuf(500, 720, 0.05, 0.22);
-                    this.bufs.eat    = this.makeToneBuf(340, 560, 0.06, 0.22);
-                    this.bufs.potion = this.makeToneBuf(460, 920, 0.16, 0.26);
-                    this.bufs.kill   = this.makeToneBuf(420, 860, 0.16, 0.28);
-                    this.bufs.buy    = this.makeToneBuf(520, 1040, 0.18, 0.26);
-                    this.bufs.drop   = this.makeToneBuf(480, 760, 0.22, 0.24);
-                    this.bufs.win    = this.makeToneBuf(523, 1046, 0.35, 0.28);
-                    this.bufs.over   = this.makeToneBuf(240, 80, 0.35, 0.28);
+                    this.bufs.click  = this.makeToneBuf(500, 720, 0.05, 0.14);
+                    this.bufs.eat    = this.makeToneBuf(340, 540, 0.06, 0.14);
+                    this.bufs.potion = this.makeToneBuf(460, 880, 0.16, 0.18);
+                    this.bufs.kill   = this.makeToneBuf(420, 820, 0.16, 0.18);
+                    this.bufs.buy    = this.makeToneBuf(520, 980, 0.18, 0.18);
+                    this.bufs.drop   = this.makeToneBuf(480, 760, 0.22, 0.16);
+                    this.bufs.win    = this.makeToneBuf(523, 1046, 0.35, 0.2);
+                    this.bufs.over   = this.makeToneBuf(240, 85, 0.35, 0.2);
                   },
                   startBgmLoop() {
                     if (!this.ctx || !this.bufs.bgm || this.bgmSrc) return;
@@ -1102,25 +1123,28 @@ jobs:
                   updateVol() {
                     if (!this.ctx || !this.bgmGain || !this.sfxGain) return;
                     const v = profile.settings.muted ? 0 : profile.settings.sfxVol;
-                    this.bgmGain.gain.setTargetAtTime(profile.settings.bgm ? v * 0.26 : 0, this.ctx.currentTime, 0.05);
+                    this.bgmGain.gain.setTargetAtTime(profile.settings.bgm ? v * 0.45 : 0, this.ctx.currentTime, 0.06);
                     this.sfxGain.gain.setTargetAtTime(v * 0.55, this.ctx.currentTime, 0.03);
                   },
                   play(name) {
                     if (!this.ctx || !this.bufs[name] || profile.settings.muted || profile.settings.sfxVol <= 0) return;
-                    try {
-                      const src = this.ctx.createBufferSource();
-                      src.buffer = this.bufs[name]; src.connect(this.sfxGain); src.start(0);
-                    } catch (e) {}
+                    try { const src = this.ctx.createBufferSource(); src.buffer = this.bufs[name]; src.connect(this.sfxGain); src.start(0); } catch (e) {}
                   },
                   click()  { this.play('click'); },
                   buy()    { this.play('buy'); },
-                  eat()    { const now = performance.now(); if (now - this.lastEatMs < 95) return; this.lastEatMs = now; this.play('eat'); },
+                  eat()    { const now = performance.now(); if (now - this.lastEatMs < 100) return; this.lastEatMs = now; this.play('eat'); },
                   potion() { this.play('potion'); },
                   kill()   { this.play('kill'); },
                   drop()   { this.play('drop'); },
                   win()    { this.play('win'); },
                   over()   { this.play('over'); }
                 };
+
+                window.pauseGameAudio = () => Sound.pause();
+                window.resumeGameAudio = () => Sound.resume();
+                document.addEventListener('visibilitychange', () => { document.hidden ? Sound.pause() : Sound.resume(); });
+                window.addEventListener('pagehide', () => Sound.pause());
+                window.addEventListener('blur', () => Sound.pause());
 
                 const canvas = document.getElementById('gameCanvas');
                 const ctx = canvas.getContext('2d');
@@ -1310,7 +1334,7 @@ jobs:
                 }
 
                 function spawnParticles(x, y, color, count = 6, spd = 90) {
-                  if (particles.length > 160) return;
+                  if (particles.length > 180) return;
                   for (let i = 0; i < count; i++) {
                     const a = rand(0, Math.PI * 2), v = rand(spd * 0.3, spd);
                     particles.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: rand(0.25, 0.55), maxLife: 0.55, size: rand(2.5, 5.5), color });
@@ -1398,7 +1422,7 @@ jobs:
 
                   if (sp.glow && sp.curr !== 'free') {
                     c.save(); c.shadowColor = sp.glow; c.shadowBlur = (8 + sp.fxPower * 16) * pulse;
-                    c.strokeStyle = sp.glow; c.lineWidth = 1.8 + sp.fxPower * 1.4; c.beginPath(); c.arc(0, 0, hr * 1.16, 0, Math.PI * 2); c.stroke(); c.restore();
+                    c.strokeStyle = sp.glow; c.lineWidth = 1.8 + sp.fxPower * 1.4; c.beginPath(); c.arc(0, 0, hr * 1.18, 0, Math.PI * 2); c.stroke(); c.restore();
                   }
 
                   if (pat === 'cat' || pat === 'bear' || pat === 'ape') {
@@ -1525,7 +1549,7 @@ jobs:
                   tc.restore();
                 }
 
-                // 100% SOLID 3D LAYERED SNAKE WITH 47 UNIQUE PRICE-SCALED GLOWING ANIMATIONS!
+                // 100% SOLID 3D SNAKE WITH OUTWARD SKIN-EMITTING ANIMATIONS (DRAWN BEHIND SKIN, NEVER ON TOP!)
                 class Snake {
                   constructor({ name, species, x, y, isPlayer = false, mass = 16 }) {
                     this.name = name; this.species = species; this.isPlayer = isPlayer; this.alive = true;
@@ -1659,10 +1683,18 @@ jobs:
                       if (this.terrain === 'water' && this.rippleCd <= 0 && ripples.length < 36) { ripples.push({ x: this.x, y: this.y, r: r * 0.7, maxR: r * 3.0, life: 0.7, maxLife: 0.7 }); this.rippleCd = 0.18; }
                       this.trackCd -= dt;
                       if (this.terrain === 'mud' && this.trackCd <= 0 && tracks.length < 70) { tracks.push({ x: this.segments[3].x, y: this.segments[3].y, r: r * 0.85, ang: this.angle, life: 3.0, maxLife: 3.0 }); this.trackCd = 0.12; }
+
+                      // OUTWARD SKIN-EMITTING PARTICLES FOR PAID SKINS & BOOST!
                       this.trailCd -= dt;
-                      if ((canBoost || this.species.anim >= 3) && this.trailCd <= 0) {
-                        spawnParticles(this.segments[Math.min(5, this.segments.length - 1)].x, this.segments[Math.min(5, this.segments.length - 1)].y, this.species.glow || this.species.accent, 1, 48);
-                        this.trailCd = canBoost ? 0.08 : (0.32 - this.species.fxPower * 0.12);
+                      if ((canBoost || this.species.curr !== 'free') && this.trailCd <= 0) {
+                        const sIdx = Math.floor(rand(2, Math.max(3, this.segments.length - 1)));
+                        const sg = this.segments[sIdx], ang = rand(0, Math.PI * 2);
+                        const edgeX = sg.x + Math.cos(ang) * (r * 0.95), edgeY = sg.y + Math.sin(ang) * (r * 0.95);
+                        const pCol = this.species.fx === 'prism' ? `hsl(${(globalTime * 180) % 360}, 100%, 62%)` : (this.species.glow || '#ffe45c');
+                        if (particles.length < 180) {
+                          particles.push({ x: edgeX, y: edgeY, vx: Math.cos(ang) * (35 + this.species.fxPower * 45), vy: Math.sin(ang) * (35 + this.species.fxPower * 45), life: 0.42, maxLife: 0.42, size: 2.2 + this.species.fxPower * 2.2, color: pCol });
+                        }
+                        this.trailCd = canBoost ? 0.06 : Math.max(0.08, 0.28 - this.species.fxPower * 0.14);
                       }
                     }
                   }
@@ -1687,33 +1719,69 @@ jobs:
                     c.save();
                     c.globalAlpha = 1.0;
 
+                    // 1. GROUND DROP SHADOW
                     if (detail) {
                       c.fillStyle = 'rgba(0,0,0,0.4)';
-                      for (let i = len - 1; i >= 0; i -= 2) {
-                        const p = pts[i];
-                        c.beginPath(); c.arc(p.x + 5, p.y + 8, p.w * 1.04, 0, Math.PI * 2); c.fill();
-                      }
+                      for (let i = len - 1; i >= 0; i -= 2) { const p = pts[i]; c.beginPath(); c.arc(p.x + 5, p.y + 8, p.w * 1.04, 0, Math.PI * 2); c.fill(); }
                     }
 
-                    const pat = this.species.pat;
+                    // 2. OUTWARD SKIN-EMITTING FX LAYER (DRAWN BEHIND SKIN SO IT RADIATES OUTWARD FROM EDGES!)
                     const glowCol = this.species.glow || (this.boosting ? '#ffe45c' : null);
+                    if (detail && (fx !== 'none' || this.boosting) && glowCol) {
+                      for (let i = len - 1; i >= 1; i -= 2) {
+                        const p = pts[i], w = p.w;
+                        const tCol = fx === 'prism' ? `hsl(${(globalTime * 160 + i * 14 + seed * 30) % 360}, 100%, 62%)` : glowCol;
+                        const pulse = 0.65 + 0.35 * Math.sin(globalTime * (4 + pwr * 4) - i * 0.35 + seed);
 
-                    // 100% SOLID 3D SEGMENTS + 47 UNIQUE PRICE-SCALED GLOW ANIMATIONS!
+                        // Soft Outer Aura Halo behind skin
+                        c.fillStyle = tCol; c.globalAlpha = clamp(0.16 + pwr * 0.15, 0.14, 0.32) * pulse;
+                        c.beginPath(); c.arc(p.x, p.y, w * (1.2 + pwr * 0.28 + (this.boosting ? 0.14 : 0)), 0, Math.PI * 2); c.fill();
+
+                        // Outward-Radiating Species-Unique FX around skin edges!
+                        c.globalAlpha = 0.85;
+                        if (fx === 'fire') {
+                          const fl = 0.5 + 0.5 * Math.sin(globalTime * 16 + i * 1.9 + seed);
+                          const side = (i % 4 === 0 ? 1 : -1) * w * (1.05 + fl * 0.35 * pwr);
+                          c.fillStyle = tCol; c.beginPath(); c.arc(p.x + p.nx * side, p.y + p.ny * side, 3 + pwr * 3 * fl, 0, Math.PI * 2); c.fill();
+                        } else if (fx === 'ice') {
+                          const spk = Math.sin(globalTime * 8 + i * 2.7 + seed);
+                          if (spk > 0.15) {
+                            const side = (i % 4 === 0 ? 1 : -1) * w * 1.18, sr = (4 + pwr * 4) * spk;
+                            const sx = p.x + p.nx * side, sy = p.y + p.ny * side;
+                            c.fillStyle = '#ffffff'; c.beginPath(); c.moveTo(sx, sy - sr); c.lineTo(sx + sr * 0.4, sy); c.lineTo(sx, sy + sr); c.lineTo(sx - sr * 0.4, sy); c.closePath(); c.fill();
+                          }
+                        } else if (fx === 'elec' && i > 2) {
+                          const nxt = pts[i - 2];
+                          if (Math.sin(globalTime * 20 + i * 3.1 + seed) > 0) {
+                            const side = (i % 4 === 0 ? 1 : -1) * w * 1.2;
+                            c.strokeStyle = tCol; c.lineWidth = 1.6 + pwr;
+                            c.beginPath(); c.moveTo(p.x + p.nx * w * 0.9, p.y + p.ny * w * 0.9);
+                            c.lineTo((p.x + nxt.x) * 0.5 + p.nx * side * 1.35, (p.y + nxt.y) * 0.5 + p.ny * side * 1.35);
+                            c.lineTo(nxt.x + nxt.nx * w * 0.9, nxt.y + nxt.ny * w * 0.9); c.stroke();
+                          }
+                        } else if (fx === 'helix') {
+                          const side = Math.sin(globalTime * 6 - i * 0.45 + seed) * w * (1.28 + pwr * 0.25);
+                          c.fillStyle = tCol; c.beginPath(); c.arc(p.x + p.nx * side, p.y + p.ny * side, 2.5 + pwr * 2.4, 0, Math.PI * 2); c.fill();
+                        } else if (fx === 'rings' && i % 4 === 0) {
+                          const rw = 1.05 + (0.45 + pwr * 0.35) * ((globalTime * 1.8 + i * 0.2) % 1);
+                          c.strokeStyle = tCol; c.lineWidth = 1.5 + pwr; c.globalAlpha = 1 - ((globalTime * 1.8 + i * 0.2) % 1);
+                          c.beginPath(); c.arc(p.x, p.y, w * rw, 0, Math.PI * 2); c.stroke();
+                        } else if (fx === 'orbit' && i % 4 === 0) {
+                          const oa = globalTime * (4.5 + pwr * 2) + i + seed;
+                          c.fillStyle = tCol; c.beginPath(); c.arc(p.x + Math.cos(oa) * w * 1.35, p.y + Math.sin(oa) * w * 1.35, 2.5 + pwr * 2.2, 0, Math.PI * 2); c.fill();
+                        } else if (fx === 'cosmic' || fx === 'prism' || fx === 'royal') {
+                          const side = (i % 4 === 0 ? 1 : -1) * w * (1.25 + pwr * 0.25);
+                          c.fillStyle = fx === 'royal' ? '#fff9c4' : tCol;
+                          c.beginPath(); c.arc(p.x + p.nx * side, p.y + p.ny * side, 2.2 + pwr * 2.2 * pulse, 0, Math.PI * 2); c.fill();
+                        }
+                      }
+                      c.globalAlpha = 1.0;
+                    }
+
+                    // 3. 100% CLEAN, SOLID 3D LAYERED SKIN (NOTHING STAMPED ON TOP!)
+                    const pat = this.species.pat;
                     for (let i = len - 1; i >= 1; i--) {
                       const p = pts[i], w = p.w;
-                      const tCol = fx === 'prism' ? `hsl(${(globalTime * 160 + i * 14 + seed * 30) % 360}, 100%, 62%)` : glowCol;
-
-                      // 1. OUTER PRICE-SCALED GLOW AURA
-                      if (detail && (fx !== 'none' || this.boosting) && tCol && i % 2 === 0) {
-                        const aRad = 1.15 + pwr * 0.24 + (this.boosting ? 0.12 : 0);
-                        const aAl = clamp(0.14 + pwr * 0.16, 0.12, 0.34);
-                        const pulse = 0.65 + 0.35 * Math.sin(globalTime * (4 + pwr * 5) - i * 0.35 + seed);
-                        c.fillStyle = tCol; c.globalAlpha = aAl * pulse;
-                        c.beginPath(); c.arc(p.x, p.y, w * aRad, 0, Math.PI * 2); c.fill();
-                        c.globalAlpha = 1.0;
-                      }
-
-                      // 2. 100% OPAQUE 3D SPHERE BODY
                       const sg = c.createRadialGradient(p.x - w * 0.28, p.y - w * 0.28, w * 0.1, p.x, p.y, w);
                       sg.addColorStop(0, this.species.base);
                       sg.addColorStop(0.68, this.species.mid);
@@ -1722,7 +1790,6 @@ jobs:
                       c.beginPath(); c.arc(p.x, p.y, w, 0, Math.PI * 2); c.fill();
                       c.strokeStyle = 'rgba(0,0,0,0.42)'; c.lineWidth = 1.2; c.stroke();
 
-                      // 3. SPECIES MARKINGS
                       if (i % 3 === 0) {
                         c.save(); c.translate(p.x, p.y); c.rotate(p.ang);
                         if (this.species.id === 'tiger') { c.fillStyle = '#121010'; c.fillRect(-w * 0.2, -w * 0.92, w * 0.4, w * 1.84); }
@@ -1732,42 +1799,6 @@ jobs:
                         else if (pat === 'plasma') { c.strokeStyle = '#00f7ff'; c.lineWidth = 1.6; c.beginPath(); c.arc(0, 0, w * 0.45, 0, Math.PI * 2); c.stroke(); c.fillStyle = this.species.accent; c.beginPath(); c.arc(0, 0, w * 0.24, 0, Math.PI * 2); c.fill(); }
                         else { c.fillStyle = this.species.accent; c.beginPath(); c.moveTo(w * 0.42, 0); c.lineTo(0, -w * 0.48); c.lineTo(-w * 0.42, 0); c.lineTo(0, w * 0.48); c.closePath(); c.fill(); }
                         c.restore();
-                      }
-
-                      // 4. DISTINCT PER-SPECIES ANIMATED GLOW FX (SCALED BY PRICE!)
-                      if (detail && fx !== 'none' && tCol) {
-                        if (fx === 'helix' && i % 2 === 0) {
-                          const off = Math.sin(globalTime * (6 + pwr * 2) - i * 0.55 + seed) * w * 0.95;
-                          c.fillStyle = tCol; c.beginPath(); c.arc(p.x + p.nx * off, p.y + p.ny * off, 2.2 + pwr * 2.2, 0, Math.PI * 2); c.fill();
-                          if (pwr > 0.75) { c.fillStyle = '#ffffff'; c.beginPath(); c.arc(p.x - p.nx * off, p.y - p.ny * off, 2.0 + pwr * 1.4, 0, Math.PI * 2); c.fill(); }
-                        } else if (fx === 'rings' && i % 4 === 0) {
-                          const rw = 0.7 + 0.45 * Math.sin(globalTime * (5 + pwr * 3) - i * 0.4 + seed);
-                          c.strokeStyle = tCol; c.lineWidth = 1.5 + pwr; c.globalAlpha = 0.75;
-                          c.beginPath(); c.arc(p.x, p.y, w * rw, 0, Math.PI * 2); c.stroke(); c.globalAlpha = 1.0;
-                        } else if (fx === 'orbit' && i % 4 === 0) {
-                          const oa = globalTime * (5 + pwr * 2) + i + seed;
-                          c.fillStyle = tCol; c.beginPath(); c.arc(p.x + Math.cos(oa) * w * 1.15, p.y + Math.sin(oa) * w * 1.15, 2.4 + pwr * 2, 0, Math.PI * 2); c.fill();
-                        } else if (fx === 'ice' && i % 3 === 0) {
-                          const spk = Math.sin(globalTime * 9 + i * 2.7 + seed);
-                          if (spk > 0.25) { const sr = w * (0.35 + pwr * 0.25) * spk; c.fillStyle = '#ffffff'; c.beginPath(); c.moveTo(p.x, p.y - sr); c.lineTo(p.x + sr * 0.35, p.y); c.lineTo(p.x, p.y + sr); c.lineTo(p.x - sr * 0.35, p.y); c.closePath(); c.fill(); }
-                        } else if (fx === 'elec' && i % 3 === 0 && i > 1) {
-                          const nxt = pts[i - 2];
-                          if (Math.sin(globalTime * 22 + i * 3.1 + seed) > 0) {
-                            c.strokeStyle = tCol; c.lineWidth = 1.5 + pwr * 1.2;
-                            c.beginPath(); c.moveTo(p.x, p.y); c.lineTo((p.x + nxt.x) * 0.5 + Math.sin(globalTime * 40 + i) * w * 0.6, (p.y + nxt.y) * 0.5 + Math.cos(globalTime * 35 + i) * w * 0.6); c.lineTo(nxt.x, nxt.y); c.stroke();
-                          }
-                        } else if (fx === 'cosmic' && i % 2 === 0) {
-                          const st = 0.4 + 0.6 * Math.sin(globalTime * 7 + i * 4.3 + seed);
-                          c.fillStyle = '#ffffff'; c.globalAlpha = st;
-                          c.beginPath(); c.arc(p.x + Math.cos(i * 2.1 + seed) * w * 0.48, p.y + Math.sin(i * 3.7 + seed) * w * 0.48, 1.8 + pwr * 1.4, 0, Math.PI * 2); c.fill(); c.globalAlpha = 1.0;
-                        } else if (fx === 'royal' || fx === 'prism') {
-                          const sw = Math.sin(globalTime * (6 + pwr * 2) - i * 0.4 + seed);
-                          if (sw > 0.45) { c.fillStyle = fx === 'prism' ? tCol : '#fff9c4'; c.globalAlpha = (sw - 0.45) * 1.4; c.beginPath(); c.arc(p.x - w * 0.22, p.y - w * 0.22, w * (0.32 + pwr * 0.16), 0, Math.PI * 2); c.fill(); c.globalAlpha = 1.0; }
-                        } else if (fx === 'fire' && i % 3 === 0) {
-                          const fl = 0.5 + 0.5 * Math.sin(globalTime * 16 + i * 2.1 + seed);
-                          c.fillStyle = '#ffee54'; c.globalAlpha = 0.7 * fl;
-                          c.beginPath(); c.arc(p.x + Math.cos(i + globalTime * 9) * w * 0.4, p.y - w * 0.25, 2.2 + pwr * 2.4 * fl, 0, Math.PI * 2); c.fill(); c.globalAlpha = 1.0;
-                        }
                       }
                     }
 
@@ -2289,6 +2320,9 @@ jobs:
                   }
                   for (const p of preyList) { if (isNearCam(p.x, p.y, 65)) drawPrey(ctx, p); }
                   for (const m of meatList) { if (isNearCam(m.x, m.y, 50)) drawMeatChunk(ctx, m); }
+                  // Particles drawn BEFORE snakes so outward-emitted skin particles radiate cleanly from behind the skin!
+                  for (const pt of particles) { ctx.globalAlpha = clamp(pt.life / pt.maxLife, 0, 1); ctx.fillStyle = pt.color; ctx.beginPath(); ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2); ctx.fill(); }
+                  ctx.globalAlpha = 1;
                   for (const s of snakes) { if (s.alive && isSnakeVisible(s)) s.draw(ctx, true); }
 
                   if (player && player.alive && safeZone.active && dist(player.x, player.y, safeZone.cx, safeZone.cy) > safeZone.r - 120) {
@@ -2306,7 +2340,6 @@ jobs:
                     ctx.fillStyle = '#36852c'; ctx.beginPath(); ctx.arc(-tr.r * 0.1, -tr.r * 0.1, tr.r * 0.42, 0, Math.PI * 2); ctx.fill(); ctx.restore();
                   }
 
-                  for (const pt of particles) { ctx.globalAlpha = clamp(pt.life / pt.maxLife, 0, 1); ctx.fillStyle = pt.color; ctx.beginPath(); ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2); ctx.fill(); }
                   ctx.globalAlpha = 1; ctx.font = '900 14px sans-serif'; ctx.textAlign = 'center';
                   for (const ft of floatTexts) { ctx.globalAlpha = clamp(ft.life / ft.maxLife, 0, 1); ctx.fillStyle = ft.color; ctx.fillText(ft.text, ft.x, ft.y); }
                   ctx.restore();
@@ -2669,7 +2702,6 @@ jobs:
                   joyKnob.style.transform = `translate(calc(-50% + ${Math.cos(ctrl.joyAngle) * cl}px), calc(-50% + ${Math.sin(ctrl.joyAngle) * cl}px))`;
                 }
 
-                // FIXED: RIGHT-SIDE SWIPE STEERS SNAKE SMOOTHLY (NO MAP DRAG!)
                 canvas.addEventListener('touchstart', e => {
                   if (screenState !== 'playing') return;
                   e.preventDefault();
