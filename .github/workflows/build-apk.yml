@@ -1,4 +1,4 @@
-name: Build Serpent-Wild v18 Native Audio & Realistic Pro APK
+name: Build Serpent-Wild v19 Endless Growth & Notifications APK
 
 on:
   push:
@@ -36,7 +36,7 @@ jobs:
           import math, wave, struct
           sr = 44100
           bpm = 100
-          step = 60.0 / bpm / 2.0  # 0.3s per 8th note
+          step = 60.0 / bpm / 2.0
           melody = [
               293.66, 0, 349.23, 440.0, 392.0, 0, 349.23, 329.63,
               293.66, 0, 261.63, 293.66, 349.23, 0, 329.63, 0,
@@ -52,7 +52,6 @@ jobs:
           total_sec = step * len(melody)
           n_samples = int(sr * total_sec)
           buf = [0.0] * n_samples
-          # Warm ambient chord pad (continuous phase, zero clicks)
           pad_ph = [0.0, 0.0, 0.0]
           for i in range(n_samples):
               t = i / sr
@@ -65,7 +64,6 @@ jobs:
                   pad_ph[k] += 2.0 * math.pi * cf[k] / sr
                   s += math.sin(pad_ph[k]) * (0.065 if k == 0 else 0.04)
               buf[i] += s * c_env
-          # Soft jungle marimba melody
           for idx, freq in enumerate(melody):
               if freq <= 0:
                   continue
@@ -78,7 +76,6 @@ jobs:
                   env = min(1.0, j / (sr * 0.015)) * ((1.0 - u) ** 2.2)
                   val = math.sin(2.0 * math.pi * freq * j / sr) * 0.16 + math.sin(4.0 * math.pi * freq * j / sr) * 0.03
                   buf[start + j] += val * env
-          # Seamless loop crossfade edges
           fade = int(sr * 0.08)
           for i in range(fade):
               buf[i] *= (i / fade)
@@ -94,7 +91,7 @@ jobs:
               wf.writeframes(data)
           PYEOF
 
-      - name: Generate Serpent-Wild v18 Android Project
+      - name: Generate Serpent-Wild v19 Android Project
         run: |
           mkdir -p app/src/main/java/com/apexwild/serpent app/src/main/assets app/src/main/res/values
 
@@ -141,8 +138,8 @@ jobs:
                   applicationId = "com.apexwild.serpent.royale"
                   minSdk = 26
                   targetSdk = 35
-                  versionCode = 18
-                  versionName = "18.0.0"
+                  versionCode = 19
+                  versionName = "19.0.0"
               }
               signingConfigs {
                   create("release") {
@@ -196,6 +193,7 @@ jobs:
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
               <uses-permission android:name="android.permission.INTERNET" />
               <uses-permission android:name="android.permission.VIBRATE" />
+              <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
               <application
                   android:allowBackup="true"
@@ -203,6 +201,8 @@ jobs:
                   android:label="Serpent Wild: Apex"
                   android:theme="@style/Theme.SerpentWild"
                   android:usesCleartextTraffic="true">
+
+                  <receiver android:name=".ReminderReceiver" android:exported="false" />
 
                   <activity
                       android:name=".MainActivity"
@@ -230,13 +230,69 @@ jobs:
             sed -i 's/android:label="Serpent Wild: Apex"/android:label="Serpent Wild: Apex" android:icon="@mipmap\/ic_launcher" android:roundIcon="@mipmap\/ic_launcher"/' app/src/main/AndroidManifest.xml
           fi
 
+          cat << 'EOF' > app/src/main/java/com/apexwild/serpent/ReminderReceiver.kt
+          package com.apexwild.serpent
+
+          import android.app.NotificationChannel
+          import android.app.NotificationManager
+          import android.app.PendingIntent
+          import android.content.BroadcastReceiver
+          import android.content.Context
+          import android.content.Intent
+          import android.os.Build
+          import androidx.core.app.NotificationCompat
+
+          class ReminderReceiver : BroadcastReceiver() {
+              override fun onReceive(context: Context, intent: Intent) {
+                  showNotification(context)
+              }
+
+              companion object {
+                  const val CHANNEL_ID = "serpent_wild_reminders"
+
+                  fun showNotification(context: Context) {
+                      val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                          val ch = NotificationChannel(CHANNEL_ID, "Serpent Wild Reminders", NotificationManager.IMPORTANCE_DEFAULT)
+                          ch.description = "Daily jungle battle & reward reminders"
+                          nm.createNotificationChannel(ch)
+                      }
+                      val openIntent = Intent(context, MainActivity::class.java).apply {
+                          flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                      }
+                      val pi = PendingIntent.getActivity(
+                          context, 1001, openIntent,
+                          PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                      )
+                      val iconRes = context.applicationInfo.icon.takeIf { it != 0 } ?: android.R.drawable.sym_def_app_icon
+                      val notif = NotificationCompat.Builder(context, CHANNEL_ID)
+                          .setSmallIcon(iconRes)
+                          .setContentTitle("🐍 Serpent Wild: Apex Awaits!")
+                          .setContentText("Your Daily Coins & Diamonds are ready! Enter the 18KM Jungle and become #1!")
+                          .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                          .setAutoCancel(true)
+                          .setContentIntent(pi)
+                          .build()
+                      nm.notify(2026, notif)
+                  }
+              }
+          }
+          EOF
+
           cat << 'EOF' > app/src/main/java/com/apexwild/serpent/MainActivity.kt
           package com.apexwild.serpent
 
+          import android.Manifest
           import android.annotation.SuppressLint
+          import android.app.AlarmManager
+          import android.app.PendingIntent
+          import android.content.Context
+          import android.content.Intent
           import android.content.pm.ActivityInfo
+          import android.content.pm.PackageManager
           import android.graphics.Color
           import android.media.MediaPlayer
+          import android.os.Build
           import android.os.Bundle
           import android.view.View
           import android.view.WindowManager
@@ -247,6 +303,8 @@ jobs:
           import android.webkit.WebViewClient
           import android.widget.Toast
           import androidx.appcompat.app.AppCompatActivity
+          import androidx.core.app.ActivityCompat
+          import androidx.core.content.ContextCompat
           import androidx.core.view.WindowCompat
           import androidx.core.view.WindowInsetsCompat
           import androidx.core.view.WindowInsetsControllerCompat
@@ -256,6 +314,7 @@ jobs:
               private var bgmPlayer: MediaPlayer? = null
               private var bgmEnabled = true
               private var bgmVolume = 0.65f
+              private var notifEnabled = true
               private var userStarted = false
               private var lastBackPressMs = 0L
 
@@ -278,6 +337,61 @@ jobs:
                           syncNativeBgm()
                       }
                   }
+
+                  @JavascriptInterface
+                  fun setNotifications(enabled: Boolean) {
+                      runOnUiThread {
+                          notifEnabled = enabled
+                          if (enabled) {
+                              requestNotifPermission()
+                              scheduleReminder(6L * 60L * 60L * 1000L)
+                          } else {
+                              cancelReminder()
+                          }
+                      }
+                  }
+
+                  @JavascriptInterface
+                  fun testNotification() {
+                      runOnUiThread {
+                          requestNotifPermission()
+                          ReminderReceiver.showNotification(this@MainActivity)
+                          Toast.makeText(this@MainActivity, "Notification Sent! Check status bar.", Toast.LENGTH_SHORT).show()
+                      }
+                  }
+              }
+
+              private fun requestNotifPermission() {
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                      if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                          ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 101)
+                      }
+                  }
+              }
+
+              private fun scheduleReminder(delayMs: Long) {
+                  val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                  val intent = Intent(this, ReminderReceiver::class.java)
+                  val pi = PendingIntent.getBroadcast(
+                      this, 3001, intent,
+                      PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                  )
+                  am.setInexactRepeating(
+                      AlarmManager.RTC_WAKEUP,
+                      System.currentTimeMillis() + delayMs,
+                      AlarmManager.INTERVAL_HALF_DAY,
+                      pi
+                  )
+              }
+
+              private fun cancelReminder() {
+                  val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                  val intent = Intent(this, ReminderReceiver::class.java)
+                  val pi = PendingIntent.getBroadcast(
+                      this, 3001, intent,
+                      PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                  )
+                  am.cancel(pi)
               }
 
               private fun ensureBgm() {
@@ -308,6 +422,8 @@ jobs:
                   requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
                   window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                   hideSystemBars()
+                  requestNotifPermission()
+                  scheduleReminder(6L * 60L * 60L * 1000L)
 
                   webView = WebView(this).apply {
                       setBackgroundColor(Color.parseColor("#060b07"))
@@ -398,7 +514,7 @@ jobs:
           <head>
             <meta charset="UTF-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-            <title>SERPENT WILD: APEX — v18 Native Audio &amp; Realistic Pro</title>
+            <title>SERPENT WILD: APEX — v19 Endless Growth &amp; Notifications</title>
             <style>
               :root {
                 --bg-dark: #060b07;
@@ -588,7 +704,7 @@ jobs:
 
               #hudTopCenter {
                 position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
-                display: flex; flex-direction: column; align-items: center; gap: 4px; width: 268px;
+                display: flex; flex-direction: column; align-items: center; gap: 4px; width: 280px;
               }
               .br-stats-bar { display: flex; align-items: center; justify-content: space-around; gap: 6px; width: 100%; padding: 4px 9px; border-radius: 11px; }
               .br-stat { display: flex; align-items: baseline; gap: 3px; font-size: 8px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
@@ -670,16 +786,16 @@ jobs:
                   </svg>
                 </div>
                 <div class="splash-title">SERPENT WILD: APEX</div>
-                <div class="splash-subtitle">v18 • NATIVE AUDIO • REALISTIC 3D • FREE-LOOK</div>
+                <div class="splash-subtitle">v19 • ENDLESS GROWTH • ULTRA JUNGLE • ALERTS</div>
               </div>
               <div id="tapEnterWrap">
                 <button class="btn-gold" id="btnTapEnter" type="button">TAP TO ENTER JUNGLE</button>
                 <div style="font-size:10.5px;color:var(--text-muted);text-align:center;">Press the button above to enter</div>
               </div>
               <div id="loaderWrap">
-                <div class="loader-row"><span id="loaderStatus">Loading Native Studio Audio &amp; Realistic Jungle...</span><span id="loaderPct">0%</span></div>
+                <div class="loader-row"><span id="loaderStatus">Loading Endless Growth &amp; Living 18KM Jungle...</span><span id="loaderPct">0%</span></div>
                 <div class="loader-bar"><div id="loaderFill"></div></div>
-                <div id="loaderTip">Tip: Swipe the RIGHT side of the screen to scout ahead like PUBG/Free Fire!</div>
+                <div id="loaderTip">Tip: Keep eating to grow endlessly longer and thicker!</div>
               </div>
             </div>
 
@@ -838,12 +954,19 @@ jobs:
             </div>
 
             <div class="modal-backdrop" id="settingsModal">
-              <div class="modal-box" style="max-width:540px;height:auto;max-height:90vh;">
+              <div class="modal-box" style="max-width:560px;height:auto;max-height:90vh;">
                 <div class="modal-head">
                   <div class="modal-title">Pro Tactical Settings</div>
                   <button class="close-btn" type="button" data-close="settingsModal">✕</button>
                 </div>
                 <div class="modal-body">
+                  <div class="setting-row">
+                    <div><div style="font-size:12.5px;font-weight:800;">Daily Game Notifications 🔔</div><div style="font-size:9.5px;color:var(--text-muted);">Remind me to play &amp; claim rewards</div></div>
+                    <div style="display:flex;gap:6px;">
+                      <button class="chip selected" id="btnNotif" type="button">ON</button>
+                      <button class="chip" id="btnTestNotif" type="button" style="border-color:var(--cyan);color:#9cf4ff;">TEST</button>
+                    </div>
+                  </div>
                   <div class="setting-row">
                     <div><div style="font-size:12.5px;font-weight:800;">Background Music (Native)</div><div style="font-size:9.5px;color:var(--text-muted);">Hardware studio audio • Auto-pauses on exit</div></div>
                     <button class="chip selected" id="btnBgm" type="button">ON</button>
@@ -857,7 +980,7 @@ jobs:
                     <input type="range" id="setSfxVol" min="0" max="100" value="80" style="width:120px;accent-color:#f6c445;" />
                   </div>
                   <div class="setting-row">
-                    <div><div style="font-size:12.5px;font-weight:800;">Graphics Quality</div><div style="font-size:9.5px;color:var(--text-muted);">High/Ultra enables realistic scales, glow &amp; rain</div></div>
+                    <div><div style="font-size:12.5px;font-weight:800;">Graphics Quality</div><div style="font-size:9.5px;color:var(--text-muted);">High/Ultra enables clouds, butterflies &amp; glow</div></div>
                     <div class="chip-row" id="setGfxRow" style="margin:0;"></div>
                   </div>
                   <div class="setting-row">
@@ -877,12 +1000,23 @@ jobs:
                     <div class="chip-row" id="setJoyRow" style="margin:0;"></div>
                   </div>
                   <div class="setting-row">
+                    <div><div style="font-size:12.5px;font-weight:800;">Show XP Popups</div><div style="font-size:9.5px;color:var(--text-muted);">Floating +100 / +500 XP numbers on eat</div></div>
+                    <button class="chip selected" id="btnXpPop" type="button">ON</button>
+                  </div>
+                  <div class="setting-row">
+                    <div><div style="font-size:12.5px;font-weight:800;">Show Minimap</div><div style="font-size:9.5px;color:var(--text-muted);">Display 18KM radar in top-left corner</div></div>
+                    <button class="chip selected" id="btnShowMap" type="button">ON</button>
+                  </div>
+                  <div class="setting-row">
                     <div><div style="font-size:12.5px;font-weight:800;">Vibration (Haptics)</div><div style="font-size:9.5px;color:var(--text-muted);">Vibrate on kills &amp; potions</div></div>
                     <button class="chip selected" id="btnVib" type="button">ON</button>
                   </div>
                   <div class="setting-row">
                     <div><div style="font-size:12.5px;font-weight:800;">Show FPS Counter</div><div style="font-size:9.5px;color:var(--text-muted);">Display live frame rate on HUD</div></div>
                     <button class="chip" id="btnFps" type="button">OFF</button>
+                  </div>
+                  <div style="text-align:center;margin-top:8px;">
+                    <button class="btn-ghost" id="btnResetSet" type="button" style="font-size:10.5px;padding:7px 14px;">↺ Reset Settings to Default</button>
                   </div>
                 </div>
               </div>
@@ -907,8 +1041,8 @@ jobs:
                 <div class="br-stats-bar glass">
                   <div class="br-stat"><span style="color:var(--green);">ALIVE</span><strong id="hudAlive">50/50</strong></div>
                   <div class="br-stat"><span>KILLS</span><strong id="hudKills" style="color:var(--gold);">0</strong></div>
+                  <div class="br-stat"><span>LEN</span><strong id="hudLen" style="color:#61e4ff;">18m</strong></div>
                   <div class="br-stat"><span>XP</span><strong id="hudXp" style="color:#a8ff78;">0</strong></div>
-                  <div class="br-stat"><span>WT</span><strong id="hudLen">72</strong></div>
                 </div>
                 <div id="missionBar" class="glass"><span id="missionTxt">🎯 Eat 40 Animals</span><span id="missionProg">0/40</span></div>
                 <div class="zone-pill glass">
@@ -967,7 +1101,7 @@ jobs:
                 <div class="stat-grid" style="grid-template-columns:repeat(4,1fr);">
                   <div class="stat-box"><div class="stat-val" id="resRank">#1</div><div class="stat-lbl">Rank</div></div>
                   <div class="stat-box"><div class="stat-val" id="resKills" style="color:var(--gold);">0</div><div class="stat-lbl">Kills</div></div>
-                  <div class="stat-box"><div class="stat-val" id="resLen">0</div><div class="stat-lbl">Max Wt</div></div>
+                  <div class="stat-box"><div class="stat-val" id="resLen">0m</div><div class="stat-lbl">Max Len</div></div>
                   <div class="stat-box"><div class="stat-val" id="resPrey">0</div><div class="stat-lbl">Eaten</div></div>
                 </div>
                 <div class="reward-row">
@@ -1041,7 +1175,7 @@ jobs:
                   { id: 'k10',  name: 'First Blood',     desc: 'Eliminate 10 rival beasts',    stat: 'kills',      goal: 10,   coins: 400,  dias: 5 },
                   { id: 'k50',  name: 'Apex Assassin',   desc: 'Eliminate 50 rival beasts',    stat: 'kills',      goal: 50,   coins: 1500, dias: 15 },
                   { id: 'p100', name: 'Hungry Hunter',   desc: 'Eat 100 jungle animals',       stat: 'prey',       goal: 100,  coins: 300,  dias: 4 },
-                  { id: 'l500', name: 'Giant Serpent',   desc: 'Reach 500 Weight in a match',  stat: 'bestLength', goal: 500,  coins: 600,  dias: 8 },
+                  { id: 'l500', name: 'Giant Serpent',   desc: 'Reach 500m Length in a match', stat: 'bestLength', goal: 500,  coins: 600,  dias: 8 },
                   { id: 'w1',   name: 'Jungle Champion', desc: 'Win 1 Classic Royale match',   stat: 'wins',       goal: 1,    coins: 1000, dias: 12 }
                 ];
 
@@ -1125,6 +1259,11 @@ jobs:
                 const AI_PREFIX = ['King','Shadow','Wild','Apex','Alpha','Toxic','Razor','Ghost','Iron','Gold','Dark','Swamp','Storm','Night'];
                 const AI_SUFFIX = ['Tiger','Wolf','Shark','Dragon','Lion','Cobra','Bull','Croco','Titan','Eagle','Bear','Rhino'];
 
+                const DEFAULT_SETTINGS = {
+                  notifs: true, bgm: true, bgmVol: 0.65, sfxVol: 0.8, gfx: 'high', zoom: 0.88,
+                  lookSens: 1.35, autoCenter: true, joyMode: 'floating', xpPopups: true, showMinimap: true,
+                  vib: true, showFps: false, muted: false
+                };
                 const DEFAULT_PROFILE = {
                   name: 'ApexHunter', avatar: '🐍', title: 'Apex Predator',
                   level: 1, xp: 0, coins: 2500, diamonds: 50, lastDaily: 0,
@@ -1133,20 +1272,20 @@ jobs:
                   potionInv: { magnet: 2, turbo: 2, zoom: 2, double: 2 },
                   claimedAch: [],
                   selectedSnake: 'cobra', selectedBiome: 'amazon', selectedFood: 'prey', selectedMode: 'br',
-                  settings: { bgm: true, bgmVol: 0.65, sfxVol: 0.8, gfx: 'high', zoom: 0.88, lookSens: 1.35, autoCenter: true, joyMode: 'floating', vib: true, showFps: false, muted: false },
+                  settings: { ...DEFAULT_SETTINGS },
                   stats: { matches: 0, wins: 0, bestLength: 0, kills: 0, prey: 0 }
                 };
 
                 let profile = (() => {
                   try {
-                    const raw = localStorage.getItem('serpent_wild_v18') || localStorage.getItem('serpent_wild_v17') || localStorage.getItem('serpent_wild_v16');
+                    const raw = localStorage.getItem('serpent_wild_v19') || localStorage.getItem('serpent_wild_v18') || localStorage.getItem('serpent_wild_v17');
                     if (!raw) return JSON.parse(JSON.stringify(DEFAULT_PROFILE));
                     const d = JSON.parse(raw);
                     const merged = {
                       ...JSON.parse(JSON.stringify(DEFAULT_PROFILE)), ...d,
                       upgrades: { ...DEFAULT_PROFILE.upgrades, ...(d.upgrades || {}) },
                       potionInv: { ...DEFAULT_PROFILE.potionInv, ...(d.potionInv || {}) },
-                      settings: { ...DEFAULT_PROFILE.settings, ...(d.settings || {}) },
+                      settings: { ...DEFAULT_SETTINGS, ...(d.settings || {}) },
                       stats: { ...DEFAULT_PROFILE.stats, ...(d.stats || {}) }
                     };
                     ['cobra','tiger','wolf'].forEach(id => { if (!merged.ownedSnakes.includes(id)) merged.ownedSnakes.push(id); });
@@ -1154,7 +1293,7 @@ jobs:
                   } catch (e) { return JSON.parse(JSON.stringify(DEFAULT_PROFILE)); }
                 })();
 
-                const saveProfile = () => { try { localStorage.setItem('serpent_wild_v18', JSON.stringify(profile)); } catch (e) {} };
+                const saveProfile = () => { try { localStorage.setItem('serpent_wild_v19', JSON.stringify(profile)); } catch (e) {} };
                 const getRank = lv => { let n = RANK_TIERS[0].name; for (const r of RANK_TIERS) if (lv >= r.lv) n = r.name; return n; };
                 const getXpNeed = lv => 1000 + (lv - 1) * 500;
 
@@ -1167,7 +1306,6 @@ jobs:
                 const randInCircle = (cx, cy, r, m = 200) => { const a = rand(0, Math.PI * 2), d = Math.sqrt(Math.random()) * Math.max(40, r - m); return { x: cx + Math.cos(a) * d, y: cy + Math.sin(a) * d }; };
                 const vibrate = ms => { try { if (profile.settings.vib && navigator.vibrate) navigator.vibrate(ms); } catch (e) {} };
 
-                // NATIVE ANDROID MEDIAPLAYER BGM + CLEAN SFX ENGINE (0% CRACKLE!)
                 const Sound = {
                   ctx: null, sfxGain: null, bufs: {}, lastEatMs: 0,
                   init() {
@@ -1175,6 +1313,7 @@ jobs:
                       if (window.AndroidAudio) {
                         const on = !profile.settings.muted && profile.settings.bgm;
                         window.AndroidAudio.startBgm(on, profile.settings.bgmVol);
+                        window.AndroidAudio.setNotifications(profile.settings.notifs);
                       }
                       if (!this.ctx) {
                         const AC = window.AudioContext || window.webkitAudioContext;
@@ -1252,6 +1391,7 @@ jobs:
                 let previewSnakeId = profile.selectedSnake, previewSnake = null, groundPattern = null;
 
                 let rivers = [], waterZones = [], lilyPads = [], mudZones = [], worldProps = [], trees = [], tracks = [], ripples = [];
+                let clouds = [], butterflies = [];
                 let snakes = [], preyList = [], meatList = [], potions = [], feastDrops = [], particles = [], floatTexts = [], rainDrops = [], fireflies = [];
                 let player = null, lobbySnake = null;
                 let activePotion = { id: null, label: '', timer: 0 };
@@ -1277,6 +1417,9 @@ jobs:
                   canvas.height = Math.max(1, Math.floor(appH * dpr));
                   rainDrops = Array.from({ length: 42 }, () => ({ x: rand(0, appW), y: rand(0, appH), l: rand(12, 22), v: rand(420, 600) }));
                   fireflies = Array.from({ length: 24 }, () => ({ x: rand(0, appW), y: rand(0, appH), ph: rand(0, 6.28), vx: rand(-14, 14), vy: rand(-14, 14) }));
+                  clouds = Array.from({ length: 6 }, () => ({ x: rand(0, appW), y: rand(0, appH), r: rand(130, 240), vx: rand(10, 22) }));
+                  const bCols = ['#ffe85c', '#ff85d4', '#61f0ff', '#ff9947'];
+                  butterflies = Array.from({ length: 12 }, (_, i) => ({ x: rand(0, appW), y: rand(0, appH), vx: rand(-26, 26), vy: rand(-22, 22), ph: rand(0, 6.28), col: bCols[i % bCols.length] }));
                 }
 
                 const snakeGrid = new Map(), preyGrid = new Map();
@@ -1286,7 +1429,7 @@ jobs:
                   snakeGrid.clear();
                   for (const s of snakes) {
                     if (!s.alive) continue;
-                    const step = Math.max(1, Math.floor(s.segments.length / 8));
+                    const step = Math.max(1, Math.floor(s.segments.length / 10));
                     const seen = new Set();
                     for (let i = 0; i < s.segments.length; i += step) {
                       const k = cellKey(Math.floor(s.segments[i].x / CELL_SIZE), Math.floor(s.segments[i].y / CELL_SIZE));
@@ -1325,12 +1468,12 @@ jobs:
                   if (s.isPlayer) return true;
                   const segs = s.segments, len = segs.length;
                   if (isNearCam(s.x, s.y, 480)) return true;
-                  if (len > 4 && isNearCam(segs[Math.floor(len * 0.5)].x, segs[Math.floor(len * 0.5)].y, 480)) return true;
+                  if (len > 4 && isNearCam(segs[Math.floor(len * 0.35)].x, segs[Math.floor(len * 0.35)].y, 480)) return true;
+                  if (len > 4 && isNearCam(segs[Math.floor(len * 0.7)].x, segs[Math.floor(len * 0.7)].y, 480)) return true;
                   if (len > 2 && isNearCam(segs[len - 1].x, segs[len - 1].y, 480)) return true;
                   return false;
                 }
 
-                // ULTRA-REALISTIC FOREST FLOOR + SMOOTH CURVED FLOWING RIVERS!
                 function generateWorld(biomeId) {
                   const biome = BIOMES.find(b => b.id === biomeId) || BIOMES[0];
                   const tile = document.createElement('canvas');
@@ -1362,7 +1505,7 @@ jobs:
                     t.beginPath(); t.ellipse(rand(8, 504), rand(8, 504), rand(3, 6), rand(2, 4), rand(0, 3), 0, Math.PI * 2); t.fill();
                   }
                   const fCols = ['#ffe866', '#ff85a8', '#85e3ff', '#ffffff'];
-                  for (let i = 0; i < 32; i++) {
+                  for (let i = 0; i < 36; i++) {
                     t.fillStyle = fCols[i % fCols.length];
                     t.beginPath(); t.arc(rand(6, 506), rand(6, 506), rand(2.0, 3.2), 0, Math.PI * 2); t.fill();
                   }
@@ -1396,7 +1539,7 @@ jobs:
                     const rad = rand(140, 240);
                     if (!waterZones.some(w => distSq(pt.x, pt.y, w.x, w.y) < (w.r + rad) ** 2)) mudZones.push({ x: pt.x, y: pt.y, r: rad });
                   }
-                  for (let i = 0; i < 340; i++) {
+                  for (let i = 0; i < 360; i++) {
                     const pt = randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 280);
                     if (waterZones.some(w => distSq(pt.x, pt.y, w.x, w.y) < (w.r + 70) ** 2)) continue;
                     const nearRuins = dist(pt.x, pt.y, 5000, 5000) < 2500;
@@ -1638,7 +1781,7 @@ jobs:
                   tc.restore();
                 }
 
-                // SMOOTH MUSCULAR 3D SERPENT (NO RING-LINES! SEAMLESS SCALES + GLOSSY SPINE + OUTWARD FX!)
+                // ENDLESS LENGTH & THICKNESS GROWTH SERPENT (GROWS WAY LONGER THAN THICKER!)
                 class Snake {
                   constructor({ name, species, x, y, isPlayer = false, mass = 16 }) {
                     this.name = name; this.species = species; this.isPlayer = isPlayer; this.alive = true;
@@ -1655,15 +1798,16 @@ jobs:
                     for (let i = 0; i < cnt; i++) this.segments.push({ x: x - Math.cos(this.angle) * i * 4.5, y: y - Math.sin(this.angle) * i * 4.5 });
                   }
 
-                  getRadius() { return clamp(10.0 + Math.pow(this.mass, 0.46) * 1.48, 10.0, 36); }
-                  getSegCount() { return Math.min(96, Math.floor(15 + this.mass * 0.42)); }
-                  getLen() { return Math.floor(this.mass * 4.5); }
+                  // Sleek controlled thickness + ENDLESS length scaling!
+                  getRadius() { return clamp(9.5 + Math.pow(this.mass, 0.36) * 1.18, 9.5, 44); }
+                  getSegCount() { return Math.min(320, Math.floor(18 + this.mass * 0.92)); }
+                  getLen() { return Math.floor(10 + this.mass * 0.9); }
 
                   getHalfWidth(i, len, baseR) {
                     const t = i / Math.max(1, len - 1);
-                    let pw = t < 0.08 ? lerp(0.92, 1.0, t / 0.08)
-                           : t < 0.78 ? (1.0 + Math.sin(((t - 0.08) / 0.7) * Math.PI) * 0.1)
-                           : lerp(1.0, 0.68, (t - 0.78) / 0.22);
+                    let pw = t < 0.06 ? lerp(0.92, 1.0, t / 0.06)
+                           : t < 0.82 ? (1.0 + Math.sin(((t - 0.06) / 0.76) * Math.PI) * 0.08)
+                           : lerp(1.0, 0.65, (t - 0.82) / 0.18);
                     let hood = 1.0;
                     if (this.species.hood && this.hoodFlare > 0.04 && i >= 1 && i <= 7) {
                       hood = 1 + Math.sin(clamp((i - 0.5) / 6.5, 0, 1) * Math.PI) * 0.82 * this.hoodFlare;
@@ -1681,7 +1825,7 @@ jobs:
                     let avX = 0, avY = 0, danger = false;
                     for (const o of rivals) {
                       if (o === this || !o.alive) continue;
-                      const step = Math.max(1, Math.floor(o.segments.length / 10));
+                      const step = Math.max(1, Math.floor(o.segments.length / 12));
                       for (let k = 0; k < o.segments.length; k += step) {
                         const sg = o.segments[k], d2 = distSq(this.x, this.y, sg.x, sg.y);
                         if (d2 < 140 * 140) { const d = Math.sqrt(d2) || 1; avX += (this.x - sg.x) / d; avY += (this.y - sg.y) / d; danger = true; }
@@ -1744,7 +1888,9 @@ jobs:
                     }
 
                     this.segments[0].x = this.x; this.segments[0].y = this.y;
-                    const spc = r * 0.38;
+                    // Dynamic spacing stretches body endlessly even past 320 segments!
+                    const extraStretch = this.mass > 330 ? clamp((this.mass - 330) * 0.0008, 0, 0.25) : 0;
+                    const spc = r * (0.42 + extraStretch);
                     for (let i = 1; i < this.segments.length; i++) {
                       const p = this.segments[i - 1], c = this.segments[i];
                       if (i === 1) {
@@ -1756,7 +1902,7 @@ jobs:
                     }
                     const tLen = this.getSegCount();
                     while (this.segments.length < tLen) { const tl = this.segments[this.segments.length - 1]; this.segments.push({ x: tl.x, y: tl.y }); }
-                    while (this.segments.length > tLen && this.segments.length > 12) this.segments.pop();
+                    while (this.segments.length > tLen && this.segments.length > 14) this.segments.pop();
 
                     if (near) {
                       const wantHood = this.species.hood ? (canBoost ? 1.0 : 0.48) : 0;
@@ -1792,6 +1938,7 @@ jobs:
                     const baseR = this.getRadius(), len = this.segments.length;
                     const detail = profile.settings.gfx !== 'low';
                     const fx = this.species.fx, pwr = this.species.fxPower, seed = this.species.fxSeed;
+                    const fxStep = len > 140 ? 4 : 2;
 
                     const pts = new Array(len);
                     for (let i = 0; i < len; i++) {
@@ -1800,23 +1947,21 @@ jobs:
                       const ang = i === 0 ? Math.atan2(seg.y - this.segments[1].y, seg.x - this.segments[1].x) : Math.atan2(prev.y - next.y, prev.x - next.x);
                       const nx = -Math.sin(ang), ny = Math.cos(ang);
                       const mask = i < 3 ? 0 : Math.min(1, (i - 2) / 4) * (1 - (i / len) * 0.2);
-                      const wave = Math.sin(this.slitherPhase - i * 0.42) * (baseR * 0.15 * mask);
+                      const wave = Math.sin(this.slitherPhase - i * 0.36) * (baseR * 0.14 * mask);
                       pts[i] = { x: seg.x + nx * wave, y: seg.y + ny * wave, ang, nx, ny, w: this.getHalfWidth(i, len, baseR) };
                     }
 
                     c.save();
                     c.globalAlpha = 1.0;
 
-                    // 1. SOFT GROUND SHADOW
                     if (detail) {
                       c.fillStyle = 'rgba(0,0,0,0.4)';
-                      for (let i = len - 1; i >= 0; i -= 2) { const p = pts[i]; c.beginPath(); c.arc(p.x + 5, p.y + 8, p.w * 1.04, 0, Math.PI * 2); c.fill(); }
+                      for (let i = len - 1; i >= 0; i -= fxStep) { const p = pts[i]; c.beginPath(); c.arc(p.x + 5, p.y + 8, p.w * 1.04, 0, Math.PI * 2); c.fill(); }
                     }
 
-                    // 2. OUTWARD SKIN-EMITTING FX LAYER (BEHIND SKIN!)
                     const glowCol = this.species.glow || (this.boosting ? '#ffe45c' : null);
                     if (detail && (fx !== 'none' || this.boosting) && glowCol) {
-                      for (let i = len - 1; i >= 1; i -= 2) {
+                      for (let i = len - 1; i >= 1; i -= fxStep) {
                         const p = pts[i], w = p.w;
                         const tCol = fx === 'prism' ? `hsl(${(globalTime * 160 + i * 14 + seed * 30) % 360}, 100%, 62%)` : glowCol;
                         const pulse = 0.65 + 0.35 * Math.sin(globalTime * (4 + pwr * 4) - i * 0.35 + seed);
@@ -1864,15 +2009,12 @@ jobs:
                       c.globalAlpha = 1.0;
                     }
 
-                    // 3. SMOOTH MUSCULAR 3D SERPENT BODY (DARK OUTER RIM UNDERNEATH, SEAMLESS BLENDED SKIN ABOVE!)
                     const pat = this.species.pat;
-                    // Outer dark silhouette pass (eliminates worm-like ring seams!)
                     c.fillStyle = this.species.dark;
                     for (let i = len - 1; i >= 1; i--) {
                       const p = pts[i];
                       c.beginPath(); c.arc(p.x, p.y, p.w * 1.04, 0, Math.PI * 2); c.fill();
                     }
-                    // Seamless 3D shaded muscular body + realistic dorsal markings & sheen
                     for (let i = len - 1; i >= 1; i--) {
                       const p = pts[i], w = p.w;
                       const sg = c.createRadialGradient(p.x - w * 0.24, p.y - w * 0.24, w * 0.08, p.x, p.y, w);
@@ -1896,7 +2038,6 @@ jobs:
                         }
                         c.restore();
                       }
-                      // Subtle glossy reptile spine specular highlight
                       if (detail && i % 2 === 0) {
                         c.fillStyle = 'rgba(255,255,255,0.14)';
                         c.beginPath(); c.arc(p.x - w * 0.22, p.y - w * 0.22, w * 0.34, 0, Math.PI * 2); c.fill();
@@ -1940,8 +2081,9 @@ jobs:
                   if (!victim.alive) return;
                   victim.alive = false;
                   spawnParticles(victim.x, victim.y, '#e82534', 18, 160);
-                  for (let i = 0; i < victim.segments.length; i += 3) {
-                    meatList.push({ x: victim.segments[i].x + rand(-12, 12), y: victim.segments[i].y + rand(-12, 12), r: rand(12, 16), mass: 12.0, rot: rand(0, 6.28), life: 32 });
+                  const mStep = Math.max(3, Math.floor(victim.segments.length / 26));
+                  for (let i = 0; i < victim.segments.length; i += mStep) {
+                    meatList.push({ x: victim.segments[i].x + rand(-12, 12), y: victim.segments[i].y + rand(-12, 12), r: rand(12, 16), mass: 14.0, rot: rand(0, 6.28), life: 34 });
                   }
                   if (killer && killer !== victim) {
                     killer.kills++;
@@ -2024,7 +2166,7 @@ jobs:
                   safeZone.stage = 1; safeZone.timer = 85; safeZone.shrinking = false;
                   dayCycle = 0; weatherRain = false; weatherTimer = 36; dropTimer = profile.selectedMode === 'treasure' ? 6 : 20;
 
-                  matchStats.kills = 0; matchStats.prey = 0; matchStats.xp = 0; matchStats.maxLen = 72; matchStats.rank = TOTAL_SNAKES; matchStats.reason = '';
+                  matchStats.kills = 0; matchStats.prey = 0; matchStats.xp = 0; matchStats.maxLen = 24; matchStats.rank = TOTAL_SNAKES; matchStats.reason = '';
 
                   const pSpec = SPECIES.find(s => s.id === profile.selectedSnake) || SPECIES[0];
                   const pSpawn = randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS * 0.55, 350);
@@ -2069,7 +2211,7 @@ jobs:
                   document.getElementById('resSub').textContent = matchStats.reason;
                   document.getElementById('resRank').textContent = `#${matchStats.rank}`;
                   document.getElementById('resKills').textContent = matchStats.kills;
-                  document.getElementById('resLen').textContent = matchStats.maxLen;
+                  document.getElementById('resLen').textContent = `${matchStats.maxLen}m`;
                   document.getElementById('resPrey').textContent = matchStats.prey;
                   document.getElementById('resGold').textContent = `+${gold} 🪙 Coins`;
                   document.getElementById('resDia').textContent = `+${dias} 💎 Diamonds`;
@@ -2129,7 +2271,8 @@ jobs:
                       if (o === s || !o.alive || o.spawnShield > 0) continue;
                       const oR = o.getRadius() * 0.85;
                       let crashed = false;
-                      for (let k = 1; k < o.segments.length; k++) {
+                      const cStep = o.segments.length > 140 ? 2 : 1;
+                      for (let k = 1; k < o.segments.length; k += cStep) {
                         if (distSq(s.x, s.y, o.segments[k].x, o.segments[k].y) < (hr + oR) ** 2) { crashed = true; break; }
                       }
                       if (crashed) { killSnake(s, o, 'Cut-Off'); break; }
@@ -2144,7 +2287,7 @@ jobs:
                       activePotion = { id: po.id, label: po.label, timer: po.dur };
                       matchStats.xp += 250; Sound.potion(); vibrate(30);
                       spawnParticles(po.x, po.y, po.col, 14, 130);
-                      floatTexts.push({ x: po.x, y: po.y - 20, text: `${po.label} +250 XP!`, color: po.col, life: 1.2, maxLife: 1.2 });
+                      if (profile.settings.xpPopups) floatTexts.push({ x: po.x, y: po.y - 20, text: `${po.label} +250 XP!`, color: po.col, life: 1.2, maxLife: 1.2 });
                       potions.splice(i, 1);
                     }
                   }
@@ -2157,7 +2300,7 @@ jobs:
                     for (const s of nearS) {
                       if (!s.alive) continue;
                       if (distSq(s.x, s.y, f.x, f.y) < (s.getRadius() + f.r) ** 2) {
-                        s.mass += 40; spawnParticles(f.x, f.y, '#ffe45c', 18, 150);
+                        s.mass += 45; spawnParticles(f.x, f.y, '#ffe45c', 18, 150);
                         if (s.isPlayer) { Sound.win(); vibrate(40); profile.coins += 50; profile.diamonds += 2; matchStats.xp += 250; saveProfile(); floatTexts.push({ x: f.x, y: f.y - 20, text: 'TREASURE! +50 🪙 +250 XP', color: '#9cf4ff', life: 1.4, maxLife: 1.4 }); }
                         pushKillFeed(`${s.name} found Golden Treasure!`);
                         feastDrops.splice(i, 1); break;
@@ -2185,7 +2328,7 @@ jobs:
                         s.mass += p.mass * (s.isPlayer ? dblMult : 1.0); s.jawOpen = 0.6;
                         if (s.isPlayer) {
                           matchStats.prey++; matchStats.xp += 100; Sound.eat();
-                          floatTexts.push({ x: p.x, y: p.y - 14, text: '+100 XP', color: '#a8ff78', life: 0.75, maxLife: 0.75 });
+                          if (profile.settings.xpPopups) floatTexts.push({ x: p.x, y: p.y - 14, text: '+100 XP', color: '#a8ff78', life: 0.75, maxLife: 0.75 });
                           if (!mission.done && matchStats.prey >= mission.goal) { mission.done = true; Sound.win(); floatTexts.push({ x: player.x, y: player.y - 30, text: 'MISSION DONE! +60 🪙', color: '#8cff6e', life: 1.5, maxLife: 1.5 }); }
                         }
                         preyList.splice(i, 1); break;
@@ -2203,7 +2346,10 @@ jobs:
                       if (!s.alive) continue;
                       if (distSq(s.x, s.y, m.x, m.y) < (s.getRadius() * 1.25 + m.r) ** 2) {
                         s.mass += m.mass * (s.isPlayer ? dblMult : 1.0); s.jawOpen = 0.55;
-                        if (s.isPlayer) { matchStats.xp += 500; Sound.eat(); floatTexts.push({ x: m.x, y: m.y - 16, text: '+500 XP', color: '#ffe45c', life: 0.9, maxLife: 0.9 }); }
+                        if (s.isPlayer) {
+                          matchStats.xp += 500; Sound.eat();
+                          if (profile.settings.xpPopups) floatTexts.push({ x: m.x, y: m.y - 16, text: '+500 XP', color: '#ffe45c', life: 0.9, maxLife: 0.9 });
+                        }
                         meatList.splice(i, 1); break;
                       }
                     }
@@ -2233,8 +2379,8 @@ jobs:
                     const aliveArr = snakes.filter(s => s.alive);
                     document.getElementById('hudAlive').textContent = `${aliveArr.length}/${TOTAL_SNAKES}`;
                     document.getElementById('hudKills').textContent = matchStats.kills;
+                    document.getElementById('hudLen').textContent = `${player.getLen()}m`;
                     document.getElementById('hudXp').textContent = matchStats.xp;
-                    document.getElementById('hudLen').textContent = player.getLen();
                     document.getElementById('missionProg').textContent = mission.done ? 'DONE ✅' : `${matchStats.prey}/${mission.goal}`;
 
                     if (safeZone.active) {
@@ -2254,7 +2400,7 @@ jobs:
                     aliveArr.sort((a, b) => b.mass - a.mass);
                     const lb = document.getElementById('leaderBox');
                     lb.innerHTML = aliveArr.slice(0, 5).map((s, idx) =>
-                      `<div class="lb-row${s.isPlayer ? ' me' : ''}"><span>${idx + 1}. ${s.name.slice(0, 10)}</span><span>${s.getLen()}</span></div>`
+                      `<div class="lb-row${s.isPlayer ? ' me' : ''}"><span>${idx + 1}. ${s.name.slice(0, 10)}</span><span>${s.getLen()}m</span></div>`
                     ).join('');
 
                     const stRing = document.getElementById('staminaRing');
@@ -2270,7 +2416,7 @@ jobs:
                     else if (player.terrain === 'mud') { tTag.style.display = 'block'; tTag.style.background = 'rgba(84,54,28,0.88)'; tTag.textContent = '🟤 MUD SLOW'; }
                     else tTag.style.display = 'none';
 
-                    drawRadar(miniCtx, miniCanvas.width, miniCanvas.height, false);
+                    if (profile.settings.showMinimap) drawRadar(miniCtx, miniCanvas.width, miniCanvas.height, false);
                     if (tacMapOpen) drawRadar(tacCtx, tacCanvas.width, tacCanvas.height, true);
                   }
                 }
@@ -2314,7 +2460,6 @@ jobs:
                     traceRiver(rv); ctx.strokeStyle = biome.shore; ctx.lineWidth = rv.width + 38; ctx.stroke();
                     traceRiver(rv); ctx.strokeStyle = biome.water; ctx.lineWidth = rv.width; ctx.stroke();
                     traceRiver(rv); ctx.strokeStyle = biome.waterDeep; ctx.lineWidth = rv.width * 0.58; ctx.stroke();
-                    // Flowing animated water current highlights
                     ctx.save(); ctx.setLineDash([45, 75]); ctx.lineDashOffset = -globalTime * 48;
                     traceRiver(rv); ctx.strokeStyle = 'rgba(200,248,255,0.16)'; ctx.lineWidth = 10; ctx.stroke();
                     ctx.restore();
@@ -2355,7 +2500,7 @@ jobs:
                       const nx = appW * 0.5 + Math.cos(t) * rx, ny = appH * 0.48 + Math.sin(t) * ry;
                       lobbySnake.angle = Math.atan2(ny - lobbySnake.y, nx - lobbySnake.x);
                       lobbySnake.x = nx; lobbySnake.y = ny; lobbySnake.segments[0].x = nx; lobbySnake.segments[0].y = ny;
-                      const spc = lobbySnake.getRadius() * 0.4;
+                      const spc = lobbySnake.getRadius() * 0.42;
                       for (let i = 1; i < lobbySnake.segments.length; i++) {
                         const p = lobbySnake.segments[i - 1], c = lobbySnake.segments[i], dx = c.x - p.x, dy = c.y - p.y, d = Math.hypot(dx, dy) || 1;
                         if (d > spc) { c.x = p.x + (dx / d) * spc; c.y = p.y + (dy / d) * spc; }
@@ -2473,12 +2618,36 @@ jobs:
                   for (const ft of floatTexts) { ctx.globalAlpha = clamp(ft.life / ft.maxLife, 0, 1); ctx.fillStyle = ft.color; ctx.fillText(ft.text, ft.x, ft.y); }
                   ctx.restore();
 
+                  // LIVING JUNGLE ATMOSPHERE: Drifting Cloud Shadows, Glowing Butterflies & Boost Speed Lines!
                   if (profile.settings.gfx !== 'low') {
+                    ctx.fillStyle = 'rgba(0, 12, 4, 0.08)';
+                    for (const cl of clouds) {
+                      cl.x += cl.vx * dt; if (cl.x - cl.r > appW) cl.x = -cl.r;
+                      ctx.beginPath(); ctx.ellipse(cl.x, cl.y, cl.r, cl.r * 0.52, 0.15, 0, Math.PI * 2); ctx.fill();
+                    }
+                    for (const bf of butterflies) {
+                      bf.x = (bf.x + bf.vx * dt + appW) % appW; bf.y = (bf.y + bf.vy * dt + appH) % appH;
+                      const fl = Math.abs(Math.sin(globalTime * 16 + bf.ph));
+                      ctx.fillStyle = bf.col; ctx.globalAlpha = 0.72;
+                      ctx.beginPath(); ctx.ellipse(bf.x - 3, bf.y, 4 * fl + 1, 2.5, -0.3, 0, Math.PI * 2); ctx.ellipse(bf.x + 3, bf.y, 4 * fl + 1, 2.5, 0.3, 0, Math.PI * 2); ctx.fill();
+                    }
+                    ctx.globalAlpha = 1;
                     for (const ff of fireflies) {
                       ff.x = (ff.x + ff.vx * dt + appW) % appW; ff.y = (ff.y + ff.vy * dt + appH) % appH;
                       ctx.fillStyle = `rgba(215, 255, 160, ${0.14 + 0.25 * (0.5 + 0.5 * Math.sin(globalTime * 3 + ff.ph))})`;
                       ctx.beginPath(); ctx.arc(ff.x, ff.y, 1.8, 0, Math.PI * 2); ctx.fill();
                     }
+                  }
+                  if (player && player.alive && player.boosting && player.stamina > 6) {
+                    ctx.strokeStyle = 'rgba(255, 240, 160, 0.18)'; ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    for (let i = 0; i < 12; i++) {
+                      const a = (i / 12) * Math.PI * 2 + (globalTime * 4) % 0.5;
+                      const r1 = Math.min(appW, appH) * 0.42, r2 = Math.max(appW, appH) * 0.65;
+                      ctx.moveTo(appW / 2 + Math.cos(a) * r1, appH / 2 + Math.sin(a) * r1);
+                      ctx.lineTo(appW / 2 + Math.cos(a) * r2, appH / 2 + Math.sin(a) * r2);
+                    }
+                    ctx.stroke();
                   }
                   if (dayCycle < 48 && profile.settings.gfx === 'ultra') {
                     const sg = ctx.createLinearGradient(0, 0, appW * 0.6, appH * 0.7);
@@ -2553,12 +2722,16 @@ jobs:
                 }
 
                 function applySettingsToDOM() {
+                  const nt = document.getElementById('btnNotif'); nt.textContent = profile.settings.notifs ? 'ON' : 'OFF'; nt.classList.toggle('selected', profile.settings.notifs);
                   const bg = document.getElementById('btnBgm'); bg.textContent = profile.settings.bgm ? 'ON' : 'OFF'; bg.classList.toggle('selected', profile.settings.bgm);
                   document.getElementById('setBgmVol').value = Math.round((profile.settings.bgmVol ?? 0.65) * 100);
                   document.getElementById('setSfxVol').value = Math.round(profile.settings.sfxVol * 100);
                   document.getElementById('setZoom').value = Math.round(profile.settings.zoom * 100);
                   document.getElementById('setSens').value = Math.round((profile.settings.lookSens ?? 1.35) * 100);
                   const ac = document.getElementById('btnAutoCenter'); ac.textContent = profile.settings.autoCenter ? 'ON' : 'OFF'; ac.classList.toggle('selected', profile.settings.autoCenter);
+                  const xp = document.getElementById('btnXpPop'); xp.textContent = profile.settings.xpPopups ? 'ON' : 'OFF'; xp.classList.toggle('selected', profile.settings.xpPopups);
+                  const mp = document.getElementById('btnShowMap'); mp.textContent = profile.settings.showMinimap ? 'ON' : 'OFF'; mp.classList.toggle('selected', profile.settings.showMinimap);
+                  document.getElementById('minimapBox').style.display = profile.settings.showMinimap ? 'block' : 'none';
                   const vb = document.getElementById('btnVib'); vb.textContent = profile.settings.vib ? 'ON' : 'OFF'; vb.classList.toggle('selected', profile.settings.vib);
                   const fp = document.getElementById('btnFps'); fp.textContent = profile.settings.showFps ? 'ON' : 'OFF'; fp.classList.toggle('selected', profile.settings.showFps);
                   document.getElementById('fpsPill').style.display = profile.settings.showFps ? 'block' : 'none';
@@ -2597,7 +2770,7 @@ jobs:
                     <div class="stat-box"><div class="stat-val">${profile.stats.matches}</div><div class="stat-lbl">Matches</div></div>
                     <div class="stat-box"><div class="stat-val" style="color:var(--gold);">${profile.stats.wins}</div><div class="stat-lbl">Wins</div></div>
                     <div class="stat-box"><div class="stat-val">${profile.stats.kills}</div><div class="stat-lbl">Kills</div></div>
-                    <div class="stat-box"><div class="stat-val">${profile.stats.bestLength}</div><div class="stat-lbl">Max Wt</div></div>`;
+                    <div class="stat-box"><div class="stat-val">${profile.stats.bestLength}m</div><div class="stat-lbl">Max Len</div></div>`;
 
                   const pg = document.getElementById('potionShopGrid'); pg.innerHTML = '';
                   POTION_TYPES.forEach(po => {
@@ -2724,7 +2897,7 @@ jobs:
                     activePotion = { id: po.id, label: po.label, timer: po.dur };
                     matchStats.xp += 250;
                     saveProfile(); refreshQuickPotions(); Sound.potion(); vibrate(25);
-                    floatTexts.push({ x: player.x, y: player.y - 24, text: `${po.label} +250 XP!`, color: po.col, life: 1.2, maxLife: 1.2 });
+                    if (profile.settings.xpPopups) floatTexts.push({ x: player.x, y: player.y - 24, text: `${po.label} +250 XP!`, color: po.col, life: 1.2, maxLife: 1.2 });
                   });
                 });
 
@@ -2818,14 +2991,25 @@ jobs:
                 document.getElementById('btnLobbySettings').addEventListener('click', openSettings);
                 document.getElementById('hudSetBtn').addEventListener('click', openSettings);
 
+                document.getElementById('btnNotif').addEventListener('click', () => {
+                  profile.settings.notifs = !profile.settings.notifs; saveProfile(); applySettingsToDOM(); Sound.click();
+                  if (window.AndroidAudio) window.AndroidAudio.setNotifications(profile.settings.notifs);
+                });
+                document.getElementById('btnTestNotif').addEventListener('click', () => {
+                  Sound.click();
+                  if (window.AndroidAudio) window.AndroidAudio.testNotification();
+                });
                 document.getElementById('btnBgm').addEventListener('click', () => { profile.settings.bgm = !profile.settings.bgm; saveProfile(); applySettingsToDOM(); Sound.click(); });
                 document.getElementById('setBgmVol').addEventListener('input', e => { profile.settings.bgmVol = e.target.value / 100; saveProfile(); Sound.updateVol(); });
                 document.getElementById('setSfxVol').addEventListener('input', e => { profile.settings.sfxVol = e.target.value / 100; saveProfile(); Sound.updateVol(); });
                 document.getElementById('setZoom').addEventListener('input', e => { profile.settings.zoom = e.target.value / 100; saveProfile(); });
                 document.getElementById('setSens').addEventListener('input', e => { profile.settings.lookSens = e.target.value / 100; saveProfile(); });
                 document.getElementById('btnAutoCenter').addEventListener('click', () => { profile.settings.autoCenter = !profile.settings.autoCenter; saveProfile(); applySettingsToDOM(); Sound.click(); });
+                document.getElementById('btnXpPop').addEventListener('click', () => { profile.settings.xpPopups = !profile.settings.xpPopups; saveProfile(); applySettingsToDOM(); Sound.click(); });
+                document.getElementById('btnShowMap').addEventListener('click', () => { profile.settings.showMinimap = !profile.settings.showMinimap; saveProfile(); applySettingsToDOM(); Sound.click(); });
                 document.getElementById('btnVib').addEventListener('click', () => { profile.settings.vib = !profile.settings.vib; saveProfile(); applySettingsToDOM(); Sound.click(); });
                 document.getElementById('btnFps').addEventListener('click', () => { profile.settings.showFps = !profile.settings.showFps; saveProfile(); applySettingsToDOM(); Sound.click(); });
+                document.getElementById('btnResetSet').addEventListener('click', () => { profile.settings = { ...DEFAULT_SETTINGS }; saveProfile(); resizeCanvas(); applySettingsToDOM(); Sound.click(); });
                 document.getElementById('btnResLobby').addEventListener('click', () => { Sound.click(); enterLobby(); });
                 document.getElementById('btnResAgain').addEventListener('click', () => { Sound.click(); startMatch(); });
                 document.getElementById('btnRecenter').addEventListener('click', () => { camera.lookX = 0; camera.lookY = 0; Sound.click(); });
@@ -2838,7 +3022,6 @@ jobs:
                   joyKnob.style.transform = `translate(calc(-50% + ${Math.cos(ctrl.joyAngle) * cl}px), calc(-50% + ${Math.sin(ctrl.joyAngle) * cl}px))`;
                 }
 
-                // PUBG / FREE FIRE STYLE CONTROLS: LEFT = JOYSTICK STEER | RIGHT = SCREEN CAMERA SCOUTING!
                 canvas.addEventListener('touchstart', e => {
                   if (screenState !== 'playing') return;
                   e.preventDefault();
