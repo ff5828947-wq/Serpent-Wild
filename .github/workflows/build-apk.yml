@@ -1,4 +1,4 @@
-name: Build Serpent-Wild v17 Clean Audio & Skin-Emit FX APK
+name: Build Serpent-Wild v18 Native Audio & Realistic Pro APK
 
 on:
   push:
@@ -29,7 +29,72 @@ jobs:
             yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null 2>&1 || true
           fi
 
-      - name: Generate Serpent-Wild v17 Android Project
+      - name: Generate Crystal-Clear Native BGM WAV
+        run: |
+          mkdir -p app/src/main/res/raw
+          python3 - << 'PYEOF'
+          import math, wave, struct
+          sr = 44100
+          bpm = 100
+          step = 60.0 / bpm / 2.0  # 0.3s per 8th note
+          melody = [
+              293.66, 0, 349.23, 440.0, 392.0, 0, 349.23, 329.63,
+              293.66, 0, 261.63, 293.66, 349.23, 0, 329.63, 0,
+              293.66, 0, 349.23, 440.0, 523.25, 0, 440.0, 392.0,
+              349.23, 0, 329.63, 293.66, 293.66, 0, 0, 0
+          ]
+          chords = [
+              (146.83, 220.0, 293.66),
+              (174.61, 220.0, 261.63),
+              (130.81, 196.0, 261.63),
+              (146.83, 220.0, 293.66)
+          ]
+          total_sec = step * len(melody)
+          n_samples = int(sr * total_sec)
+          buf = [0.0] * n_samples
+          # Warm ambient chord pad (continuous phase, zero clicks)
+          pad_ph = [0.0, 0.0, 0.0]
+          for i in range(n_samples):
+              t = i / sr
+              c_idx = min(3, int(t / (total_sec / 4.0)))
+              cf = chords[c_idx]
+              c_local = (t % (total_sec / 4.0)) / (total_sec / 4.0)
+              c_env = math.sin(math.pi * c_local) ** 0.5
+              s = 0.0
+              for k in range(3):
+                  pad_ph[k] += 2.0 * math.pi * cf[k] / sr
+                  s += math.sin(pad_ph[k]) * (0.065 if k == 0 else 0.04)
+              buf[i] += s * c_env
+          # Soft jungle marimba melody
+          for idx, freq in enumerate(melody):
+              if freq <= 0:
+                  continue
+              start = int(idx * step * sr)
+              dur_s = int(step * 1.45 * sr)
+              for j in range(dur_s):
+                  if start + j >= n_samples:
+                      break
+                  u = j / dur_s
+                  env = min(1.0, j / (sr * 0.015)) * ((1.0 - u) ** 2.2)
+                  val = math.sin(2.0 * math.pi * freq * j / sr) * 0.16 + math.sin(4.0 * math.pi * freq * j / sr) * 0.03
+                  buf[start + j] += val * env
+          # Seamless loop crossfade edges
+          fade = int(sr * 0.08)
+          for i in range(fade):
+              buf[i] *= (i / fade)
+              buf[n_samples - 1 - i] *= (i / fade)
+          with wave.open("app/src/main/res/raw/bgm.wav", "w") as wf:
+              wf.setnchannels(1)
+              wf.setsampwidth(2)
+              wf.setframerate(sr)
+              data = bytearray()
+              for sample in buf:
+                  clamped = max(-0.85, min(0.85, sample))
+                  data += struct.pack("<h", int(clamped * 32767))
+              wf.writeframes(data)
+          PYEOF
+
+      - name: Generate Serpent-Wild v18 Android Project
         run: |
           mkdir -p app/src/main/java/com/apexwild/serpent app/src/main/assets app/src/main/res/values
 
@@ -76,8 +141,8 @@ jobs:
                   applicationId = "com.apexwild.serpent.royale"
                   minSdk = 26
                   targetSdk = 35
-                  versionCode = 17
-                  versionName = "17.0.0"
+                  versionCode = 18
+                  versionName = "18.0.0"
               }
               signingConfigs {
                   create("release") {
@@ -171,9 +236,11 @@ jobs:
           import android.annotation.SuppressLint
           import android.content.pm.ActivityInfo
           import android.graphics.Color
+          import android.media.MediaPlayer
           import android.os.Bundle
           import android.view.View
           import android.view.WindowManager
+          import android.webkit.JavascriptInterface
           import android.webkit.WebChromeClient
           import android.webkit.WebSettings
           import android.webkit.WebView
@@ -186,7 +253,54 @@ jobs:
 
           class MainActivity : AppCompatActivity() {
               private lateinit var webView: WebView
+              private var bgmPlayer: MediaPlayer? = null
+              private var bgmEnabled = true
+              private var bgmVolume = 0.65f
+              private var userStarted = false
               private var lastBackPressMs = 0L
+
+              inner class AudioBridge {
+                  @JavascriptInterface
+                  fun startBgm(enabled: Boolean, vol: Float) {
+                      runOnUiThread {
+                          userStarted = true
+                          bgmEnabled = enabled
+                          bgmVolume = vol.coerceIn(0f, 1f)
+                          syncNativeBgm()
+                      }
+                  }
+
+                  @JavascriptInterface
+                  fun updateBgm(enabled: Boolean, vol: Float) {
+                      runOnUiThread {
+                          bgmEnabled = enabled
+                          bgmVolume = vol.coerceIn(0f, 1f)
+                          syncNativeBgm()
+                      }
+                  }
+              }
+
+              private fun ensureBgm() {
+                  if (bgmPlayer == null) {
+                      bgmPlayer = MediaPlayer.create(this, R.raw.bgm)?.apply {
+                          isLooping = true
+                      }
+                  }
+              }
+
+              private fun syncNativeBgm() {
+                  if (!userStarted) return
+                  ensureBgm()
+                  bgmPlayer?.let { mp ->
+                      val v = if (bgmEnabled) bgmVolume else 0f
+                      mp.setVolume(v, v)
+                      if (bgmEnabled && v > 0.01f) {
+                          if (!mp.isPlaying) mp.start()
+                      } else {
+                          if (mp.isPlaying) mp.pause()
+                      }
+                  }
+              }
 
               @SuppressLint("SetJavaScriptEnabled")
               override fun onCreate(savedInstanceState: Bundle?) {
@@ -212,6 +326,7 @@ jobs:
                           loadWithOverviewMode = true
                           mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
                       }
+                      addJavascriptInterface(AudioBridge(), "AndroidAudio")
                       webViewClient = WebViewClient()
                       webChromeClient = WebChromeClient()
                   }
@@ -235,6 +350,7 @@ jobs:
 
               override fun onPause() {
                   super.onPause()
+                  bgmPlayer?.let { if (it.isPlaying) it.pause() }
                   webView.evaluateJavascript("window.pauseGameAudio && window.pauseGameAudio();", null)
                   webView.onPause()
                   webView.pauseTimers()
@@ -242,7 +358,7 @@ jobs:
 
               override fun onStop() {
                   super.onStop()
-                  webView.evaluateJavascript("window.pauseGameAudio && window.pauseGameAudio();", null)
+                  bgmPlayer?.let { if (it.isPlaying) it.pause() }
               }
 
               override fun onResume() {
@@ -250,11 +366,14 @@ jobs:
                   hideSystemBars()
                   webView.resumeTimers()
                   webView.onResume()
+                  syncNativeBgm()
                   webView.evaluateJavascript("window.resumeGameAudio && window.resumeGameAudio();", null)
               }
 
               override fun onDestroy() {
-                  webView.evaluateJavascript("window.pauseGameAudio && window.pauseGameAudio();", null)
+                  bgmPlayer?.stop()
+                  bgmPlayer?.release()
+                  bgmPlayer = null
                   webView.destroy()
                   super.onDestroy()
               }
@@ -263,7 +382,7 @@ jobs:
               override fun onBackPressed() {
                   val now = System.currentTimeMillis()
                   if (now - lastBackPressMs < 2000L) {
-                      webView.evaluateJavascript("window.pauseGameAudio && window.pauseGameAudio();", null)
+                      bgmPlayer?.stop()
                       super.onBackPressed()
                   } else {
                       lastBackPressMs = now
@@ -279,7 +398,7 @@ jobs:
           <head>
             <meta charset="UTF-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-            <title>SERPENT WILD: APEX — v17 Clean Audio &amp; Skin-Emit FX</title>
+            <title>SERPENT WILD: APEX — v18 Native Audio &amp; Realistic Pro</title>
             <style>
               :root {
                 --bg-dark: #060b07;
@@ -516,6 +635,7 @@ jobs:
               #floatingJoy.visible { opacity: 1; }
               #floatingJoy.fixed-mode { left: 82px !important; top: calc(100% - 82px) !important; opacity: 0.88 !important; }
               #floatingJoyKnob { position: absolute; top: 50%; left: 50%; width: 42px; height: 42px; border-radius: 50%; transform: translate(-50%,-50%); background: radial-gradient(circle at 35% 30%, #d4ffaa, #589c34 72%, #295218); border: 2px solid rgba(245,255,238,0.85); }
+              #btnRecenter { pointer-events: auto; position: absolute; right: 112px; bottom: 24px; width: 42px; height: 42px; border-radius: 50%; border: 2px solid rgba(77,226,240,0.88); background: rgba(14,34,40,0.9); color: #b8f7ff; font-size: 17px; display: none; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.5); }
 
               #abilityCluster { position: absolute; bottom: 16px; right: max(18px, env(safe-area-inset-right)); width: 82px; height: 82px; pointer-events: none; }
               .ab-btn { pointer-events: auto; position: absolute; border-radius: 50%; border: 2.5px solid rgba(255,242,186,0.75); display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-weight: 900; cursor: pointer; box-shadow: 0 8px 22px rgba(0,0,0,0.6); overflow: hidden; }
@@ -550,16 +670,16 @@ jobs:
                   </svg>
                 </div>
                 <div class="splash-title">SERPENT WILD: APEX</div>
-                <div class="splash-subtitle">v17 • CLEAN AUDIO • SKIN-EMITTING FX</div>
+                <div class="splash-subtitle">v18 • NATIVE AUDIO • REALISTIC 3D • FREE-LOOK</div>
               </div>
               <div id="tapEnterWrap">
                 <button class="btn-gold" id="btnTapEnter" type="button">TAP TO ENTER JUNGLE</button>
                 <div style="font-size:10.5px;color:var(--text-muted);text-align:center;">Press the button above to enter</div>
               </div>
               <div id="loaderWrap">
-                <div class="loader-row"><span id="loaderStatus">Loading Clean Audio &amp; Skin-Emitting FX...</span><span id="loaderPct">0%</span></div>
+                <div class="loader-row"><span id="loaderStatus">Loading Native Studio Audio &amp; Realistic Jungle...</span><span id="loaderPct">0%</span></div>
                 <div class="loader-bar"><div id="loaderFill"></div></div>
-                <div id="loaderTip">Tip: Every paid beast radiates unique energy directly from its skin!</div>
+                <div id="loaderTip">Tip: Swipe the RIGHT side of the screen to scout ahead like PUBG/Free Fire!</div>
               </div>
             </div>
 
@@ -718,23 +838,39 @@ jobs:
             </div>
 
             <div class="modal-backdrop" id="settingsModal">
-              <div class="modal-box" style="max-width:520px;height:auto;max-height:90vh;">
+              <div class="modal-box" style="max-width:540px;height:auto;max-height:90vh;">
                 <div class="modal-head">
                   <div class="modal-title">Pro Tactical Settings</div>
                   <button class="close-btn" type="button" data-close="settingsModal">✕</button>
                 </div>
                 <div class="modal-body">
                   <div class="setting-row">
-                    <div><div style="font-size:12.5px;font-weight:800;">Background Music (Song)</div><div style="font-size:9.5px;color:var(--text-muted);">Clean zero-crackle audio (Auto-pauses on exit)</div></div>
+                    <div><div style="font-size:12.5px;font-weight:800;">Background Music (Native)</div><div style="font-size:9.5px;color:var(--text-muted);">Hardware studio audio • Auto-pauses on exit</div></div>
                     <button class="chip selected" id="btnBgm" type="button">ON</button>
                   </div>
                   <div class="setting-row">
-                    <div><div style="font-size:12.5px;font-weight:800;">Graphics Quality</div><div style="font-size:9.5px;color:var(--text-muted);">High/Ultra enables skin-emitting glow FX &amp; rain</div></div>
+                    <div><div style="font-size:12.5px;font-weight:800;">Music Volume</div><div style="font-size:9.5px;color:var(--text-muted);">Adjust jungle soundtrack loudness</div></div>
+                    <input type="range" id="setBgmVol" min="0" max="100" value="65" style="width:120px;accent-color:#7ce846;" />
+                  </div>
+                  <div class="setting-row">
+                    <div><div style="font-size:12.5px;font-weight:800;">Sound FX Volume</div><div style="font-size:9.5px;color:var(--text-muted);">Eat, kill, potion &amp; victory sounds</div></div>
+                    <input type="range" id="setSfxVol" min="0" max="100" value="80" style="width:120px;accent-color:#f6c445;" />
+                  </div>
+                  <div class="setting-row">
+                    <div><div style="font-size:12.5px;font-weight:800;">Graphics Quality</div><div style="font-size:9.5px;color:var(--text-muted);">High/Ultra enables realistic scales, glow &amp; rain</div></div>
                     <div class="chip-row" id="setGfxRow" style="margin:0;"></div>
                   </div>
                   <div class="setting-row">
-                    <div><div style="font-size:12.5px;font-weight:800;">Camera Zoom (FOV)</div><div style="font-size:9.5px;color:var(--text-muted);">Zoom out to spot rival snakes earlier</div></div>
+                    <div><div style="font-size:12.5px;font-weight:800;">Camera Zoom (FOV)</div><div style="font-size:9.5px;color:var(--text-muted);">Zoom out to spot rival beasts earlier</div></div>
                     <input type="range" id="setZoom" min="65" max="115" value="88" style="width:120px;accent-color:#f6c445;" />
+                  </div>
+                  <div class="setting-row">
+                    <div><div style="font-size:12.5px;font-weight:800;">Right-Swipe Camera Speed</div><div style="font-size:9.5px;color:var(--text-muted);">PUBG/Free Fire style screen scouting speed</div></div>
+                    <input type="range" id="setSens" min="60" max="220" value="135" style="width:120px;accent-color:#4de2f0;" />
+                  </div>
+                  <div class="setting-row">
+                    <div><div style="font-size:12.5px;font-weight:800;">Auto-Center Camera</div><div style="font-size:9.5px;color:var(--text-muted);">Snap camera back to snake on release</div></div>
+                    <button class="chip selected" id="btnAutoCenter" type="button">ON</button>
                   </div>
                   <div class="setting-row">
                     <div><div style="font-size:12.5px;font-weight:800;">Joystick Mode</div><div style="font-size:9.5px;color:var(--text-muted);">Floating follows thumb; Fixed stays bottom-left</div></div>
@@ -747,10 +883,6 @@ jobs:
                   <div class="setting-row">
                     <div><div style="font-size:12.5px;font-weight:800;">Show FPS Counter</div><div style="font-size:9.5px;color:var(--text-muted);">Display live frame rate on HUD</div></div>
                     <button class="chip" id="btnFps" type="button">OFF</button>
-                  </div>
-                  <div class="setting-row">
-                    <div><div style="font-size:12.5px;font-weight:800;">Sound Volume</div><div style="font-size:9.5px;color:var(--text-muted);">Music, eat, kill &amp; victory audio</div></div>
-                    <input type="range" id="setSfxVol" min="0" max="100" value="80" style="width:120px;accent-color:#f6c445;" />
                   </div>
                 </div>
               </div>
@@ -807,6 +939,7 @@ jobs:
               </div>
 
               <div id="floatingJoy"><div id="floatingJoyKnob"></div></div>
+              <button id="btnRecenter" type="button" title="Center Camera">👁️</button>
 
               <div id="abilityCluster">
                 <button class="ab-btn" id="btnBoost" type="button">
@@ -848,6 +981,7 @@ jobs:
                 </div>
               </div>
             </div>
+
             <script>
               (() => {
                 'use strict';
@@ -857,6 +991,7 @@ jobs:
                 const WORLD_CENTER = WORLD_SIZE / 2;
                 const ARENA_RADIUS = 8500;
                 const CELL_SIZE = 450;
+                const FREE_LOOK_MAX = 640;
 
                 const REGIONS = [
                   { id: 'basin',  name: 'Emerald Basin',  x: 9000,  y: 9000,  r: 2800, col: 'rgba(56,120,38,0.18)' },
@@ -873,13 +1008,11 @@ jobs:
                   { lv: 1, name: 'Bronze Viper' }, { lv: 4, name: 'Silver Cobra' },
                   { lv: 8, name: 'Gold Python' }, { lv: 14, name: 'Platinum Beast' }, { lv: 20, name: 'Apex Emperor' }
                 ];
-
                 const MODES = [
                   { id: 'br',       label: 'Classic Royale (50)' },
                   { id: 'infinity', label: 'Infinity Mode' },
                   { id: 'treasure', label: 'Treasure Hunter' }
                 ];
-
                 const STORE_PACKS = [
                   { id: 'dia500',  title: '💎 500 Diamonds',  desc: 'Special ₹10 Diamond Pack!',   inr: 10, coins: 0,     dias: 500 },
                   { id: 'coin10k', title: '🪙 10,000 Coins',  desc: 'Special ₹10 Gold Pack!',      inr: 10, coins: 10000, dias: 0 },
@@ -887,27 +1020,23 @@ jobs:
                   { id: 'coin35k', title: '🪙 35,000 Coins',  desc: 'Unlock Epic Beasts!',         inr: 25, coins: 35000, dias: 0 },
                   { id: 'mega',    title: '👑 Apex Mega Pack',desc: '5,000 💎 + 50,000 🪙 Bundle', inr: 79, coins: 50000, dias: 5000 }
                 ];
-
                 const UPGRADE_LIST = [
                   { id: 'magnet',  name: 'Prey Magnet',   icon: '🧲', desc: 'Pull nearby animals & meat towards your mouth', max: 5, baseCost: 800 },
                   { id: 'speed',   name: 'Slither Speed', icon: '⚡', desc: 'Increase base movement speed in all terrains',  max: 5, baseCost: 1000 },
                   { id: 'agility', name: 'Turn Agility',  icon: '🌀', desc: 'Sharper turns to cut off rival snakes faster',  max: 5, baseCost: 900 },
                   { id: 'stamina', name: 'Boost Stamina', icon: '🔥', desc: 'Longer boost duration & faster recharge',       max: 5, baseCost: 1100 }
                 ];
-
                 const POTION_TYPES = [
                   { id: 'magnet', name: 'Magnet Potion',  icon: '🧲', label: '🧲 MAGNET',  col: '#ff47de', dur: 12, cost: 400 },
                   { id: 'turbo',  name: 'Turbo Potion',   icon: '⚡', label: '⚡ TURBO',   col: '#ffe047', dur: 10, cost: 500 },
                   { id: 'zoom',   name: 'Zoom Potion',    icon: '🔍', label: '🔍 ZOOM',    col: '#4de2f0', dur: 12, cost: 450 },
                   { id: 'double', name: '2x Mass Potion', icon: '✨', label: '✨ 2X MASS', col: '#7ce846', dur: 12, cost: 600 }
                 ];
-
                 const FOOD_STYLES = [
                   { id: 'prey',   name: 'Wild Jungle Animals', desc: '3D realistic frogs, rabbits, mice & crabs', icon: '🐸' },
                   { id: 'fruits', name: 'Juicy Yummies',       desc: 'Apples, pizza, watermelon & donuts',        icon: '🍎' },
                   { id: 'orbs',   name: 'Neon Energy Orbs',    desc: 'Glowing arcade plasma pearls',              icon: '🔮' }
                 ];
-
                 const ACHIEVEMENTS = [
                   { id: 'k10',  name: 'First Blood',     desc: 'Eliminate 10 rival beasts',    stat: 'kills',      goal: 10,   coins: 400,  dias: 5 },
                   { id: 'k50',  name: 'Apex Assassin',   desc: 'Eliminate 50 rival beasts',    stat: 'kills',      goal: 50,   coins: 1500, dias: 15 },
@@ -916,7 +1045,6 @@ jobs:
                   { id: 'w1',   name: 'Jungle Champion', desc: 'Win 1 Classic Royale match',   stat: 'wins',       goal: 1,    coins: 1000, dias: 12 }
                 ];
 
-                // 50 ANIMALS: 3 FREE NATURAL + 47 PAID WITH OUTWARD SKIN-EMITTING FX!
                 const RAW_SPECIES = [
                   ['cobra',     'King Cobra',          'Free',      'cobra',    'slit',   'fang',  0, 'none',   null,      '#5e7328','#3d4f16','#172108','#f0d46c','#d9cc82','#ffc424', 84,86,1.04, 'free', 0,     'Royal Spectacle Hood'],
                   ['tiger',     'Bengal Tiger',        'Free',      'cat',      'round',  'whisk', 0, 'none',   null,      '#f07b1d','#b84f08','#240e02','#121010','#fff2d6','#ffe038', 88,90,1.10, 'free', 0,     'Tiger Ears & Stripes'],
@@ -986,7 +1114,6 @@ jobs:
                   { id: 'bayou',  name: 'Misty Bayou Swamp', floor: '#12201c', moss: 'rgba(34,88,68,0.48)',  soil: 'rgba(42,40,30,0.4)',  water: '#1e6e68', waterDeep: '#0e4240', shore: 'rgba(90,84,64,0.5)',   mud: '#292117' },
                   { id: 'canyon', name: 'Canyon Oasis',      floor: '#302114', moss: 'rgba(88,82,34,0.34)',  soil: 'rgba(118,66,34,0.44)',water: '#248594', waterDeep: '#125361', shore: 'rgba(176,134,84,0.55)',mud: '#4a331d' }
                 ];
-
                 const PREY_TYPES = [
                   { id: 'frog',   emoji: '🍎', col: '#ff4b3a', r: 23, mass: 11.5, speed: 58 },
                   { id: 'rabbit', emoji: '🍕', col: '#ffb838', r: 24, mass: 12.5, speed: 84 },
@@ -995,7 +1122,6 @@ jobs:
                   { id: 'crab',   emoji: '🍔', col: '#ffe047', r: 23, mass: 13.5, speed: 60 },
                   { id: 'beetle', emoji: '🍇', col: '#a855ff', r: 20, mass: 14.5, speed: 50 }
                 ];
-
                 const AI_PREFIX = ['King','Shadow','Wild','Apex','Alpha','Toxic','Razor','Ghost','Iron','Gold','Dark','Swamp','Storm','Night'];
                 const AI_SUFFIX = ['Tiger','Wolf','Shark','Dragon','Lion','Cobra','Bull','Croco','Titan','Eagle','Bear','Rhino'];
 
@@ -1007,13 +1133,13 @@ jobs:
                   potionInv: { magnet: 2, turbo: 2, zoom: 2, double: 2 },
                   claimedAch: [],
                   selectedSnake: 'cobra', selectedBiome: 'amazon', selectedFood: 'prey', selectedMode: 'br',
-                  settings: { bgm: true, gfx: 'high', zoom: 0.88, joyMode: 'floating', vib: true, showFps: false, sfxVol: 0.8, muted: false },
+                  settings: { bgm: true, bgmVol: 0.65, sfxVol: 0.8, gfx: 'high', zoom: 0.88, lookSens: 1.35, autoCenter: true, joyMode: 'floating', vib: true, showFps: false, muted: false },
                   stats: { matches: 0, wins: 0, bestLength: 0, kills: 0, prey: 0 }
                 };
 
                 let profile = (() => {
                   try {
-                    const raw = localStorage.getItem('serpent_wild_v17') || localStorage.getItem('serpent_wild_v16') || localStorage.getItem('serpent_wild_v15') || localStorage.getItem('serpent_wild_v14');
+                    const raw = localStorage.getItem('serpent_wild_v18') || localStorage.getItem('serpent_wild_v17') || localStorage.getItem('serpent_wild_v16');
                     if (!raw) return JSON.parse(JSON.stringify(DEFAULT_PROFILE));
                     const d = JSON.parse(raw);
                     const merged = {
@@ -1028,7 +1154,7 @@ jobs:
                   } catch (e) { return JSON.parse(JSON.stringify(DEFAULT_PROFILE)); }
                 })();
 
-                const saveProfile = () => { try { localStorage.setItem('serpent_wild_v17', JSON.stringify(profile)); } catch (e) {} };
+                const saveProfile = () => { try { localStorage.setItem('serpent_wild_v18', JSON.stringify(profile)); } catch (e) {} };
                 const getRank = lv => { let n = RANK_TIERS[0].name; for (const r of RANK_TIERS) if (lv >= r.lv) n = r.name; return n; };
                 const getXpNeed = lv => 1000 + (lv - 1) * 500;
 
@@ -1041,90 +1167,58 @@ jobs:
                 const randInCircle = (cx, cy, r, m = 200) => { const a = rand(0, Math.PI * 2), d = Math.sqrt(Math.random()) * Math.max(40, r - m); return { x: cx + Math.cos(a) * d, y: cy + Math.sin(a) * d }; };
                 const vibrate = ms => { try { if (profile.settings.vib && navigator.vibrate) navigator.vibrate(ms); } catch (e) {} };
 
-                // PHASE-CONTINUOUS ZERO-CRACKLE AUDIO ENGINE + AUTO-PAUSE ON APP EXIT!
+                // NATIVE ANDROID MEDIAPLAYER BGM + CLEAN SFX ENGINE (0% CRACKLE!)
                 const Sound = {
-                  ctx: null, bgmGain: null, sfxGain: null, bgmSrc: null, bufs: {}, lastEatMs: 0,
+                  ctx: null, sfxGain: null, bufs: {}, lastEatMs: 0,
                   init() {
                     try {
+                      if (window.AndroidAudio) {
+                        const on = !profile.settings.muted && profile.settings.bgm;
+                        window.AndroidAudio.startBgm(on, profile.settings.bgmVol);
+                      }
                       if (!this.ctx) {
                         const AC = window.AudioContext || window.webkitAudioContext;
                         if (!AC) return;
                         this.ctx = new AC();
-                        this.bgmGain = this.ctx.createGain();
-                        this.bgmGain.connect(this.ctx.destination);
                         this.sfxGain = this.ctx.createGain();
                         this.sfxGain.connect(this.ctx.destination);
-                        this.buildBuffers();
-                        this.startBgmLoop();
+                        this.bufs.click  = this.makeToneBuf(500, 720, 0.05, 0.14);
+                        this.bufs.eat    = this.makeToneBuf(340, 540, 0.06, 0.14);
+                        this.bufs.potion = this.makeToneBuf(460, 880, 0.16, 0.18);
+                        this.bufs.kill   = this.makeToneBuf(420, 820, 0.16, 0.18);
+                        this.bufs.buy    = this.makeToneBuf(520, 980, 0.18, 0.18);
+                        this.bufs.drop   = this.makeToneBuf(480, 760, 0.22, 0.16);
+                        this.bufs.win    = this.makeToneBuf(523, 1046, 0.35, 0.2);
+                        this.bufs.over   = this.makeToneBuf(240, 85, 0.35, 0.2);
                       }
                       if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
                       this.updateVol();
                     } catch (e) {}
                   },
-                  pause() {
-                    try {
-                      if (this.bgmGain && this.ctx) this.bgmGain.gain.setValueAtTime(0, this.ctx.currentTime);
-                      if (this.ctx && this.ctx.state === 'running') this.ctx.suspend().catch(() => {});
-                    } catch (e) {}
-                  },
-                  resume() {
-                    try {
-                      if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume().then(() => this.updateVol()).catch(() => {});
-                    } catch (e) {}
-                  },
+                  pause() { try { if (this.ctx && this.ctx.state === 'running') this.ctx.suspend().catch(() => {}); } catch (e) {} },
+                  resume() { try { if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume().catch(() => {}); } catch (e) {} },
                   makeToneBuf(f1, f2, dur, vol = 0.16) {
                     const sr = this.ctx.sampleRate, len = Math.floor(sr * dur);
                     const buf = this.ctx.createBuffer(1, len, sr), ch = buf.getChannelData(0);
                     let ph = 0;
                     for (let i = 0; i < len; i++) {
-                      const t = i / len;
-                      const env = Math.sin(Math.PI * t);
-                      const freq = f1 + (f2 - f1) * t;
-                      ph += (2 * Math.PI * freq) / sr;
+                      const t = i / len, env = Math.sin(Math.PI * t);
+                      ph += (2 * Math.PI * (f1 + (f2 - f1) * t)) / sr;
                       ch[i] = Math.sin(ph) * env * vol;
                     }
                     return buf;
                   },
-                  buildBuffers() {
-                    // Phase-continuous smooth jungle flute/pad loop (Zero clicks, zero clipping!)
-                    const sr = this.ctx.sampleRate, stepDur = 0.5, notes = [261.63, 293.66, 329.63, 392.0, 329.63, 293.66, 261.63, 220.0, 261.63, 329.63, 392.0, 440.0, 392.0, 329.63, 293.66, 261.63];
-                    const bass = [130.81, 146.83, 164.81, 110.0];
-                    const totalLen = Math.floor(sr * stepDur * notes.length);
-                    const bgmBuf = this.ctx.createBuffer(1, totalLen, sr), ch = bgmBuf.getChannelData(0);
-                    let ph1 = 0, ph2 = 0;
-                    for (let i = 0; i < totalLen; i++) {
-                      const pos = i / (sr * stepDur);
-                      const nIdx = Math.min(notes.length - 1, Math.floor(pos));
-                      const frac = pos - nIdx;
-                      const f = notes[nIdx], bf = bass[Math.floor(nIdx / 4) % bass.length];
-                      const env = Math.pow(Math.sin(Math.PI * frac), 0.7);
-                      const loopFade = i < 800 ? i / 800 : (i > totalLen - 800 ? (totalLen - i) / 800 : 1);
-                      ph1 += (2 * Math.PI * f) / sr;
-                      ph2 += (2 * Math.PI * bf) / sr;
-                      ch[i] = (Math.sin(ph1) * 0.08 * env + Math.sin(ph2) * 0.06) * loopFade;
-                    }
-                    this.bufs.bgm = bgmBuf;
-                    this.bufs.click  = this.makeToneBuf(500, 720, 0.05, 0.14);
-                    this.bufs.eat    = this.makeToneBuf(340, 540, 0.06, 0.14);
-                    this.bufs.potion = this.makeToneBuf(460, 880, 0.16, 0.18);
-                    this.bufs.kill   = this.makeToneBuf(420, 820, 0.16, 0.18);
-                    this.bufs.buy    = this.makeToneBuf(520, 980, 0.18, 0.18);
-                    this.bufs.drop   = this.makeToneBuf(480, 760, 0.22, 0.16);
-                    this.bufs.win    = this.makeToneBuf(523, 1046, 0.35, 0.2);
-                    this.bufs.over   = this.makeToneBuf(240, 85, 0.35, 0.2);
-                  },
-                  startBgmLoop() {
-                    if (!this.ctx || !this.bufs.bgm || this.bgmSrc) return;
-                    const src = this.ctx.createBufferSource();
-                    src.buffer = this.bufs.bgm; src.loop = true;
-                    src.connect(this.bgmGain); src.start(0);
-                    this.bgmSrc = src;
-                  },
                   updateVol() {
-                    if (!this.ctx || !this.bgmGain || !this.sfxGain) return;
-                    const v = profile.settings.muted ? 0 : profile.settings.sfxVol;
-                    this.bgmGain.gain.setTargetAtTime(profile.settings.bgm ? v * 0.45 : 0, this.ctx.currentTime, 0.06);
-                    this.sfxGain.gain.setTargetAtTime(v * 0.55, this.ctx.currentTime, 0.03);
+                    try {
+                      if (window.AndroidAudio) {
+                        const on = !profile.settings.muted && profile.settings.bgm;
+                        window.AndroidAudio.updateBgm(on, profile.settings.bgmVol);
+                      }
+                      if (this.ctx && this.sfxGain) {
+                        const v = profile.settings.muted ? 0 : profile.settings.sfxVol;
+                        this.sfxGain.gain.setTargetAtTime(v * 0.55, this.ctx.currentTime, 0.03);
+                      }
+                    } catch (e) {}
                   },
                   play(name) {
                     if (!this.ctx || !this.bufs[name] || profile.settings.muted || profile.settings.sfxVol <= 0) return;
@@ -1142,9 +1236,6 @@ jobs:
 
                 window.pauseGameAudio = () => Sound.pause();
                 window.resumeGameAudio = () => Sound.resume();
-                document.addEventListener('visibilitychange', () => { document.hidden ? Sound.pause() : Sound.resume(); });
-                window.addEventListener('pagehide', () => Sound.pause());
-                window.addEventListener('blur', () => Sound.pause());
 
                 const canvas = document.getElementById('gameCanvas');
                 const ctx = canvas.getContext('2d');
@@ -1160,14 +1251,14 @@ jobs:
                 let splashEntered = false, tacMapOpen = false, pendingPack = null;
                 let previewSnakeId = profile.selectedSnake, previewSnake = null, groundPattern = null;
 
-                let waterZones = [], lilyPads = [], mudZones = [], worldProps = [], trees = [], tracks = [], ripples = [];
+                let rivers = [], waterZones = [], lilyPads = [], mudZones = [], worldProps = [], trees = [], tracks = [], ripples = [];
                 let snakes = [], preyList = [], meatList = [], potions = [], feastDrops = [], particles = [], floatTexts = [], rainDrops = [], fireflies = [];
                 let player = null, lobbySnake = null;
                 let activePotion = { id: null, label: '', timer: 0 };
                 let mission = { goal: 40, done: false };
                 let emojiIdx = 0, killStreak = 0, streakTimer = 0;
 
-                const camera = { x: WORLD_CENTER, y: WORLD_CENTER, zoom: profile.settings.zoom, shake: 0 };
+                const camera = { x: WORLD_CENTER, y: WORLD_CENTER, zoom: profile.settings.zoom, lookX: 0, lookY: 0, shake: 0 };
                 const safeZone = { active: true, cx: WORLD_CENTER, cy: WORLD_CENTER, r: ARENA_RADIUS, targetR: ARENA_RADIUS, stage: 1, timer: 85, shrinking: false };
                 const matchStats = { kills: 0, prey: 0, xp: 0, maxLen: 0, rank: 1, reason: '' };
                 let globalTime = 0, dayCycle = 0, weatherRain = false, weatherTimer = 35, dropTimer = 20;
@@ -1175,7 +1266,7 @@ jobs:
 
                 const ctrl = {
                   joyActive: false, joyTouchId: null, joyMouse: false, joyOx: 0, joyOy: 0, joyAngle: 0, joyMag: 0,
-                  swipeTouchId: null, swipeOx: 0, swipeOy: 0,
+                  lookActive: false, lookTouchId: null, lookLastX: 0, lookLastY: 0,
                   boostHeld: false, keys: { up: false, down: false, left: false, right: false, boost: false }
                 };
 
@@ -1226,7 +1317,8 @@ jobs:
                 }
 
                 function isNearCam(x, y, pad = 720) {
-                  return Math.abs(x - camera.x) < (appW / camera.zoom) * 0.6 + pad && Math.abs(y - camera.y) < (appH / camera.zoom) * 0.6 + pad;
+                  const cx = camera.x + camera.lookX, cy = camera.y + camera.lookY;
+                  return Math.abs(x - cx) < (appW / camera.zoom) * 0.6 + pad && Math.abs(y - cy) < (appH / camera.zoom) * 0.6 + pad;
                 }
 
                 function isSnakeVisible(s) {
@@ -1238,6 +1330,7 @@ jobs:
                   return false;
                 }
 
+                // ULTRA-REALISTIC FOREST FLOOR + SMOOTH CURVED FLOWING RIVERS!
                 function generateWorld(biomeId) {
                   const biome = BIOMES.find(b => b.id === biomeId) || BIOMES[0];
                   const tile = document.createElement('canvas');
@@ -1259,42 +1352,44 @@ jobs:
                     t.fillStyle = Math.random() < 0.5 ? 'rgba(0,0,0,0.22)' : 'rgba(200,210,160,0.1)';
                     t.fillRect(rand(0, 512), rand(0, 512), rand(1.2, 2.8), rand(1.2, 2.8));
                   }
-                  for (let i = 0; i < 90; i++) {
+                  for (let i = 0; i < 95; i++) {
                     const gx = rand(12, 500), gy = rand(14, 500);
-                    t.strokeStyle = 'rgba(86, 162, 50, 0.44)'; t.lineWidth = 1.4;
+                    t.strokeStyle = 'rgba(86, 162, 50, 0.46)'; t.lineWidth = 1.4;
                     for (let b = -1; b <= 1; b++) { t.beginPath(); t.moveTo(gx, gy); t.quadraticCurveTo(gx + b * 4, gy - 7, gx + b * 8, gy - 12); t.stroke(); }
                   }
-                  for (let i = 0; i < 26; i++) {
+                  for (let i = 0; i < 28; i++) {
                     t.fillStyle = 'rgba(115,120,108,0.48)';
                     t.beginPath(); t.ellipse(rand(8, 504), rand(8, 504), rand(3, 6), rand(2, 4), rand(0, 3), 0, Math.PI * 2); t.fill();
                   }
                   const fCols = ['#ffe866', '#ff85a8', '#85e3ff', '#ffffff'];
-                  for (let i = 0; i < 30; i++) {
+                  for (let i = 0; i < 32; i++) {
                     t.fillStyle = fCols[i % fCols.length];
                     t.beginPath(); t.arc(rand(6, 506), rand(6, 506), rand(2.0, 3.2), 0, Math.PI * 2); t.fill();
                   }
                   groundPattern = ctx.createPattern(tile, 'repeat');
 
-                  waterZones = []; lilyPads = []; mudZones = []; worldProps = []; trees = []; tracks = []; ripples = [];
-                  const addRiver = (sx, sy, ang, steps, baseR) => {
+                  rivers = []; waterZones = []; lilyPads = []; mudZones = []; worldProps = []; trees = []; tracks = []; ripples = [];
+                  const addRiver = (sx, sy, ang, steps, width) => {
                     let rx = sx, ry = sy, a = ang;
+                    const pts = [];
                     for (let s = 0; s < steps; s++) {
-                      const rad = baseR + rand(-30, 40);
-                      if (dist(rx, ry, WORLD_CENTER, WORLD_CENTER) < ARENA_RADIUS - 360) {
-                        waterZones.push({ x: rx, y: ry, r: rad });
-                        if (Math.random() < 0.72) {
-                          for (let l = 0; l < 3; l++) {
-                            const la = rand(0, 6.28), ld = rand(18, rad * 0.65);
+                      if (dist(rx, ry, WORLD_CENTER, WORLD_CENTER) < ARENA_RADIUS - 380) {
+                        pts.push({ x: rx, y: ry });
+                        waterZones.push({ x: rx, y: ry, r: width * 0.52 });
+                        if (Math.random() < 0.7) {
+                          for (let l = 0; l < 2; l++) {
+                            const la = rand(0, 6.28), ld = rand(15, width * 0.32);
                             lilyPads.push({ x: rx + Math.cos(la) * ld, y: ry + Math.sin(la) * ld, r: rand(14, 24), rot: rand(0, 6.28), lotus: Math.random() < 0.45 });
                           }
                         }
                       }
-                      a += rand(-0.35, 0.35); rx += Math.cos(a) * rad * 1.1; ry += Math.sin(a) * rad * 1.1;
+                      a += rand(-0.32, 0.32); rx += Math.cos(a) * 260; ry += Math.sin(a) * 260;
                     }
+                    if (pts.length > 2) rivers.push({ pts, width });
                   };
-                  addRiver(2400, 6600, 0.42, 26, 210);
-                  addRiver(9200, 12800, -1.25, 22, 185);
-                  addRiver(13400, 13200, -2.3, 20, 180);
+                  addRiver(2400, 6600, 0.42, 24, 340);
+                  addRiver(9200, 12800, -1.25, 20, 300);
+                  addRiver(13400, 13200, -2.3, 18, 290);
 
                   for (let i = 0; i < 52; i++) {
                     const pt = i < 16 ? randInCircle(13000, 5200, 2200, 160) : randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 420);
@@ -1321,18 +1416,15 @@ jobs:
                   for (const r of REGIONS) { const d = dist(x, y, r.x, r.y); if (d < bd) { bd = d; best = r; } }
                   return best;
                 }
-
                 function getTerrainAt(x, y) {
                   for (const w of waterZones) if (distSq(x, y, w.x, w.y) < w.r * w.r) return 'water';
                   for (const m of mudZones) if (distSq(x, y, m.x, m.y) < m.r * m.r) return 'mud';
                   return 'ground';
                 }
-
                 function isUnderTree(x, y) {
                   for (const tr of trees) if (distSq(x, y, tr.x, tr.y) < (tr.r * 0.78) ** 2) return true;
                   return false;
                 }
-
                 function spawnParticles(x, y, color, count = 6, spd = 90) {
                   if (particles.length > 180) return;
                   for (let i = 0; i < count; i++) {
@@ -1340,13 +1432,11 @@ jobs:
                     particles.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: rand(0.25, 0.55), maxLife: 0.55, size: rand(2.5, 5.5), color });
                   }
                 }
-
                 function pushKillFeed(text) {
                   const feed = document.getElementById('killFeed');
                   if (!feed) return;
                   const div = document.createElement('div');
-                  div.className = 'kf-entry';
-                  div.textContent = text;
+                  div.className = 'kf-entry'; div.textContent = text;
                   feed.prepend(div);
                   while (feed.children.length > 4) feed.lastChild.remove();
                   setTimeout(() => div.remove(), 4200);
@@ -1414,7 +1504,6 @@ jobs:
                   }
                   c.restore();
                 }
-
                 function drawSpeciesHead(c, sp, hr, tongueExt = 0, jawOpen = 0, lookShift = 0) {
                   const pat = sp.pat;
                   const pShift = clamp(lookShift, -1, 1) * hr * 0.08;
@@ -1480,7 +1569,7 @@ jobs:
                   hg.addColorStop(0, pat === 'skeleton' ? '#f2f7ff' : sp.base);
                   hg.addColorStop(0.68, pat === 'skeleton' ? '#cad6e6' : sp.mid);
                   hg.addColorStop(1, pat === 'skeleton' ? '#6d7a8c' : sp.dark);
-                  c.fillStyle = hg; c.strokeStyle = 'rgba(0,0,0,0.72)'; c.lineWidth = 1.5;
+                  c.fillStyle = hg; c.strokeStyle = 'rgba(0,0,0,0.68)'; c.lineWidth = 1.4;
                   c.beginPath();
                   if (pat === 'croco' || pat === 'shark') {
                     c.moveTo(hr * 1.68, -hr * 0.2); c.quadraticCurveTo(hr * 1.82, 0, hr * 1.68, hr * 0.2); c.lineTo(hr * 0.55, hr * 0.58);
@@ -1549,7 +1638,7 @@ jobs:
                   tc.restore();
                 }
 
-                // 100% SOLID 3D SNAKE WITH OUTWARD SKIN-EMITTING ANIMATIONS (DRAWN BEHIND SKIN, NEVER ON TOP!)
+                // SMOOTH MUSCULAR 3D SERPENT (NO RING-LINES! SEAMLESS SCALES + GLOSSY SPINE + OUTWARD FX!)
                 class Snake {
                   constructor({ name, species, x, y, isPlayer = false, mass = 16 }) {
                     this.name = name; this.species = species; this.isPlayer = isPlayer; this.alive = true;
@@ -1563,18 +1652,18 @@ jobs:
                     this.aiTimer = rand(0, 0.5); this.aiWander = this.angle; this.aiBoost = 0;
                     this.segments = [];
                     const cnt = this.getSegCount();
-                    for (let i = 0; i < cnt; i++) this.segments.push({ x: x - Math.cos(this.angle) * i * 5.2, y: y - Math.sin(this.angle) * i * 5.2 });
+                    for (let i = 0; i < cnt; i++) this.segments.push({ x: x - Math.cos(this.angle) * i * 4.5, y: y - Math.sin(this.angle) * i * 4.5 });
                   }
 
                   getRadius() { return clamp(10.0 + Math.pow(this.mass, 0.46) * 1.48, 10.0, 36); }
-                  getSegCount() { return Math.min(92, Math.floor(14 + this.mass * 0.42)); }
+                  getSegCount() { return Math.min(96, Math.floor(15 + this.mass * 0.42)); }
                   getLen() { return Math.floor(this.mass * 4.5); }
 
                   getHalfWidth(i, len, baseR) {
                     const t = i / Math.max(1, len - 1);
                     let pw = t < 0.08 ? lerp(0.92, 1.0, t / 0.08)
                            : t < 0.78 ? (1.0 + Math.sin(((t - 0.08) / 0.7) * Math.PI) * 0.1)
-                           : lerp(1.0, 0.7, (t - 0.78) / 0.22);
+                           : lerp(1.0, 0.68, (t - 0.78) / 0.22);
                     let hood = 1.0;
                     if (this.species.hood && this.hoodFlare > 0.04 && i >= 1 && i <= 7) {
                       hood = 1 + Math.sin(clamp((i - 0.5) / 6.5, 0, 1) * Math.PI) * 0.82 * this.hoodFlare;
@@ -1655,7 +1744,7 @@ jobs:
                     }
 
                     this.segments[0].x = this.x; this.segments[0].y = this.y;
-                    const spc = r * 0.44;
+                    const spc = r * 0.38;
                     for (let i = 1; i < this.segments.length; i++) {
                       const p = this.segments[i - 1], c = this.segments[i];
                       if (i === 1) {
@@ -1684,7 +1773,6 @@ jobs:
                       this.trackCd -= dt;
                       if (this.terrain === 'mud' && this.trackCd <= 0 && tracks.length < 70) { tracks.push({ x: this.segments[3].x, y: this.segments[3].y, r: r * 0.85, ang: this.angle, life: 3.0, maxLife: 3.0 }); this.trackCd = 0.12; }
 
-                      // OUTWARD SKIN-EMITTING PARTICLES FOR PAID SKINS & BOOST!
                       this.trailCd -= dt;
                       if ((canBoost || this.species.curr !== 'free') && this.trailCd <= 0) {
                         const sIdx = Math.floor(rand(2, Math.max(3, this.segments.length - 1)));
@@ -1719,13 +1807,13 @@ jobs:
                     c.save();
                     c.globalAlpha = 1.0;
 
-                    // 1. GROUND DROP SHADOW
+                    // 1. SOFT GROUND SHADOW
                     if (detail) {
                       c.fillStyle = 'rgba(0,0,0,0.4)';
                       for (let i = len - 1; i >= 0; i -= 2) { const p = pts[i]; c.beginPath(); c.arc(p.x + 5, p.y + 8, p.w * 1.04, 0, Math.PI * 2); c.fill(); }
                     }
 
-                    // 2. OUTWARD SKIN-EMITTING FX LAYER (DRAWN BEHIND SKIN SO IT RADIATES OUTWARD FROM EDGES!)
+                    // 2. OUTWARD SKIN-EMITTING FX LAYER (BEHIND SKIN!)
                     const glowCol = this.species.glow || (this.boosting ? '#ffe45c' : null);
                     if (detail && (fx !== 'none' || this.boosting) && glowCol) {
                       for (let i = len - 1; i >= 1; i -= 2) {
@@ -1733,11 +1821,9 @@ jobs:
                         const tCol = fx === 'prism' ? `hsl(${(globalTime * 160 + i * 14 + seed * 30) % 360}, 100%, 62%)` : glowCol;
                         const pulse = 0.65 + 0.35 * Math.sin(globalTime * (4 + pwr * 4) - i * 0.35 + seed);
 
-                        // Soft Outer Aura Halo behind skin
                         c.fillStyle = tCol; c.globalAlpha = clamp(0.16 + pwr * 0.15, 0.14, 0.32) * pulse;
                         c.beginPath(); c.arc(p.x, p.y, w * (1.2 + pwr * 0.28 + (this.boosting ? 0.14 : 0)), 0, Math.PI * 2); c.fill();
 
-                        // Outward-Radiating Species-Unique FX around skin edges!
                         c.globalAlpha = 0.85;
                         if (fx === 'fire') {
                           const fl = 0.5 + 0.5 * Math.sin(globalTime * 16 + i * 1.9 + seed);
@@ -1778,27 +1864,42 @@ jobs:
                       c.globalAlpha = 1.0;
                     }
 
-                    // 3. 100% CLEAN, SOLID 3D LAYERED SKIN (NOTHING STAMPED ON TOP!)
+                    // 3. SMOOTH MUSCULAR 3D SERPENT BODY (DARK OUTER RIM UNDERNEATH, SEAMLESS BLENDED SKIN ABOVE!)
                     const pat = this.species.pat;
+                    // Outer dark silhouette pass (eliminates worm-like ring seams!)
+                    c.fillStyle = this.species.dark;
+                    for (let i = len - 1; i >= 1; i--) {
+                      const p = pts[i];
+                      c.beginPath(); c.arc(p.x, p.y, p.w * 1.04, 0, Math.PI * 2); c.fill();
+                    }
+                    // Seamless 3D shaded muscular body + realistic dorsal markings & sheen
                     for (let i = len - 1; i >= 1; i--) {
                       const p = pts[i], w = p.w;
-                      const sg = c.createRadialGradient(p.x - w * 0.28, p.y - w * 0.28, w * 0.1, p.x, p.y, w);
+                      const sg = c.createRadialGradient(p.x - w * 0.24, p.y - w * 0.24, w * 0.08, p.x, p.y, w);
                       sg.addColorStop(0, this.species.base);
-                      sg.addColorStop(0.68, this.species.mid);
+                      sg.addColorStop(0.72, this.species.mid);
                       sg.addColorStop(1, this.species.dark);
                       c.fillStyle = sg;
                       c.beginPath(); c.arc(p.x, p.y, w, 0, Math.PI * 2); c.fill();
-                      c.strokeStyle = 'rgba(0,0,0,0.42)'; c.lineWidth = 1.2; c.stroke();
 
                       if (i % 3 === 0) {
                         c.save(); c.translate(p.x, p.y); c.rotate(p.ang);
-                        if (this.species.id === 'tiger') { c.fillStyle = '#121010'; c.fillRect(-w * 0.2, -w * 0.92, w * 0.4, w * 1.84); }
+                        if (this.species.id === 'tiger') { c.fillStyle = '#121010'; c.fillRect(-w * 0.2, -w * 0.9, w * 0.4, w * 1.8); }
                         else if (this.species.id === 'panda') { c.fillStyle = (i % 6 === 0) ? '#14171a' : '#ffffff'; c.beginPath(); c.arc(0, 0, w * 0.72, 0, Math.PI * 2); c.fill(); }
                         else if (pat === 'skeleton') { c.strokeStyle = '#f2f7ff'; c.lineWidth = Math.max(1.8, w * 0.18); c.beginPath(); c.moveTo(0, -w * 0.75); c.lineTo(0, w * 0.75); c.stroke(); c.fillStyle = '#ffffff'; c.beginPath(); c.arc(0, 0, w * 0.24, 0, Math.PI * 2); c.fill(); }
                         else if (pat === 'racer') { c.fillStyle = '#ffffff'; c.fillRect(-w * 0.45, -w * 0.22, w * 0.9, w * 0.44); }
                         else if (pat === 'plasma') { c.strokeStyle = '#00f7ff'; c.lineWidth = 1.6; c.beginPath(); c.arc(0, 0, w * 0.45, 0, Math.PI * 2); c.stroke(); c.fillStyle = this.species.accent; c.beginPath(); c.arc(0, 0, w * 0.24, 0, Math.PI * 2); c.fill(); }
-                        else { c.fillStyle = this.species.accent; c.beginPath(); c.moveTo(w * 0.42, 0); c.lineTo(0, -w * 0.48); c.lineTo(-w * 0.42, 0); c.lineTo(0, w * 0.48); c.closePath(); c.fill(); }
+                        else {
+                          c.fillStyle = this.species.accent; c.globalAlpha = 0.82;
+                          c.beginPath(); c.moveTo(w * 0.44, 0); c.lineTo(0, -w * 0.5); c.lineTo(-w * 0.44, 0); c.lineTo(0, w * 0.5); c.closePath(); c.fill();
+                          c.globalAlpha = 1.0;
+                        }
                         c.restore();
+                      }
+                      // Subtle glossy reptile spine specular highlight
+                      if (detail && i % 2 === 0) {
+                        c.fillStyle = 'rgba(255,255,255,0.14)';
+                        c.beginPath(); c.arc(p.x - w * 0.22, p.y - w * 0.22, w * 0.34, 0, Math.PI * 2); c.fill();
                       }
                     }
 
@@ -1882,7 +1983,6 @@ jobs:
                     preyList.push({ ...t, x: pt.x, y: pt.y, angle: rand(0, Math.PI * 2), timer: rand(0.5, 2.5) });
                   }
                 }
-
                 function spawnPotions(count = 1) {
                   for (let i = 0; i < count; i++) {
                     const t = POTION_TYPES[Math.floor(Math.random() * POTION_TYPES.length)];
@@ -1890,7 +1990,6 @@ jobs:
                     potions.push({ ...t, x: pt.x, y: pt.y, r: 18, life: 45 });
                   }
                 }
-
                 function spawnGoldenDrop() {
                   const pt = randInCircle(safeZone.cx, safeZone.cy, Math.min(safeZone.r * 0.8, ARENA_RADIUS - 400), 220);
                   feastDrops.push({ x: pt.x, y: pt.y, r: 24, life: 50 });
@@ -1899,7 +1998,6 @@ jobs:
                   al.style.display = 'block';
                   setTimeout(() => { al.style.display = 'none'; }, 4500);
                 }
-
                 function refreshQuickPotions() {
                   ['magnet', 'turbo', 'zoom', 'double'].forEach(id => {
                     const el = document.getElementById(`qpc_${id}`);
@@ -1944,7 +2042,7 @@ jobs:
                   spawnPrey(480);
                   spawnPotions(34);
                   if (profile.selectedMode === 'treasure') { spawnGoldenDrop(); spawnGoldenDrop(); }
-                  camera.x = player.x; camera.y = player.y;
+                  camera.x = player.x; camera.y = player.y; camera.lookX = 0; camera.lookY = 0;
                   camera.zoom = profile.settings.zoom;
                   applySettingsToDOM();
                   refreshQuickPotions();
@@ -2122,6 +2220,11 @@ jobs:
                     camera.y = lerp(camera.y, player.y, clamp(dt * 8, 0, 1));
                     const targetZoom = (activePotion.id === 'zoom' && activePotion.timer > 0) ? Math.max(0.58, profile.settings.zoom - 0.2) : profile.settings.zoom;
                     camera.zoom = lerp(camera.zoom, targetZoom, clamp(dt * 5, 0, 1));
+                    if (!ctrl.lookActive && profile.settings.autoCenter) {
+                      camera.lookX = lerp(camera.lookX, 0, clamp(dt * 7, 0, 1));
+                      camera.lookY = lerp(camera.lookY, 0, clamp(dt * 7, 0, 1));
+                    }
+                    document.getElementById('btnRecenter').style.display = Math.hypot(camera.lookX, camera.lookY) > 35 ? 'flex' : 'none';
                   }
 
                   hudTick -= dt;
@@ -2176,8 +2279,13 @@ jobs:
                   const sc = (w * 0.45) / ARENA_RADIUS, cx = w / 2, cy = h / 2;
                   rc.clearRect(0, 0, w, h); rc.fillStyle = '#0c180d'; rc.fillRect(0, 0, w, h);
                   for (const r of REGIONS) { const rx = cx + (r.x - WORLD_CENTER) * sc, ry = cy + (r.y - WORLD_CENTER) * sc; rc.fillStyle = r.col; rc.beginPath(); rc.arc(rx, ry, r.r * sc, 0, Math.PI * 2); rc.fill(); }
-                  rc.fillStyle = 'rgba(38,165,180,0.45)';
-                  for (const wv of waterZones) { rc.beginPath(); rc.arc(cx + (wv.x - WORLD_CENTER) * sc, cy + (wv.y - WORLD_CENTER) * sc, Math.max(2, wv.r * sc), 0, Math.PI * 2); rc.fill(); }
+                  rc.strokeStyle = 'rgba(38,165,180,0.55)'; rc.lineCap = 'round'; rc.lineJoin = 'round';
+                  for (const rv of rivers) {
+                    rc.lineWidth = Math.max(2, rv.width * sc);
+                    rc.beginPath();
+                    rv.pts.forEach((pt, idx) => { const px = cx + (pt.x - WORLD_CENTER) * sc, py = cy + (pt.y - WORLD_CENTER) * sc; idx === 0 ? rc.moveTo(px, py) : rc.lineTo(px, py); });
+                    rc.stroke();
+                  }
                   rc.strokeStyle = 'rgba(255,75,58,0.5)'; rc.lineWidth = showLabels ? 2.5 : 1.5; rc.beginPath(); rc.arc(cx, cy, ARENA_RADIUS * sc, 0, Math.PI * 2); rc.stroke();
                   if (safeZone.active) { rc.strokeStyle = '#4de2f0'; rc.lineWidth = showLabels ? 3 : 2; rc.beginPath(); rc.arc(cx + (safeZone.cx - WORLD_CENTER) * sc, cy + (safeZone.cy - WORLD_CENTER) * sc, safeZone.r * sc, 0, Math.PI * 2); rc.stroke(); }
                   if (showLabels) { rc.font = 'bold 10px sans-serif'; rc.textAlign = 'center'; rc.fillStyle = 'rgba(255,235,160,0.88)'; for (const r of REGIONS) rc.fillText(r.name.toUpperCase(), cx + (r.x - WORLD_CENTER) * sc, cy + (r.y - WORLD_CENTER) * sc); }
@@ -2186,6 +2294,32 @@ jobs:
                   rc.fillStyle = 'rgba(255,90,78,0.85)';
                   for (const s of snakes) { if (!s.alive || s.isPlayer) continue; rc.beginPath(); rc.arc(cx + (s.x - WORLD_CENTER) * sc, cy + (s.y - WORLD_CENTER) * sc, showLabels ? 3 : 1.7, 0, Math.PI * 2); rc.fill(); }
                   if (player && player.alive) { const px = cx + (player.x - WORLD_CENTER) * sc, py = cy + (player.y - WORLD_CENTER) * sc; rc.fillStyle = '#7ce846'; rc.beginPath(); rc.arc(px, py, showLabels ? 6 : 4, 0, Math.PI * 2); rc.fill(); rc.strokeStyle = '#fff'; rc.lineWidth = 1.5; rc.stroke(); }
+                }
+
+                function drawSmoothRivers(biome) {
+                  ctx.save();
+                  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                  const traceRiver = rv => {
+                    ctx.beginPath();
+                    ctx.moveTo(rv.pts[0].x, rv.pts[0].y);
+                    for (let i = 1; i < rv.pts.length - 1; i++) {
+                      const xc = (rv.pts[i].x + rv.pts[i + 1].x) * 0.5;
+                      const yc = (rv.pts[i].y + rv.pts[i + 1].y) * 0.5;
+                      ctx.quadraticCurveTo(rv.pts[i].x, rv.pts[i].y, xc, yc);
+                    }
+                    const last = rv.pts[rv.pts.length - 1];
+                    ctx.lineTo(last.x, last.y);
+                  };
+                  for (const rv of rivers) {
+                    traceRiver(rv); ctx.strokeStyle = biome.shore; ctx.lineWidth = rv.width + 38; ctx.stroke();
+                    traceRiver(rv); ctx.strokeStyle = biome.water; ctx.lineWidth = rv.width; ctx.stroke();
+                    traceRiver(rv); ctx.strokeStyle = biome.waterDeep; ctx.lineWidth = rv.width * 0.58; ctx.stroke();
+                    // Flowing animated water current highlights
+                    ctx.save(); ctx.setLineDash([45, 75]); ctx.lineDashOffset = -globalTime * 48;
+                    traceRiver(rv); ctx.strokeStyle = 'rgba(200,248,255,0.16)'; ctx.lineWidth = 10; ctx.stroke();
+                    ctx.restore();
+                  }
+                  ctx.restore();
                 }
 
                 function renderGame(dt) {
@@ -2202,7 +2336,7 @@ jobs:
                     previewSnake.x = nx; previewSnake.y = ny; previewSnake.segments[0].x = nx; previewSnake.segments[0].y = ny;
                     for (let i = 1; i < previewSnake.segments.length; i++) {
                       const p = previewSnake.segments[i - 1], c = previewSnake.segments[i], dx = c.x - p.x, dy = c.y - p.y, d = Math.hypot(dx, dy) || 1;
-                      if (d > 6) { c.x = p.x + (dx / d) * 6; c.y = p.y + (dy / d) * 6; }
+                      if (d > 5.5) { c.x = p.x + (dx / d) * 5.5; c.y = p.y + (dy / d) * 5.5; }
                     }
                     previewSnake.draw(wsCtx, false);
                   }
@@ -2221,7 +2355,7 @@ jobs:
                       const nx = appW * 0.5 + Math.cos(t) * rx, ny = appH * 0.48 + Math.sin(t) * ry;
                       lobbySnake.angle = Math.atan2(ny - lobbySnake.y, nx - lobbySnake.x);
                       lobbySnake.x = nx; lobbySnake.y = ny; lobbySnake.segments[0].x = nx; lobbySnake.segments[0].y = ny;
-                      const spc = lobbySnake.getRadius() * 0.46;
+                      const spc = lobbySnake.getRadius() * 0.4;
                       for (let i = 1; i < lobbySnake.segments.length; i++) {
                         const p = lobbySnake.segments[i - 1], c = lobbySnake.segments[i], dx = c.x - p.x, dy = c.y - p.y, d = Math.hypot(dx, dy) || 1;
                         if (d > spc) { c.x = p.x + (dx / d) * spc; c.y = p.y + (dy / d) * spc; }
@@ -2243,18 +2377,14 @@ jobs:
                   ctx.save();
                   ctx.translate(appW / 2 + shX, appH / 2 + shY);
                   ctx.scale(camera.zoom, camera.zoom);
-                  ctx.translate(-camera.x, -camera.y);
+                  ctx.translate(-(camera.x + camera.lookX), -(camera.y + camera.lookY));
 
                   if (groundPattern) { ctx.fillStyle = groundPattern; ctx.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE); }
                   for (const r of REGIONS) { if (!isNearCam(r.x, r.y, r.r)) continue; ctx.fillStyle = r.col; ctx.beginPath(); ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2); ctx.fill(); }
                   for (const m of mudZones) { if (!isNearCam(m.x, m.y, m.r + 80)) continue; ctx.fillStyle = biome.mud; ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2); ctx.fill(); }
-                  for (const w of waterZones) { if (!isNearCam(w.x, w.y, w.r + 100)) continue; ctx.fillStyle = biome.shore; ctx.beginPath(); ctx.arc(w.x, w.y, w.r + 16, 0, Math.PI * 2); ctx.fill(); }
-                  for (const w of waterZones) {
-                    if (!isNearCam(w.x, w.y, w.r + 100)) continue;
-                    ctx.fillStyle = biome.water; ctx.beginPath(); ctx.arc(w.x, w.y, w.r, 0, Math.PI * 2); ctx.fill();
-                    ctx.fillStyle = biome.waterDeep; ctx.beginPath(); ctx.arc(w.x, w.y, w.r * 0.65, 0, Math.PI * 2); ctx.fill();
-                    ctx.fillStyle = 'rgba(255,255,255,0.16)'; ctx.beginPath(); ctx.ellipse(w.x + Math.sin(globalTime * 2 + w.x) * 14, w.y - w.r * 0.2, w.r * 0.28, 4, 0.2, 0, Math.PI * 2); ctx.fill();
-                  }
+
+                  drawSmoothRivers(biome);
+
                   for (const lp of lilyPads) {
                     if (!isNearCam(lp.x, lp.y, 50)) continue;
                     ctx.save(); ctx.translate(lp.x, lp.y); ctx.rotate(lp.rot);
@@ -2320,7 +2450,6 @@ jobs:
                   }
                   for (const p of preyList) { if (isNearCam(p.x, p.y, 65)) drawPrey(ctx, p); }
                   for (const m of meatList) { if (isNearCam(m.x, m.y, 50)) drawMeatChunk(ctx, m); }
-                  // Particles drawn BEFORE snakes so outward-emitted skin particles radiate cleanly from behind the skin!
                   for (const pt of particles) { ctx.globalAlpha = clamp(pt.life / pt.maxLife, 0, 1); ctx.fillStyle = pt.color; ctx.beginPath(); ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2); ctx.fill(); }
                   ctx.globalAlpha = 1;
                   for (const s of snakes) { if (s.alive && isSnakeVisible(s)) s.draw(ctx, true); }
@@ -2425,8 +2554,11 @@ jobs:
 
                 function applySettingsToDOM() {
                   const bg = document.getElementById('btnBgm'); bg.textContent = profile.settings.bgm ? 'ON' : 'OFF'; bg.classList.toggle('selected', profile.settings.bgm);
-                  document.getElementById('setZoom').value = Math.round(profile.settings.zoom * 100);
+                  document.getElementById('setBgmVol').value = Math.round((profile.settings.bgmVol ?? 0.65) * 100);
                   document.getElementById('setSfxVol').value = Math.round(profile.settings.sfxVol * 100);
+                  document.getElementById('setZoom').value = Math.round(profile.settings.zoom * 100);
+                  document.getElementById('setSens').value = Math.round((profile.settings.lookSens ?? 1.35) * 100);
+                  const ac = document.getElementById('btnAutoCenter'); ac.textContent = profile.settings.autoCenter ? 'ON' : 'OFF'; ac.classList.toggle('selected', profile.settings.autoCenter);
                   const vb = document.getElementById('btnVib'); vb.textContent = profile.settings.vib ? 'ON' : 'OFF'; vb.classList.toggle('selected', profile.settings.vib);
                   const fp = document.getElementById('btnFps'); fp.textContent = profile.settings.showFps ? 'ON' : 'OFF'; fp.classList.toggle('selected', profile.settings.showFps);
                   document.getElementById('fpsPill').style.display = profile.settings.showFps ? 'block' : 'none';
@@ -2687,12 +2819,16 @@ jobs:
                 document.getElementById('hudSetBtn').addEventListener('click', openSettings);
 
                 document.getElementById('btnBgm').addEventListener('click', () => { profile.settings.bgm = !profile.settings.bgm; saveProfile(); applySettingsToDOM(); Sound.click(); });
-                document.getElementById('setZoom').addEventListener('input', e => { profile.settings.zoom = e.target.value / 100; saveProfile(); });
+                document.getElementById('setBgmVol').addEventListener('input', e => { profile.settings.bgmVol = e.target.value / 100; saveProfile(); Sound.updateVol(); });
                 document.getElementById('setSfxVol').addEventListener('input', e => { profile.settings.sfxVol = e.target.value / 100; saveProfile(); Sound.updateVol(); });
+                document.getElementById('setZoom').addEventListener('input', e => { profile.settings.zoom = e.target.value / 100; saveProfile(); });
+                document.getElementById('setSens').addEventListener('input', e => { profile.settings.lookSens = e.target.value / 100; saveProfile(); });
+                document.getElementById('btnAutoCenter').addEventListener('click', () => { profile.settings.autoCenter = !profile.settings.autoCenter; saveProfile(); applySettingsToDOM(); Sound.click(); });
                 document.getElementById('btnVib').addEventListener('click', () => { profile.settings.vib = !profile.settings.vib; saveProfile(); applySettingsToDOM(); Sound.click(); });
                 document.getElementById('btnFps').addEventListener('click', () => { profile.settings.showFps = !profile.settings.showFps; saveProfile(); applySettingsToDOM(); Sound.click(); });
                 document.getElementById('btnResLobby').addEventListener('click', () => { Sound.click(); enterLobby(); });
                 document.getElementById('btnResAgain').addEventListener('click', () => { Sound.click(); startMatch(); });
+                document.getElementById('btnRecenter').addEventListener('click', () => { camera.lookX = 0; camera.lookY = 0; Sound.click(); });
 
                 const joyEl = document.getElementById('floatingJoy'), joyKnob = document.getElementById('floatingJoyKnob');
                 function updateJoyVisual(x, y) {
@@ -2702,6 +2838,7 @@ jobs:
                   joyKnob.style.transform = `translate(calc(-50% + ${Math.cos(ctrl.joyAngle) * cl}px), calc(-50% + ${Math.sin(ctrl.joyAngle) * cl}px))`;
                 }
 
+                // PUBG / FREE FIRE STYLE CONTROLS: LEFT = JOYSTICK STEER | RIGHT = SCREEN CAMERA SCOUTING!
                 canvas.addEventListener('touchstart', e => {
                   if (screenState !== 'playing') return;
                   e.preventDefault();
@@ -2711,8 +2848,8 @@ jobs:
                       if (profile.settings.joyMode === 'fixed') { ctrl.joyOx = 82; ctrl.joyOy = appH - 82; }
                       else { ctrl.joyOx = t.clientX; ctrl.joyOy = t.clientY; joyEl.style.left = `${t.clientX}px`; joyEl.style.top = `${t.clientY}px`; }
                       joyEl.classList.add('visible'); updateJoyVisual(t.clientX, t.clientY);
-                    } else if (t.clientX >= appW * 0.5 && ctrl.swipeTouchId === null) {
-                      ctrl.swipeTouchId = t.identifier; ctrl.swipeOx = t.clientX; ctrl.swipeOy = t.clientY;
+                    } else if (t.clientX >= appW * 0.5 && ctrl.lookTouchId === null) {
+                      ctrl.lookTouchId = t.identifier; ctrl.lookActive = true; ctrl.lookLastX = t.clientX; ctrl.lookLastY = t.clientY;
                     }
                   }
                 }, { passive: false });
@@ -2723,13 +2860,11 @@ jobs:
                   for (const t of e.changedTouches) {
                     if (t.identifier === ctrl.joyTouchId) {
                       updateJoyVisual(t.clientX, t.clientY);
-                    } else if (t.identifier === ctrl.swipeTouchId && player && player.alive) {
-                      const dx = t.clientX - ctrl.swipeOx, dy = t.clientY - ctrl.swipeOy;
-                      if (Math.hypot(dx, dy) > 10) {
-                        player.targetAngle = Math.atan2(dy, dx);
-                        ctrl.swipeOx = lerp(ctrl.swipeOx, t.clientX, 0.25);
-                        ctrl.swipeOy = lerp(ctrl.swipeOy, t.clientY, 0.25);
-                      }
+                    } else if (t.identifier === ctrl.lookTouchId) {
+                      const sens = profile.settings.lookSens || 1.35;
+                      camera.lookX = clamp(camera.lookX - (t.clientX - ctrl.lookLastX) * sens, -FREE_LOOK_MAX, FREE_LOOK_MAX);
+                      camera.lookY = clamp(camera.lookY - (t.clientY - ctrl.lookLastY) * sens, -FREE_LOOK_MAX, FREE_LOOK_MAX);
+                      ctrl.lookLastX = t.clientX; ctrl.lookLastY = t.clientY;
                     }
                   }
                 }, { passive: false });
@@ -2737,7 +2872,7 @@ jobs:
                 const endTouch = e => {
                   for (const t of e.changedTouches) {
                     if (t.identifier === ctrl.joyTouchId) { ctrl.joyTouchId = null; ctrl.joyActive = false; ctrl.joyMag = 0; joyEl.classList.remove('visible'); joyKnob.style.transform = 'translate(-50%,-50%)'; }
-                    if (t.identifier === ctrl.swipeTouchId) { ctrl.swipeTouchId = null; }
+                    if (t.identifier === ctrl.lookTouchId) { ctrl.lookTouchId = null; ctrl.lookActive = false; }
                   }
                 };
                 canvas.addEventListener('touchend', endTouch);
