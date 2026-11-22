@@ -1,4 +1,4 @@
-name: Build Serpent-Wild v10 Ultra Pro Max APK
+name: Build Serpent-Wild v11 Unique Faces APK
 
 on:
   push:
@@ -29,7 +29,7 @@ jobs:
             yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null 2>&1 || true
           fi
 
-      - name: Generate Serpent-Wild v10 Android Project
+      - name: Generate Serpent-Wild v11 Android Project
         run: |
           mkdir -p app/src/main/java/com/apexwild/serpent app/src/main/assets app/src/main/res/values
 
@@ -76,8 +76,8 @@ jobs:
                   applicationId = "com.apexwild.serpent.royale"
                   minSdk = 26
                   targetSdk = 35
-                  versionCode = 10
-                  versionName = "10.0.0"
+                  versionCode = 11
+                  versionName = "11.0.0"
               }
               signingConfigs {
                   create("release") {
@@ -270,7 +270,7 @@ jobs:
           <head>
             <meta charset="UTF-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-            <title>SERPENT WILD: APEX — v10 Ultra Pro Max</title>
+            <title>SERPENT WILD: APEX — v11 Unique Faces Pro</title>
             <style>
               :root {
                 --bg-dark: #060b07;
@@ -416,7 +416,7 @@ jobs:
               .snake-card.t-Legendary { background: linear-gradient(160deg, #b86614, #592b05); border-color: #ffc247; }
               .snake-card.t-Mythic    { background: linear-gradient(160deg, #165e78, #2e114f); border-color: #61e4ff; }
               .snake-card.selected    { outline: 2.5px solid #fff; transform: scale(1.02); }
-              .snake-thumb { width: 72px; height: 72px; border-radius: 10px; background: rgba(0,0,0,0.26); display: block; }
+              .snake-thumb { width: 74px; height: 74px; border-radius: 10px; background: rgba(0,0,0,0.26); display: block; }
               .sc-name { font-size: 10.5px; font-weight: 900; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; text-shadow: 0 1px 2px #000; }
               .sc-price { font-size: 10px; font-weight: 900; padding: 3px 6px; border-radius: 7px; background: rgba(0,0,0,0.52); width: 100%; }
 
@@ -482,7 +482,6 @@ jobs:
               #killFeed { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; max-width: 170px; }
               .kf-entry { padding: 2px 6px; border-radius: 6px; background: rgba(10,17,11,0.84); border-right: 3px solid var(--gold); font-size: 8.5px; font-weight: 700; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px; }
 
-              /* BOTTOM-CENTER QUICK POTIONS BAR (VIDEO 1 STYLE) */
               #quickPotions {
                 position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
                 display: flex; gap: 7px; pointer-events: auto;
@@ -546,16 +545,16 @@ jobs:
                   </svg>
                 </div>
                 <div class="splash-title">SERPENT WILD: APEX</div>
-                <div class="splash-subtitle">v10 ULTRA PRO MAX • 3 MODES • 24 SERPENTS</div>
+                <div class="splash-subtitle">v11 UNIQUE FACES • SLOW ZONE • WORMS ZONE PRO</div>
               </div>
               <div id="tapEnterWrap">
                 <button class="btn-gold" id="btnTapEnter" type="button">TAP TO ENTER JUNGLE</button>
                 <div style="font-size:10.5px;color:var(--text-muted);text-align:center;">Press the button above to enter</div>
               </div>
               <div id="loaderWrap">
-                <div class="loader-row"><span id="loaderStatus">Loading Ultra-Realistic 12KM Jungle &amp; 24 Serpents...</span><span id="loaderPct">0%</span></div>
+                <div class="loader-row"><span id="loaderStatus">Sculpting 24 Unique Faces &amp; Plump 3D Tails...</span><span id="loaderPct">0%</span></div>
                 <div class="loader-bar"><div id="loaderFill"></div></div>
-                <div id="loaderTip">Tip: Use Quick-Potions at the bottom of the screen for instant Magnet, Turbo or Zoom!</div>
+                <div id="loaderTip">Tip: Every snake now has its own unique face, skull, visor or crown!</div>
               </div>
             </div>
 
@@ -604,7 +603,6 @@ jobs:
               </div>
             </div>
 
-            <!-- WORKSHOP, DECOR, ACHIEVEMENTS & ₹10 STORE MODAL -->
             <div class="modal-backdrop" id="profileModal">
               <div class="modal-box">
                 <div class="modal-head">
@@ -781,7 +779,7 @@ jobs:
                 <div id="missionBar" class="glass"><span id="missionTxt">🎯 Eat 40 Yummies</span><span id="missionProg">0/40</span></div>
                 <div class="zone-pill glass">
                   <span id="zoneLabel" style="color:#52e5ff;">◎ ZONE <span id="hudZoneStage">1</span></span>
-                  <span id="hudZoneTimer">0:40</span>
+                  <span id="hudZoneTimer">1:25</span>
                 </div>
                 <div id="shieldBadge">🛡️ SPAWN SHIELD</div>
                 <div id="dropAlert">⭐ GOLDEN TREASURE CHEST!</div>
@@ -798,7 +796,6 @@ jobs:
                 <div id="killFeed"></div>
               </div>
 
-              <!-- BOTTOM-CENTER QUICK POTIONS BAR -->
               <div id="quickPotions">
                 <button class="qp-btn" type="button" data-qp="magnet">🧲<span class="qp-cnt" id="qpc_magnet">2</span></button>
                 <button class="qp-btn" type="button" data-qp="turbo">⚡<span class="qp-cnt" id="qpc_turbo">2</span></button>
@@ -920,32 +917,32 @@ jobs:
                   { id: 'w1',   name: 'Jungle Champion', desc: 'Win 1 Classic Royale match',   stat: 'wins',       goal: 1,    coins: 4000, dias: 40 }
                 ];
 
-                // 24 UNIQUE 3D SERPENTS (FIRST 5 FREE -> COINS -> DILOPHOSAURUS, CROCO, WATER DRAGON, RACER, SKELETON, BANSHEE, EMPEROR)
+                // 24 UNIQUE FACES & DESIGNS (FIRST 5 FREE -> COINS -> UNIQUE MYTHIC DRAGONS!)
                 const SPECIES = [
                   { id: 'cobra',     name: 'King Cobra',          tier: 'Free',      pat: 'cobra',    hood: true,  rattle: false, horns: false, dragon: false, glow: null,      base: '#5e7328', mid: '#3d4f16', dark: '#172108', accent: '#f0d46c', belly: '#d9cc82', eye: '#ffc424', speed: 84, turn: 86, girth: 1.04, trait: 'Spectacle Hood • Venom Slow+',     curr: 'free', price: 0 },
                   { id: 'boa',       name: 'Emerald Tree Boa',    tier: 'Free',      pat: 'boa',      hood: false, rattle: false, horns: false, dragon: false, glow: null,      base: '#19a34a', mid: '#0f7030', dark: '#043314', accent: '#f5fff2', belly: '#c2eb57', eye: '#ffe338', speed: 82, turn: 90, girth: 1.12, trait: 'White Saddles • Longer Camo',      curr: 'free', price: 0 },
                   { id: 'viper',     name: 'Desert Horned Viper', tier: 'Free',      pat: 'viper',    hood: false, rattle: true,  horns: true,  dragon: false, glow: null,      base: '#d1a064', mid: '#9e6e36', dark: '#4a2b0d', accent: '#61330e', belly: '#f0ddb6', eye: '#ff7b1c', speed: 92, turn: 92, girth: 1.08, trait: 'Brow Horns & Rattle Tail',         curr: 'free', price: 0 },
                   { id: 'python',    name: 'Reticulated Python',  tier: 'Free',      pat: 'python',   hood: false, rattle: false, horns: false, dragon: false, glow: null,      base: '#614d35', mid: '#3b2d1d', dark: '#171009', accent: '#e3be78', belly: '#c4af8d', eye: '#ffa23b', speed: 83, turn: 85, girth: 1.14, trait: 'Natural Retic Net • +20% Mass',    curr: 'free', price: 0 },
                   { id: 'anaconda',  name: 'Green Anaconda',      tier: 'Free',      pat: 'anaconda', hood: false, rattle: false, horns: false, dragon: false, glow: null,      base: '#768029', mid: '#505917', dark: '#202607', accent: '#1c1a0a', belly: '#c7bf69', eye: '#f7b224', speed: 80, turn: 82, girth: 1.24, trait: 'Swamp Giant • Fast Swimmer',       curr: 'free', price: 0 },
-                  { id: 'racer',     name: 'Turbo Racer',         tier: 'Rare',      pat: 'racer',    hood: false, rattle: false, horns: false, dragon: false, glow: '#ff4757', base: '#e82538', mid: '#9e1120', dark: '#2b0408', accent: '#ffffff', belly: '#ffd6db', eye: '#ffe647', speed: 95, turn: 92, girth: 1.0,  trait: 'Racing Stripes • Turbo Speed',     curr: 'coin', price: 5000 },
+                  { id: 'racer',     name: 'Turbo Racer',         tier: 'Rare',      pat: 'racer',    hood: false, rattle: false, horns: false, dragon: false, glow: '#ff4757', base: '#e82538', mid: '#9e1120', dark: '#2b0408', accent: '#ffffff', belly: '#ffd6db', eye: '#ffe647', speed: 95, turn: 92, girth: 1.0,  trait: 'Racing Helmet & Tinted Visor',     curr: 'coin', price: 5000 },
                   { id: 'krait',     name: 'Crimson Krait',       tier: 'Rare',      pat: 'krait',    hood: false, rattle: false, horns: false, dragon: false, glow: null,      base: '#d11f1f', mid: '#8c0f0f', dark: '#120e14', accent: '#ffdd4d', belly: '#f2e6c9', eye: '#ffeb47', speed: 88, turn: 88, girth: 0.98, trait: 'Curved Tri-Bands • Fast Venom',    curr: 'coin', price: 8000 },
-                  { id: 'croco',     name: 'Swamp Croco',         tier: 'Rare',      pat: 'croco',    hood: false, rattle: false, horns: false, dragon: false, glow: '#6eff54', base: '#2c8a38', mid: '#175420', dark: '#07210b', accent: '#a8ff6e', belly: '#d9eb8a', eye: '#ffea38', speed: 86, turn: 88, girth: 1.2,  trait: 'Armored Croc Scales & Snout',      curr: 'coin', price: 12000 },
+                  { id: 'croco',     name: 'Swamp Croco',         tier: 'Rare',      pat: 'croco',    hood: false, rattle: false, horns: false, dragon: false, glow: '#6eff54', base: '#2c8a38', mid: '#175420', dark: '#07210b', accent: '#a8ff6e', belly: '#d9eb8a', eye: '#ffea38', speed: 86, turn: 88, girth: 1.2,  trait: 'Long Alligator Snout & Teeth',     curr: 'coin', price: 12000 },
                   { id: 'mamba',     name: 'Black Mamba',         tier: 'Rare',      pat: 'mamba',    hood: false, rattle: false, horns: false, dragon: false, glow: null,      base: '#3b4047', mid: '#212529', dark: '#08090b', accent: '#8b95a3', belly: '#757d87', eye: '#ff3b30', speed: 97, turn: 94, girth: 0.96, trait: 'Coffin Skull • Fastest Speed',     curr: 'coin', price: 15000 },
-                  { id: 'dilo',      name: 'Dilophosaurus',       tier: 'Epic',      pat: 'dilo',     hood: true,  rattle: false, horns: true,  dragon: false, glow: '#ff9524', base: '#2b9e4b', mid: '#16612b', dark: '#06240e', accent: '#ff6e1a', belly: '#ffe052', eye: '#ff3b30', speed: 92, turn: 92, girth: 1.1,  trait: 'Spotted Dino Frill & Twin Crest',  curr: 'coin', price: 25000 },
+                  { id: 'dilo',      name: 'Dilophosaurus',       tier: 'Epic',      pat: 'dilo',     hood: true,  rattle: false, horns: true,  dragon: false, glow: '#ff9524', base: '#2b9e4b', mid: '#16612b', dark: '#06240e', accent: '#ff6e1a', belly: '#ffe052', eye: '#ff3b30', speed: 92, turn: 92, girth: 1.1,  trait: 'Jurassic Dino Frill & Twin Crest', curr: 'coin', price: 25000 },
                   { id: 'obsidian',  name: 'Obsidian Adder',      tier: 'Epic',      pat: 'obsidian', hood: false, rattle: false, horns: true,  dragon: false, glow: '#be70ff', base: '#2c1f45', mid: '#170f29', dark: '#07040d', accent: '#cc80ff', belly: '#624b8a', eye: '#e099ff', speed: 92, turn: 91, girth: 1.08, trait: 'Jagged Crystal Spine Shards',      curr: 'coin', price: 32000 },
                   { id: 'bushmaster',name: 'Toxic Bushmaster',    tier: 'Epic',      pat: 'bush',     hood: false, rattle: false, horns: false, dragon: false, glow: '#75ff3b', base: '#337d19', mid: '#1a470b', dark: '#071a03', accent: '#96ff47', belly: '#b2f272', eye: '#e0ff38', speed: 91, turn: 90, girth: 1.14, trait: 'Radioactive Chevrons & Aura',      curr: 'coin', price: 38000 },
                   { id: 'taipan',    name: 'Sunburst Taipan',     tier: 'Epic',      pat: 'taipan',   hood: true,  rattle: false, horns: false, dragon: false, glow: '#ffb024', base: '#e68a19', mid: '#994b06', dark: '#331402', accent: '#fff48f', belly: '#ffe38f', eye: '#ffffff', speed: 96, turn: 92, girth: 1.04, trait: 'Solar Flare Hood & Sun-Rays',      curr: 'coin', price: 45000 },
-                  { id: 'skeleton',  name: 'Skeleton',            tier: 'Epic',      pat: 'skeleton', hood: false, rattle: false, horns: false, dragon: false, glow: '#d9f2ff', base: '#232830', mid: '#14171c', dark: '#07080a', accent: '#f2f7ff', belly: '#b8c4d4', eye: '#59f4ff', speed: 94, turn: 93, girth: 1.08, trait: 'Glowing Ribcage & Skull Face',     curr: 'coin', price: 50000 },
+                  { id: 'skeleton',  name: 'Skeleton',            tier: 'Epic',      pat: 'skeleton', hood: false, rattle: false, horns: false, dragon: false, glow: '#d9f2ff', base: '#232830', mid: '#14171c', dark: '#07080a', accent: '#f2f7ff', belly: '#b8c4d4', eye: '#59f4ff', speed: 94, turn: 93, girth: 1.08, trait: 'White Bone Skull & Ribcage',       curr: 'coin', price: 50000 },
                   { id: 'frost',     name: 'Frost Ice Viper',     tier: 'Legendary', pat: 'frost',    hood: false, rattle: false, horns: true,  dragon: false, glow: '#59ecff', base: '#7ee6ff', mid: '#2d9bc2', dark: '#092f40', accent: '#ffffff', belly: '#ccf7ff', eye: '#00f2ff', speed: 93, turn: 92, girth: 1.08, trait: 'Ice-Spike Ridge & Glacier Glow',   curr: 'dia',  price: 500 },
                   { id: 'titanoboa', name: 'Titanoboa',           tier: 'Legendary', pat: 'titan',    hood: false, rattle: false, horns: false, dragon: false, glow: '#ffad33', base: '#755330', mid: '#4d331a', dark: '#1c1107', accent: '#ebb55b', belly: '#a6845b', eye: '#ffad1d', speed: 87, turn: 86, girth: 1.3,  trait: 'Prehistoric Colossal Bone Armor',  curr: 'dia',  price: 650 },
-                  { id: 'plasma',    name: 'Plasma Cyber-Boa',    tier: 'Legendary', pat: 'plasma',   hood: false, rattle: false, horns: false, dragon: false, glow: '#ff38d4', base: '#3d1457', mid: '#1e082e', dark: '#0a0212', accent: '#ff4fe0', belly: '#852eb3', eye: '#00f7ff', speed: 94, turn: 94, girth: 1.12, trait: 'Neon Cyber Nodes & Energy Fins',   curr: 'dia',  price: 750 },
-                  { id: 'banshee',   name: 'Banshee',             tier: 'Legendary', pat: 'banshee',  hood: true,  rattle: false, horns: true,  dragon: false, glow: '#40f5ff', base: '#125a6e', mid: '#093442', dark: '#03131a', accent: '#80fbff', belly: '#69e8ff', eye: '#ffffff', speed: 96, turn: 95, girth: 1.12, trait: 'Ghostly Spectral Flames & Fins',   curr: 'dia',  price: 850 },
+                  { id: 'plasma',    name: 'Plasma Cyber-Boa',    tier: 'Legendary', pat: 'plasma',   hood: false, rattle: false, horns: false, dragon: false, glow: '#ff38d4', base: '#3d1457', mid: '#1e082e', dark: '#0a0212', accent: '#ff4fe0', belly: '#852eb3', eye: '#00f7ff', speed: 94, turn: 94, girth: 1.12, trait: 'Robotic LED Visor & Antennas',     curr: 'dia',  price: 750 },
+                  { id: 'banshee',   name: 'Banshee',             tier: 'Legendary', pat: 'banshee',  hood: true,  rattle: false, horns: true,  dragon: false, glow: '#40f5ff', base: '#125a6e', mid: '#093442', dark: '#03131a', accent: '#80fbff', belly: '#69e8ff', eye: '#ffffff', speed: 96, turn: 95, girth: 1.12, trait: 'Spectral Hood & Glowing Eyes',     curr: 'dia',  price: 850 },
                   { id: 'waterdrag', name: 'Water Dragon',        tier: 'Legendary', pat: 'd_sea',    hood: true,  rattle: false, horns: true,  dragon: true,  glow: '#38e8ff', base: '#1678b5', mid: '#0b4570', dark: '#03192e', accent: '#75f2ff', belly: '#9ceeff', eye: '#ffe647', speed: 96, turn: 94, girth: 1.18, trait: 'Oceanic Fins & River King',        curr: 'dia',  price: 1000 },
                   { id: 'inferno',   name: 'Inferno Dragon',      tier: 'Mythic',    pat: 'd_fire',   hood: false, rattle: false, horns: true,  dragon: true,  glow: '#ff511c', base: '#c92412', mid: '#750e05', dark: '#1f0402', accent: '#ffbf26', belly: '#ff701a', eye: '#ffee38', speed: 96, turn: 93, girth: 1.18, trait: 'Devil Horns & Blazing Magma Aura', curr: 'dia',  price: 1500 },
                   { id: 'jade',      name: 'Jade Imperial Dragon',tier: 'Mythic',    pat: 'd_jade',   hood: false, rattle: false, horns: true,  dragon: true,  glow: '#38ffad', base: '#11a170', mid: '#075c3f', dark: '#022417', accent: '#ffe354', belly: '#7ef5c5', eye: '#ffe64d', speed: 95, turn: 95, girth: 1.16, trait: 'Golden Antlers & Flowing Whiskers',curr: 'dia',  price: 1800 },
                   { id: 'leviathan', name: 'Shadow Leviathan',    tier: 'Mythic',    pat: 'd_sea',    hood: true,  rattle: false, horns: true,  dragon: true,  glow: '#7b59ff', base: '#1e2042', mid: '#0f1129', dark: '#04050f', accent: '#a875ff', belly: '#3c6082', eye: '#59f4ff', speed: 97, turn: 94, girth: 1.2,  trait: 'Abyssal Fins & Violet Bio-Glow',   curr: 'dia',  price: 2000 },
                   { id: 'emperor',   name: 'Emperor Dragon',      tier: 'Mythic',    pat: 'd_emp',    hood: false, rattle: false, horns: true,  dragon: true,  glow: '#ff9524', base: '#9e1919', mid: '#4a0909', dark: '#140202', accent: '#ffe047', belly: '#ffad33', eye: '#fff375', speed: 98, turn: 95, girth: 1.22, trait: 'Royal Gold Crown & Magma Plates',  curr: 'dia',  price: 2200 },
-                  { id: 'raijin',    name: 'Thunder Raijin',      tier: 'Mythic',    pat: 'd_thunder',hood: false, rattle: false, horns: true,  dragon: true,  glow: '#ffe647', base: '#1b427a', mid: '#0d2247', dark: '#040b1a', accent: '#ffec59', belly: '#69c9ff', eye: '#fff57d', speed: 100,turn: 96, girth: 1.18, trait: 'Lightning Spine • Ultimate Glow',  curr: 'dia',  price: 2500 }
+                  { id: 'raijin',    name: 'Thunder Raijin',      tier: 'Mythic',    pat: 'd_thunder',hood: false, rattle: false, horns: true,  dragon: true,  glow: '#ffe647', base: '#1b427a', mid: '#0d2247', dark: '#040b1a', accent: '#ffec59', belly: '#69c9ff', eye: '#fff57d', speed: 100,turn: 96, girth: 1.18, trait: 'Lightning Crown • Ultimate Glow',  curr: 'dia',  price: 2500 }
                 ];
 
                 const BIOMES = [
@@ -980,7 +977,7 @@ jobs:
 
                 let profile = (() => {
                   try {
-                    const raw = localStorage.getItem('serpent_wild_v10');
+                    const raw = localStorage.getItem('serpent_wild_v11');
                     if (!raw) return JSON.parse(JSON.stringify(DEFAULT_PROFILE));
                     const d = JSON.parse(raw);
                     const merged = {
@@ -995,7 +992,7 @@ jobs:
                   } catch (e) { return JSON.parse(JSON.stringify(DEFAULT_PROFILE)); }
                 })();
 
-                const saveProfile = () => { try { localStorage.setItem('serpent_wild_v10', JSON.stringify(profile)); } catch (e) {} };
+                const saveProfile = () => { try { localStorage.setItem('serpent_wild_v11', JSON.stringify(profile)); } catch (e) {} };
                 const getRank = lv => { let n = RANK_TIERS[0].name; for (const r of RANK_TIERS) if (lv >= r.lv) n = r.name; return n; };
                 const getXpNeed = lv => 180 + (lv - 1) * 90;
 
@@ -1060,7 +1057,8 @@ jobs:
                 let emojiIdx = 0;
 
                 const camera = { x: WORLD_CENTER, y: WORLD_CENTER, zoom: profile.settings.zoom, lookX: 0, lookY: 0, shake: 0 };
-                const safeZone = { active: true, cx: WORLD_CENTER, cy: WORLD_CENTER, r: ARENA_RADIUS, targetR: ARENA_RADIUS, stage: 1, timer: 40, shrinking: false };
+                // ULTRA-SLOW SAFE ZONE SYSTEM (85s initial wait, 3x slower shrink!)
+                const safeZone = { active: true, cx: WORLD_CENTER, cy: WORLD_CENTER, r: ARENA_RADIUS, targetR: ARENA_RADIUS, stage: 1, timer: 85, shrinking: false };
                 const matchStats = { kills: 0, prey: 0, maxLen: 0, rank: 1, reason: '' };
                 let globalTime = 0, dayCycle = 0, weatherRain = false, weatherTimer = 35, dropTimer = 20;
                 let lastFrame = 0, hudTick = 0, fpsCount = 0, fpsVal = 60, fpsTimer = 0;
@@ -1281,9 +1279,114 @@ jobs:
                   c.restore();
                 }
 
-                // 3D GLOSSY EXPRESSIVE HEAD RENDERER (SEAMLESS FUSION + LOOKING EYES + LIPS + FANGS)
+                // 24 COMPLETELY UNIQUE HEAD & FACE ARCHITECTURES (NO TWO SNAKES LOOK ALIKE!)
                 function drawSpeciesHead(c, sp, hr, alpha = 1, tongueExt = 0, jawOpen = 0, lookShift = 0) {
                   const pat = sp.pat;
+                  const pShift = clamp(lookShift, -1, 1) * hr * 0.08;
+
+                  // 1. SKELETON: TRUE WHITE BONE SKULL, HOLLOW SOCKETS, NOSE CAVITY & TEETH!
+                  if (pat === 'skeleton') {
+                    c.fillStyle = '#f2f7ff'; c.strokeStyle = '#5c6978'; c.lineWidth = 1.4;
+                    c.beginPath();
+                    c.moveTo(hr * 1.38, -hr * 0.28); c.lineTo(hr * 1.48, 0); c.lineTo(hr * 1.38, hr * 0.28);
+                    c.lineTo(hr * 0.85, hr * 0.45); c.quadraticCurveTo(hr * 0.3, hr * 1.05, -hr * 0.65, hr * 0.9);
+                    c.quadraticCurveTo(-hr * 1.05, 0, -hr * 0.65, -hr * 0.9); c.quadraticCurveTo(hr * 0.3, -hr * 1.05, hr * 0.85, -hr * 0.45);
+                    c.closePath(); c.fill(); c.stroke();
+                    // Exposed Jaw Teeth
+                    c.strokeStyle = '#232830'; c.lineWidth = 1.2;
+                    for (let tx = 0.88; tx <= 1.28; tx += 0.14) { c.beginPath(); c.moveTo(hr * tx, -hr * 0.32); c.lineTo(hr * tx, hr * 0.32); c.stroke(); }
+                    // Hollow Nose Cavity
+                    c.fillStyle = '#0c1017'; c.beginPath(); c.ellipse(hr * 0.92, 0, hr * 0.14, hr * 0.1, 0, 0, Math.PI * 2); c.fill();
+                    // Deep Hollow Eye Sockets with Glowing Cyan Core
+                    for (const s of [-1, 1]) {
+                      c.fillStyle = '#070a0f'; c.beginPath(); c.ellipse(hr * 0.28, s * hr * 0.46, hr * 0.34, hr * 0.26, s * 0.2, 0, Math.PI * 2); c.fill();
+                      c.fillStyle = '#59f4ff'; c.beginPath(); c.arc(hr * 0.34, s * hr * 0.46 + pShift, hr * 0.11, 0, Math.PI * 2); c.fill();
+                    }
+                    return;
+                  }
+
+                  // 2. PLASMA CYBER-BOA: METALLIC ROBOTIC VISOR & GLOWING CYAN LED BAR!
+                  if (pat === 'plasma') {
+                    // Cyber Antennas
+                    c.strokeStyle = '#ff4fe0'; c.lineWidth = 1.8;
+                    for (const s of [-1, 1]) {
+                      c.beginPath(); c.moveTo(-hr * 0.2, s * hr * 0.65); c.lineTo(-hr * 1.25, s * hr * 1.2); c.stroke();
+                      c.fillStyle = '#00f7ff'; c.beginPath(); c.arc(-hr * 1.25, s * hr * 1.2, hr * 0.14, 0, Math.PI * 2); c.fill();
+                    }
+                    // Angular Metallic Mech Head
+                    c.fillStyle = '#2c1142'; c.strokeStyle = '#ff4fe0'; c.lineWidth = 1.6;
+                    c.beginPath();
+                    c.moveTo(hr * 1.45, -hr * 0.25); c.lineTo(hr * 1.45, hr * 0.25); c.lineTo(hr * 0.55, hr * 0.92);
+                    c.lineTo(-hr * 0.85, hr * 0.82); c.lineTo(-hr * 1.0, 0); c.lineTo(-hr * 0.85, -hr * 0.82); c.lineTo(hr * 0.55, -hr * 0.92);
+                    c.closePath(); c.fill(); c.stroke();
+                    // Glowing Cyan Robotic Visor Strip
+                    c.fillStyle = '#00f7ff';
+                    c.beginPath(); c.moveTo(hr * 0.82, -hr * 0.62); c.quadraticCurveTo(hr * 1.05, 0, hr * 0.82, hr * 0.62);
+                    c.lineTo(hr * 0.42, hr * 0.72); c.quadraticCurveTo(hr * 0.65, 0, hr * 0.42, -hr * 0.72); c.closePath(); c.fill();
+                    c.fillStyle = '#ffffff'; c.fillRect(hr * 0.58, -hr * 0.35 + pShift, hr * 0.16, hr * 0.7);
+                    return;
+                  }
+
+                  // 3. TURBO RACER: GLOSSY RACING HELMET WITH DARK TINTED VISOR & STRIPE!
+                  if (pat === 'racer') {
+                    c.fillStyle = '#e82538'; c.strokeStyle = '#5c0710'; c.lineWidth = 1.4;
+                    c.beginPath(); c.ellipse(hr * 0.15, 0, hr * 1.2, hr * 0.96, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+                    // White Center Racing Stripe
+                    c.fillStyle = '#ffffff'; c.fillRect(-hr * 0.95, -hr * 0.18, hr * 2.1, hr * 0.36);
+                    // Glossy Dark Tinted Helmet Visor
+                    c.fillStyle = '#111621'; c.strokeStyle = '#ffe647'; c.lineWidth = 1.4;
+                    c.beginPath(); c.moveTo(hr * 0.92, -hr * 0.58); c.quadraticCurveTo(hr * 1.28, 0, hr * 0.92, hr * 0.58);
+                    c.lineTo(hr * 0.35, hr * 0.76); c.quadraticCurveTo(hr * 0.65, 0, hr * 0.35, -hr * 0.76); c.closePath(); c.fill(); c.stroke();
+                    // Visor Glint
+                    c.fillStyle = 'rgba(255,255,255,0.45)'; c.beginPath(); c.ellipse(hr * 0.82, -hr * 0.25, hr * 0.18, hr * 0.08, -0.4, 0, Math.PI * 2); c.fill();
+                    return;
+                  }
+
+                  // 4. SWAMP CROCO: LONG ALLIGATOR SNOUT WITH PROTRUDING WHITE TEETH!
+                  if (pat === 'croco') {
+                    // Protruding White Croc Teeth along snout sides
+                    c.fillStyle = '#ffffff';
+                    for (const s of [-1, 1]) {
+                      for (let tx = 0.55; tx <= 1.35; tx += 0.26) {
+                        c.beginPath(); c.moveTo(hr * tx, s * hr * 0.44); c.lineTo(hr * (tx + 0.08), s * hr * 0.68); c.lineTo(hr * (tx + 0.18), s * hr * 0.42); c.closePath(); c.fill();
+                      }
+                    }
+                    const cg = c.createRadialGradient(hr * 0.2, -hr * 0.2, 2, 0, 0, hr * 1.65);
+                    cg.addColorStop(0, '#36a844'); cg.addColorStop(0.7, '#195e23'); cg.addColorStop(1, '#07240c');
+                    c.fillStyle = cg; c.strokeStyle = '#051a08'; c.lineWidth = 1.4;
+                    c.beginPath();
+                    c.moveTo(hr * 1.68, -hr * 0.24); c.quadraticCurveTo(hr * 1.82, 0, hr * 1.68, hr * 0.24);
+                    c.lineTo(hr * 0.55, hr * 0.52); c.quadraticCurveTo(hr * 0.05, hr * 1.05, -hr * 0.85, hr * 0.85);
+                    c.quadraticCurveTo(-hr * 1.05, 0, -hr * 0.85, -hr * 0.85); c.quadraticCurveTo(hr * 0.05, -hr * 1.05, hr * 0.55, -hr * 0.52);
+                    c.closePath(); c.fill(); c.stroke();
+                    // Raised Snout Nostrils + Yellow Reptile Eyes
+                    c.fillStyle = '#071a0a'; c.beginPath(); c.arc(hr * 1.48, -hr * 0.16, hr * 0.09, 0, Math.PI * 2); c.arc(hr * 1.48, hr * 0.16, hr * 0.09, 0, Math.PI * 2); c.fill();
+                    for (const s of [-1, 1]) {
+                      c.fillStyle = '#ffea38'; c.beginPath(); c.ellipse(hr * 0.12, s * hr * 0.58, hr * 0.26, hr * 0.2, 0, 0, Math.PI * 2); c.fill();
+                      c.fillStyle = '#050505'; c.beginPath(); c.ellipse(hr * 0.16, s * hr * 0.58 + pShift, hr * 0.06, hr * 0.15, 0, 0, Math.PI * 2); c.fill();
+                    }
+                    return;
+                  }
+
+                  // 5. BANSHEE: GHOSTLY HOODED SPECTRAL FACE WITH ETHEREAL WISPS!
+                  if (pat === 'banshee') {
+                    c.fillStyle = 'rgba(64, 245, 255, 0.35)';
+                    for (const s of [-1, 1]) {
+                      c.beginPath(); c.moveTo(hr * 0.2, s * hr * 0.85); c.quadraticCurveTo(-hr * 0.6, s * hr * 1.55, -hr * 1.45, s * hr * 1.05);
+                      c.lineTo(-hr * 0.9, s * hr * 0.5); c.closePath(); c.fill();
+                    }
+                    c.fillStyle = '#0c3b4a'; c.strokeStyle = '#80fbff'; c.lineWidth = 1.5;
+                    c.beginPath(); c.moveTo(hr * 1.38, 0); c.quadraticCurveTo(hr * 0.7, -hr * 1.02, -hr * 0.85, -hr * 0.95);
+                    c.quadraticCurveTo(-hr * 1.15, 0, -hr * 0.85, hr * 0.95); c.quadraticCurveTo(hr * 0.7, hr * 1.02, hr * 1.38, 0); c.fill(); c.stroke();
+                    // Glowing Pure-White Spectral Eyes (No Pupils!)
+                    c.fillStyle = '#ffffff';
+                    for (const s of [-1, 1]) {
+                      c.beginPath(); c.moveTo(hr * 0.62, s * hr * 0.32); c.lineTo(hr * 0.22, s * hr * 0.68); c.lineTo(hr * 0.12, s * hr * 0.28); c.closePath(); c.fill();
+                    }
+                    return;
+                  }
+
+                  // 6. ALL OTHER REALISTIC REPTILES, DINOSAURS & MYTHIC DRAGONS
                   if (jawOpen > 0.12) {
                     const ext = jawOpen * hr * 0.42;
                     c.fillStyle = pat === 'mamba' ? '#12101a' : '#6e1620';
@@ -1295,55 +1398,55 @@ jobs:
                   }
                   if (tongueExt > 0.05 && jawOpen < 0.2) {
                     const tl = hr * 1.08 + tongueExt * hr * 1.1;
-                    c.strokeStyle = (sp.id === 'frost' || sp.id === 'banshee') ? '#70f3ff' : '#e82534'; c.lineWidth = Math.max(1.5, hr * 0.1); c.lineCap = 'round';
+                    c.strokeStyle = sp.id === 'frost' ? '#70f3ff' : '#e82534'; c.lineWidth = Math.max(1.5, hr * 0.1); c.lineCap = 'round';
                     c.beginPath(); c.moveTo(hr * 0.92, 0); c.lineTo(tl, 0);
                     c.lineTo(tl + hr * 0.34, -hr * 0.24); c.moveTo(tl, 0); c.lineTo(tl + hr * 0.34, hr * 0.24); c.stroke();
                   }
 
+                  // Unique Crests / Horns / Antlers / Frills / Crowns
                   if (pat === 'd_jade') {
                     c.strokeStyle = '#ffd84d'; c.lineWidth = Math.max(1.8, hr * 0.13); c.lineCap = 'round';
                     for (const s of [-1, 1]) {
-                      c.beginPath(); c.moveTo(-hr * 0.2, s * hr * 0.55); c.lineTo(-hr * 1.22, s * hr * 1.15); c.moveTo(-hr * 0.72, s * hr * 0.85); c.lineTo(-hr * 1.02, s * hr * 1.38); c.stroke();
+                      c.beginPath(); c.moveTo(-hr * 0.2, s * hr * 0.55); c.lineTo(-hr * 1.25, s * hr * 1.18); c.moveTo(-hr * 0.72, s * hr * 0.85); c.lineTo(-hr * 1.02, s * hr * 1.4); c.stroke();
                       const ww = Math.sin(globalTime * 7) * hr * 0.12;
                       c.lineWidth = Math.max(1.2, hr * 0.08);
                       c.beginPath(); c.moveTo(hr * 0.88, s * hr * 0.34); c.quadraticCurveTo(hr * 0.45, s * hr * 1.15 + ww, -hr * 0.3, s * hr * 1.38 - ww); c.stroke();
                       c.lineWidth = Math.max(1.8, hr * 0.13);
                     }
-                  } else if (pat === 'd_sea' || pat === 'plasma' || pat === 'banshee' || pat === 'dilo') {
-                    c.fillStyle = pat === 'dilo' ? 'rgba(255,110,26,0.75)' : (pat === 'plasma' ? 'rgba(255,71,222,0.58)' : 'rgba(69,240,255,0.58)');
-                    c.strokeStyle = sp.accent; c.lineWidth = 1.3;
+                  } else if (pat === 'd_sea' || pat === 'dilo') {
+                    c.fillStyle = pat === 'dilo' ? 'rgba(255,110,26,0.82)' : 'rgba(69,240,255,0.58)';
+                    c.strokeStyle = sp.accent; c.lineWidth = 1.4;
                     for (const s of [-1, 1]) {
-                      c.beginPath(); c.moveTo(hr * 0.1, s * hr * 0.8); c.lineTo(-hr * 0.85, s * hr * 1.48); c.lineTo(-hr * 1.1, s * hr * 0.6); c.closePath(); c.fill(); c.stroke();
+                      c.beginPath(); c.moveTo(hr * 0.12, s * hr * 0.8); c.lineTo(-hr * 0.85, s * hr * 1.52); c.lineTo(-hr * 1.12, s * hr * 0.58); c.closePath(); c.fill(); c.stroke();
                     }
-                  } else if (pat === 'd_emp') {
-                    c.fillStyle = '#ffe45c'; c.strokeStyle = '#8a5404'; c.lineWidth = 1;
-                    c.beginPath(); c.moveTo(-hr * 0.25, -hr * 0.65); c.lineTo(-hr * 1.05, -hr * 0.98); c.lineTo(-hr * 0.58, -hr * 0.26);
-                    c.lineTo(-hr * 1.25, 0); c.lineTo(-hr * 0.58, hr * 0.26); c.lineTo(-hr * 1.05, hr * 0.98); c.lineTo(-hr * 0.25, hr * 0.65); c.closePath(); c.fill(); c.stroke();
+                  } else if (pat === 'd_emp' || pat === 'd_thunder') {
+                    // Royal Golden Crown / Electric Crown
+                    c.fillStyle = '#ffe45c'; c.strokeStyle = '#8a5404'; c.lineWidth = 1.1;
+                    c.beginPath(); c.moveTo(-hr * 0.22, -hr * 0.68); c.lineTo(-hr * 1.1, -hr * 1.05); c.lineTo(-hr * 0.55, -hr * 0.28);
+                    c.lineTo(-hr * 1.32, 0); c.lineTo(-hr * 0.55, hr * 0.28); c.lineTo(-hr * 1.1, hr * 1.05); c.lineTo(-hr * 0.22, hr * 0.68); c.closePath(); c.fill(); c.stroke();
                   } else if (sp.dragon) {
-                    c.fillStyle = sp.dark; c.strokeStyle = sp.accent; c.lineWidth = 1.4;
+                    c.fillStyle = sp.dark; c.strokeStyle = sp.accent; c.lineWidth = 1.5;
                     for (const s of [-1, 1]) {
-                      c.beginPath(); c.moveTo(-hr * 0.15, s * hr * 0.6); c.quadraticCurveTo(-hr * 0.95, s * hr * 1.28, -hr * 1.55, s * hr * 1.08);
+                      c.beginPath(); c.moveTo(-hr * 0.15, s * hr * 0.6); c.quadraticCurveTo(-hr * 0.95, s * hr * 1.32, -hr * 1.6, s * hr * 1.1);
                       c.quadraticCurveTo(-hr * 0.9, s * hr * 0.88, -hr * 0.55, s * hr * 0.42); c.closePath(); c.fill(); c.stroke();
                     }
                   }
 
                   const hg = c.createRadialGradient(hr * 0.18, -hr * 0.22, 1, 0, 0, hr * 1.48);
-                  hg.addColorStop(0, pat === 'skeleton' ? '#f5f9ff' : sp.base);
-                  hg.addColorStop(0.68, pat === 'skeleton' ? '#cad6e6' : sp.mid);
-                  hg.addColorStop(1, pat === 'skeleton' ? '#6d7a8c' : sp.dark);
+                  hg.addColorStop(0, sp.base); hg.addColorStop(0.68, sp.mid); hg.addColorStop(1, sp.dark);
                   c.fillStyle = hg;
                   c.beginPath();
                   if (pat === 'viper' || pat === 'obsidian' || pat === 'frost') {
-                    c.moveTo(hr * 1.4, 0); c.quadraticCurveTo(hr * 0.8, -hr * 0.78, hr * 0.05, -hr * 1.12);
-                    c.quadraticCurveTo(-hr * 0.75, -hr * 1.04, -hr * 0.92, -hr * 0.74); c.quadraticCurveTo(-hr * 1.05, 0, -hr * 0.92, hr * 0.74);
-                    c.quadraticCurveTo(-hr * 0.75, hr * 1.04, hr * 0.05, hr * 1.12); c.quadraticCurveTo(hr * 0.8, hr * 0.78, hr * 1.4, 0);
-                  } else if (sp.dragon || pat === 'titan' || pat === 'croco') {
+                    c.moveTo(hr * 1.4, 0); c.quadraticCurveTo(hr * 0.8, -hr * 0.78, hr * 0.05, -hr * 1.15);
+                    c.quadraticCurveTo(-hr * 0.75, -hr * 1.05, -hr * 0.92, -hr * 0.74); c.quadraticCurveTo(-hr * 1.05, 0, -hr * 0.92, hr * 0.74);
+                    c.quadraticCurveTo(-hr * 0.75, hr * 1.05, hr * 0.05, hr * 1.15); c.quadraticCurveTo(hr * 0.8, hr * 0.78, hr * 1.4, 0);
+                  } else if (sp.dragon || pat === 'titan') {
                     c.moveTo(hr * 1.5, -hr * 0.22); c.quadraticCurveTo(hr * 1.66, 0, hr * 1.5, hr * 0.22);
-                    c.lineTo(hr * 0.62, hr * 0.74); c.quadraticCurveTo(-hr * 0.2, hr * 1.08, -hr * 0.88, hr * 0.82);
-                    c.quadraticCurveTo(-hr * 1.08, 0, -hr * 0.88, -hr * 0.82); c.quadraticCurveTo(-hr * 0.2, -hr * 1.08, hr * 0.62, -hr * 0.74);
+                    c.lineTo(hr * 0.62, hr * 0.76); c.quadraticCurveTo(-hr * 0.2, hr * 1.1, -hr * 0.88, hr * 0.82);
+                    c.quadraticCurveTo(-hr * 1.08, 0, -hr * 0.88, -hr * 0.82); c.quadraticCurveTo(-hr * 0.2, -hr * 1.1, hr * 0.62, -hr * 0.76);
                   } else if (pat === 'mamba') {
-                    c.moveTo(hr * 1.5, 0); c.lineTo(hr * 0.7, -hr * 0.66); c.lineTo(-hr * 0.45, -hr * 0.9);
-                    c.lineTo(-hr * 0.95, -hr * 0.65); c.lineTo(-hr * 0.95, hr * 0.65); c.lineTo(-hr * 0.45, hr * 0.9); c.lineTo(hr * 0.7, hr * 0.66);
+                    c.moveTo(hr * 1.52, 0); c.lineTo(hr * 0.7, -hr * 0.66); c.lineTo(-hr * 0.45, -hr * 0.92);
+                    c.lineTo(-hr * 0.95, -hr * 0.65); c.lineTo(-hr * 0.95, hr * 0.65); c.lineTo(-hr * 0.45, hr * 0.92); c.lineTo(hr * 0.7, hr * 0.66);
                   } else {
                     c.moveTo(hr * 1.4, 0); c.quadraticCurveTo(hr * 0.92, -hr * 0.66, hr * 0.14, -hr * 0.95);
                     c.quadraticCurveTo(-hr * 0.72, -hr * 0.98, -hr * 0.9, -hr * 0.78); c.quadraticCurveTo(-hr * 1.04, 0, -hr * 0.9, hr * 0.78);
@@ -1364,7 +1467,7 @@ jobs:
                   if (!sp.dragon && sp.horns) {
                     c.fillStyle = sp.accent;
                     for (const s of [-1, 1]) {
-                      c.beginPath(); c.moveTo(hr * 0.36, s * hr * 0.54); c.lineTo(hr * 0.02, s * hr * 1.16); c.lineTo(-hr * 0.14, s * hr * 0.54); c.closePath(); c.fill();
+                      c.beginPath(); c.moveTo(hr * 0.36, s * hr * 0.54); c.lineTo(hr * 0.02, s * hr * 1.18); c.lineTo(-hr * 0.14, s * hr * 0.54); c.closePath(); c.fill();
                     }
                   }
 
@@ -1373,13 +1476,12 @@ jobs:
                   c.fillStyle = 'rgba(0,0,0,0.82)';
                   c.beginPath(); c.arc(hr * 1.08, -hr * 0.2, Math.max(1.2, hr * 0.08), 0, Math.PI * 2); c.arc(hr * 1.08, hr * 0.2, Math.max(1.2, hr * 0.08), 0, Math.PI * 2); c.fill();
 
-                  const pShift = clamp(lookShift, -1, 1) * hr * 0.07;
                   for (const s of [-1, 1]) {
                     c.fillStyle = 'rgba(0,0,0,0.65)';
                     c.beginPath(); c.ellipse(hr * 0.38, s * hr * 0.52, hr * 0.34, hr * 0.25, s * 0.2, 0, Math.PI * 2); c.fill();
-                    c.fillStyle = pat === 'skeleton' ? '#090d14' : sp.eye;
+                    c.fillStyle = sp.eye;
                     c.beginPath(); c.ellipse(hr * 0.42, s * hr * 0.5, hr * 0.28, hr * 0.21, s * 0.2, 0, Math.PI * 2); c.fill();
-                    c.fillStyle = pat === 'skeleton' ? '#59f4ff' : '#050505';
+                    c.fillStyle = '#050505';
                     c.beginPath(); c.ellipse(hr * 0.47, s * hr * 0.5 + pShift, hr * 0.08, hr * 0.17, 0, 0, Math.PI * 2); c.fill();
                     c.fillStyle = 'rgba(255,255,255,0.95)';
                     c.beginPath(); c.arc(hr * 0.36, s * hr * 0.44, hr * 0.075, 0, Math.PI * 2); c.fill();
@@ -1417,18 +1519,17 @@ jobs:
                     for (let i = 0; i < cnt; i++) this.segments.push({ x: x - Math.cos(this.angle) * i * 5.2, y: y - Math.sin(this.angle) * i * 5.2 });
                   }
 
-                  // SMALLER SLEEK STARTING SNAKE THAT GROWS BIG AS YOU EAT!
                   getRadius() { return clamp(9.5 + Math.pow(this.mass, 0.42) * 1.22, 9.5, 29); }
                   getSegCount() { return Math.min(72, Math.floor(14 + this.mass * 0.52)); }
                   getLen() { return Math.floor(this.mass * 4.5); }
                   isCamo() { return this.camoTimer > 0 || this.inBush; }
 
-                  // THICKER MUSCULAR ROUNDED TAIL (0.38 AT TIP!)
+                  // WORMS ZONE PLUMP ROUNDED TAIL (0.68 THICKNESS ALL THE WAY TO THE END!)
                   getHalfWidth(i, len, baseR) {
                     const t = i / Math.max(1, len - 1);
-                    let pw = t < 0.08 ? lerp(0.9, 1.0, t / 0.08)
-                           : t < 0.68 ? (1.0 + Math.sin(((t - 0.08) / 0.6) * Math.PI) * 0.12)
-                           : lerp(1.0, 0.38, Math.pow((t - 0.68) / 0.32, 1.05));
+                    let pw = t < 0.08 ? lerp(0.92, 1.0, t / 0.08)
+                           : t < 0.78 ? (1.0 + Math.sin(((t - 0.08) / 0.7) * Math.PI) * 0.1)
+                           : lerp(1.0, 0.68, (t - 0.78) / 0.22);
                     let hood = 1.0;
                     if (this.species.hood && this.hoodFlare > 0.04 && i >= 1 && i <= 7) {
                       hood = 1 + Math.sin(clamp((i - 0.5) / 6.5, 0, 1) * Math.PI) * 0.85 * this.hoodFlare;
@@ -1543,7 +1644,7 @@ jobs:
                     const r = this.getRadius();
                     if (dist(this.x, this.y, WORLD_CENTER, WORLD_CENTER) + r > ARENA_RADIUS) { killSnake(this, null, 'Jungle Cliff'); return; }
                     if (safeZone.active && dist(this.x, this.y, safeZone.cx, safeZone.cy) > safeZone.r) {
-                      this.mass -= (4.0 + (safeZone.stage - 1) * 1.8) * dt;
+                      this.mass -= (2.5 + (safeZone.stage - 1) * 1.2) * dt;
                       if (this.mass < 9) { killSnake(this, null, 'Storm Zone'); return; }
                     }
 
@@ -1598,6 +1699,7 @@ jobs:
                       pts[i] = { x: seg.x + nx * wave, y: seg.y + ny * wave, ang, nx, ny, w: this.getHalfWidth(i, len, baseR) };
                     }
 
+                    // FULL SEMICIRCULAR ROUNDED TAIL CAP (WORMS ZONE STYLE!)
                     const traceBody = (ox = 0, oy = 0, sw = 1) => {
                       c.beginPath();
                       const p0 = pts[0];
@@ -1609,10 +1711,7 @@ jobs:
                         c.quadraticCurveTo(ax, ay, (ax + bx) * 0.5, (ay + by) * 0.5);
                       }
                       const tl = pts[len - 1];
-                      const tx = tl.x - Math.cos(tl.ang) * tl.w * 1.05 + ox;
-                      const ty = tl.y - Math.sin(tl.ang) * tl.w * 1.05 + oy;
-                      c.quadraticCurveTo(tx + tl.nx * tl.w * 0.65, ty + tl.ny * tl.w * 0.65, tx, ty);
-                      c.quadraticCurveTo(tx - tl.nx * tl.w * 0.65, ty - tl.ny * tl.w * 0.65, tl.x - tl.nx * tl.w * sw + ox, tl.y - tl.ny * tl.w * sw + oy);
+                      c.arc(tl.x + ox, tl.y + oy, tl.w * sw, tl.ang + Math.PI / 2, tl.ang + Math.PI * 1.5, false);
                       for (let i = len - 2; i >= 1; i--) {
                         const a = pts[i], b = pts[i - 1];
                         const ax = a.x - a.nx * a.w * sw + ox, ay = a.y - a.ny * a.w * sw + oy;
@@ -1749,7 +1848,6 @@ jobs:
                       c.strokeStyle = 'rgba(77, 226, 240, 0.85)'; c.lineWidth = 2.5;
                       c.beginPath(); c.arc(0, 0, hr * 1.85, 0, Math.PI * 2); c.stroke();
                     }
-                    // ORANGE FORWARD STEERING ARROW FOR PLAYER (LIKE VIDEO!)
                     if (this.isPlayer && showLabel) {
                       c.fillStyle = 'rgba(255, 148, 36, 0.85)';
                       c.beginPath(); c.moveTo(hr * 2.55, 0); c.lineTo(hr * 2.0, -hr * 0.42); c.lineTo(hr * 2.15, 0); c.lineTo(hr * 2.0, hr * 0.42); c.closePath(); c.fill();
@@ -1782,15 +1880,12 @@ jobs:
                   } else {
                     pushKillFeed(`${victim.name} (${cause})`);
                   }
-
-                  // In Infinity Mode, respawn AI snakes so arena stays lively!
                   if (!victim.isPlayer && profile.selectedMode === 'infinity') {
                     const sp = SPECIES[Math.floor(Math.random() * SPECIES.length)];
                     const pt = randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 340);
                     snakes.push(new Snake({ name: victim.name, species: sp, x: pt.x, y: pt.y, mass: rand(14, 24) }));
                     return;
                   }
-
                   const aliveCount = snakes.filter(s => s.alive).length;
                   if (victim.isPlayer) {
                     matchStats.rank = aliveCount + 1;
@@ -1849,8 +1944,8 @@ jobs:
                   snakes = []; preyList = []; meatList = []; potions = []; feastDrops = []; projectiles = []; particles = []; floatTexts = [];
                   safeZone.active = profile.selectedMode === 'br';
                   safeZone.cx = WORLD_CENTER; safeZone.cy = WORLD_CENTER;
-                  safeZone.r = ARENA_RADIUS; safeZone.targetR = ARENA_RADIUS * 0.72;
-                  safeZone.stage = 1; safeZone.timer = 40; safeZone.shrinking = false;
+                  safeZone.r = ARENA_RADIUS; safeZone.targetR = ARENA_RADIUS * 0.78;
+                  safeZone.stage = 1; safeZone.timer = 85; safeZone.shrinking = false;
                   dayCycle = 0; weatherRain = false; weatherTimer = 36; dropTimer = profile.selectedMode === 'treasure' ? 6 : 20;
 
                   matchStats.kills = 0; matchStats.prey = 0; matchStats.maxLen = 72; matchStats.rank = TOTAL_SNAKES; matchStats.reason = '';
@@ -1940,15 +2035,16 @@ jobs:
                     matchStats.maxLen = Math.max(matchStats.maxLen, player.getLen());
                   }
 
+                  // ULTRA-SLOW SAFE ZONE SYSTEM
                   if (safeZone.active) {
                     safeZone.timer -= dt;
                     if (!safeZone.shrinking && safeZone.timer <= 0) {
-                      safeZone.shrinking = true; safeZone.timer = 26;
-                      safeZone.targetR = Math.max(550, safeZone.r * 0.65);
+                      safeZone.shrinking = true; safeZone.timer = 65;
+                      safeZone.targetR = Math.max(600, safeZone.r * 0.72);
                     } else if (safeZone.shrinking) {
-                      safeZone.r = Math.max(safeZone.targetR, safeZone.r - (ARENA_RADIUS * 0.013) * dt);
+                      safeZone.r = Math.max(safeZone.targetR, safeZone.r - (ARENA_RADIUS * 0.0042) * dt);
                       if (safeZone.timer <= 0 || safeZone.r <= safeZone.targetR) {
-                        safeZone.shrinking = false; safeZone.stage = Math.min(6, safeZone.stage + 1); safeZone.timer = 32;
+                        safeZone.shrinking = false; safeZone.stage = Math.min(6, safeZone.stage + 1); safeZone.timer = 75;
                       }
                     }
                   }
@@ -2302,7 +2398,6 @@ jobs:
                   for (const ft of floatTexts) { ctx.globalAlpha = clamp(ft.life / ft.maxLife, 0, 1); ctx.fillStyle = ft.color; ctx.fillText(ft.text, ft.x, ft.y); }
                   ctx.restore();
 
-                  // Sunlit Jungle Atmosphere / Dusk / Night
                   if (dayCycle < 48 && profile.settings.gfx === 'ultra') {
                     const sg = ctx.createLinearGradient(0, 0, appW * 0.6, appH * 0.7);
                     sg.addColorStop(0, 'rgba(255,245,180,0.08)'); sg.addColorStop(1, 'rgba(0,0,0,0)');
@@ -2420,7 +2515,6 @@ jobs:
                     <div class="stat-box"><div class="stat-val">${profile.stats.kills}</div><div class="stat-lbl">Kills</div></div>
                     <div class="stat-box"><div class="stat-val">${profile.stats.bestLength}</div><div class="stat-lbl">Max Wt</div></div>`;
 
-                  // QUICK-USE POTIONS SHOP
                   const pg = document.getElementById('potionShopGrid'); pg.innerHTML = '';
                   POTION_TYPES.forEach(po => {
                     const cnt = profile.potionInv[po.id] || 0;
@@ -2454,7 +2548,6 @@ jobs:
                     ug.appendChild(card);
                   });
 
-                  // ARENA DECOR (FOOD STYLES)
                   const fg = document.getElementById('foodStyleGrid'); fg.innerHTML = '';
                   FOOD_STYLES.forEach(fs => {
                     const sel = profile.selectedFood === fs.id;
@@ -2464,7 +2557,6 @@ jobs:
                     fg.appendChild(card);
                   });
 
-                  // ACHIEVEMENTS / TROPHIES
                   const ag = document.getElementById('achGrid'); ag.innerHTML = '';
                   ACHIEVEMENTS.forEach(a => {
                     const cur = profile.stats[a.stat] || 0;
@@ -2538,7 +2630,6 @@ jobs:
                   Sound.click();
                 }
 
-                // Quick-Use Potion Buttons In-Game
                 document.querySelectorAll('[data-qp]').forEach(btn => {
                   btn.addEventListener('click', () => {
                     const pid = btn.dataset.qp;
@@ -2552,7 +2643,6 @@ jobs:
                   });
                 });
 
-                // Emoji Reaction Button
                 document.getElementById('hudEmojiBtn').addEventListener('click', () => {
                   if (!player || !player.alive) return;
                   const em = EMOJIS[emojiIdx % EMOJIS.length]; emojiIdx++;
@@ -2583,7 +2673,6 @@ jobs:
                   saveProfile(); Sound.buy(); renderProfileModal();
                 });
 
-                // BUTTON-ONLY SPLASH ENTRY
                 document.getElementById('btnTapEnter').addEventListener('click', e => {
                   e.stopPropagation();
                   if (splashEntered) return;
@@ -2743,7 +2832,7 @@ jobs:
           </body>
           </html>
           GAMEHTML
-
+       
       - name: Generate Release Signing Keystore
         run: |
           keytool -genkeypair -v \
