@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>SERPENT WILD: APEX — 50-Snake Battle Royale</title>
+  <style>
+    :root {
+      --bg-dark: #070d08;
+      --panel-bg: rgba(10, 18, 12, 0.88);
+      --panel-border: rgba(164, 224, 124, 0.3);
+      --gold: #f6c445;
+      --green: #7ce846;
+      --cyan: #4de2f0;
+      --danger: #ff4b3a;
+      --text-main: #f2f8f0;
+      --text-muted: #98b395;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg-dark); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    #gameCanvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 1; touch-action: none; }
+    button, input { touch-action: manipulation; font-family: inherit; }
+    .glass { background: var(--panel-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--panel-border); box-shadow: 0 8px 24px rgba(0,0,0,0.55); }
+    .btn-gold {
+      border: none; border-radius: 15px; padding: 14px 26px;
+      background: linear-gradient(135deg, #ffe370 0%, #f5b324 52%, #c9770c 100%);
+      color: #1c1202; font-size: 15px; font-weight: 900; letter-spacing: 1.4px; text-transform: uppercase;
+      cursor: pointer; box-shadow: 0 8px 24px rgba(245,179,36,0.48), inset 0 2px 3px rgba(255,255,255,0.6);
+    }
+    .btn-gold:active { transform: scale(0.95); }
+    .btn-ghost {
+      border: 1px solid rgba(255,255,255,0.22); border-radius: 14px; padding: 12px 18px;
+      background: rgba(255,255,255,0.08); color: #dcead7; font-size: 13px; font-weight: 800; text-transform: uppercase; cursor: pointer;
+    }
+
+    /* 1. SPLASH SCREEN */
+    #splashScreen {
+      position: fixed; inset: 0; z-index: 120; display: flex; flex-direction: column;
+      align-items: center; justify-content: space-between;
+      padding: max(22px, env(safe-area-inset-top)) 20px max(110px, calc(env(safe-area-inset-bottom) + 95px));
+      background: radial-gradient(circle at 50% 38%, rgba(28, 60, 26, 0.9), rgba(6, 11, 7, 0.99) 78%);
+      cursor: pointer; transition: opacity 0.4s ease;
+    }
+    #splashScreen.fade-out { opacity: 0; pointer-events: none; }
+    .studio-brand { font-size: 11.5px; font-weight: 900; letter-spacing: 5px; color: #b7d9a7; text-transform: uppercase; }
+    .splash-hero { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; margin: auto 0; }
+    .splash-crest {
+      width: 82px; height: 82px; border-radius: 22px;
+      background: linear-gradient(145deg, rgba(124,232,70,0.22), rgba(246,196,69,0.14));
+      border: 2px solid rgba(246,196,69,0.62); display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 42px rgba(124,232,70,0.3); animation: pulse 2.2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    .splash-title {
+      font-size: clamp(28px, 6.5vw, 50px); font-weight: 900; letter-spacing: 3px; line-height: 1.08;
+      background: linear-gradient(180deg, #fffbe0 0%, #f6c445 52%, #a66912 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .splash-subtitle { font-size: 11.5px; font-weight: 900; letter-spacing: 3.5px; color: var(--green); text-transform: uppercase; }
+    #tapEnterWrap { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 340px; }
+    #btnTapEnter { width: 100%; padding: 16px 24px; font-size: 15.5px; letter-spacing: 1.8px; animation: pulse 1.9s ease-in-out infinite; }
+    #loaderWrap { display: none; width: 100%; max-width: 420px; flex-direction: column; gap: 8px; }
+    .loader-row { display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; color: #d6ead0; }
+    .loader-bar { width: 100%; height: 10px; border-radius: 999px; background: rgba(255,255,255,0.1); border: 1px solid rgba(246,196,69,0.45); overflow: hidden; padding: 1px; }
+    #loaderFill { width: 0%; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #5ed128, #a7f554, #f6c445); transition: width 0.12s linear; }
+    #loaderTip { font-size: 11px; color: var(--text-muted); text-align: center; }
+
+    /* 2. LOBBY */
+    #lobbyScreen { position: fixed; inset: 0; z-index: 30; display: none; pointer-events: none; }
+    #lobbyTopBar { position: absolute; top: max(10px, env(safe-area-inset-top)); left: 12px; right: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    #profileBadge { pointer-events: auto; display: flex; align-items: center; gap: 9px; padding: 6px 12px 6px 6px; border-radius: 14px; cursor: pointer; }
+    .avatar-box { width: 38px; height: 38px; border-radius: 11px; background: linear-gradient(145deg,#2d4f27,#132211); border: 2px solid var(--gold); display: flex; align-items: center; justify-content: center; font-size: 20px; position: relative; }
+    .lvl-tag { position: absolute; bottom: -5px; right: -5px; background: linear-gradient(135deg,#ffe26e,#c98314); color: #171002; font-size: 8.5px; font-weight: 900; padding: 1px 4px; border-radius: 5px; }
+    .top-right-tools { pointer-events: auto; display: flex; align-items: center; gap: 6px; }
+    .curr-pill { display: flex; align-items: center; gap: 4px; padding: 6px 9px; border-radius: 11px; font-size: 11.5px; font-weight: 900; }
+    .tool-btn { pointer-events: auto; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #edf7e8; font-size: 15px; cursor: pointer; }
+    #lobbyRail { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 7px; pointer-events: auto; }
+    .rail-item { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 12px; color: #ebf5e7; font-size: 11px; font-weight: 800; text-transform: uppercase; cursor: pointer; }
+    #showcasePill { position: absolute; bottom: max(18px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); padding: 7px 14px; border-radius: 999px; display: flex; align-items: center; gap: 8px; pointer-events: auto; cursor: pointer; white-space: nowrap; max-width: 92vw; overflow: hidden; }
+    #startCluster { position: absolute; bottom: max(16px, env(safe-area-inset-bottom)); right: 14px; display: flex; flex-direction: column; align-items: flex-end; gap: 7px; pointer-events: auto; }
+    .mode-pill { display: flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 11px; font-size: 11px; font-weight: 800; cursor: pointer; }
+    .mode-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+    #btnStartMatch { width: 186px; height: 52px; }
+    @media (max-width: 680px) {
+      #showcasePill { bottom: 132px; font-size: 10.5px; }
+      #startCluster { left: 14px; right: 14px; align-items: center; bottom: 22px; }
+      #btnStartMatch { width: 100%; max-width: 300px; }
+      #lobbyRail { top: 44%; }
+      .rail-item span:last-child { display: none; }
+      .rail-item { padding: 10px 11px; font-size: 16px; }
+    }
+
+    /* MATCHMAKING & MODALS */
+    #matchmakingOverlay, .modal-backdrop { position: fixed; inset: 0; z-index: 80; display: none; align-items: center; justify-content: center; padding: 12px; background: rgba(5,10,6,0.82); backdrop-filter: blur(8px); }
+    #matchmakingOverlay.open, .modal-backdrop.open { display: flex; }
+    .mm-card { padding: 24px 28px; border-radius: 20px; text-align: center; max-width: 340px; width: 90%; }
+    .mm-spin { width: 46px; height: 46px; margin: 0 auto 12px; border-radius: 50%; border: 4px solid rgba(246,196,69,0.22); border-top-color: var(--gold); animation: spin 0.72s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .modal-box { width: 100%; max-width: 780px; max-height: 88vh; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; background: linear-gradient(165deg, rgba(16,27,17,0.98), rgba(9,15,10,0.99)); border: 1px solid rgba(168,222,128,0.34); }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .modal-title { font-size: 14.5px; font-weight: 900; letter-spacing: 1.3px; text-transform: uppercase; color: var(--gold); }
+    .close-btn { width: 34px; height: 34px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; font-size: 16px; cursor: pointer; }
+    .modal-tabs { display: flex; gap: 6px; padding: 8px 14px; background: rgba(0,0,0,0.22); overflow-x: auto; }
+    .tab-btn { padding: 7px 12px; border-radius: 10px; border: 1px solid transparent; background: rgba(255,255,255,0.06); color: var(--text-muted); font-size: 11px; font-weight: 800; text-transform: uppercase; white-space: nowrap; cursor: pointer; }
+    .tab-btn.active { background: rgba(246,196,69,0.22); border-color: var(--gold); color: #fff; }
+    .modal-body { padding: 14px 16px; overflow-y: auto; flex: 1; }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+    .section-lbl { font-size: 10.5px; font-weight: 800; letter-spacing: 1.1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 7px; }
+    .text-input { width: 100%; padding: 8px 11px; border-radius: 10px; border: 1px solid rgba(168,222,128,0.36); background: rgba(6,12,7,0.85); color: #fff; font-size: 14px; font-weight: 800; outline: none; }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .chip { padding: 6px 11px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.06); color: #dcead7; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .chip.selected { border-color: var(--gold); background: rgba(246,196,69,0.24); color: #fff; }
+    .armory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+    .card-item { padding: 11px; border-radius: 14px; background: rgba(255,255,255,0.04); border: 2px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 6px; cursor: pointer; }
+    .card-item.selected { border-color: var(--gold); background: rgba(246,196,69,0.1); }
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(95px, 1fr)); gap: 8px; margin-bottom: 12px; }
+    .stat-box { padding: 9px; border-radius: 12px; background: rgba(0,0,0,0.34); border: 1px solid rgba(255,255,255,0.08); text-align: center; }
+    .stat-val { font-size: 17px; font-weight: 900; color: var(--green); }
+    .stat-lbl { font-size: 9px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-top: 2px; }
+    .setting-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); margin-bottom: 8px; gap: 10px; }
+    .xp-track { width: 100%; height: 8px; border-radius: 999px; background: rgba(255,255,255,0.1); overflow: hidden; margin-top: 4px; }
+    .xp-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #62de3a, #f6c445); }
+
+    /* 3. IN-GAME HUD */
+    #hud { position: fixed; inset: 0; z-index: 20; display: none; pointer-events: none; }
+    #stormVignette { position: absolute; inset: 0; box-shadow: inset 0 0 90px rgba(255,48,36,0.72); opacity: 0; transition: opacity 0.25s; }
+    #hudTopLeft { position: absolute; top: max(10px, env(safe-area-inset-top)); left: 10px; display: flex; flex-direction: column; gap: 6px; }
+    .br-stats-bar { display: flex; align-items: center; gap: 8px; padding: 6px 11px; border-radius: 12px; }
+    .br-stat { display: flex; align-items: baseline; gap: 4px; font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
+    .br-stat strong { font-size: 14px; font-weight: 900; color: #fff; font-variant-numeric: tabular-nums; }
+    .zone-pill { display: flex; align-items: center; gap: 7px; padding: 5px 10px; border-radius: 10px; font-size: 10.5px; font-weight: 800; color: #d6f6ff; width: fit-content; }
+    #terrainTag { display: none; padding: 4px 10px; border-radius: 999px; font-size: 10px; font-weight: 900; text-transform: uppercase; width: fit-content; }
+    #hudTopRight { position: absolute; top: max(10px, env(safe-area-inset-top)); right: 10px; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+    .minimap-row { display: flex; align-items: flex-start; gap: 6px; }
+    #minimapBox { width: 96px; height: 96px; border-radius: 50%; padding: 3px; background: rgba(9,16,10,0.86); border: 2px solid rgba(168,222,128,0.5); }
+    #minimapCanvas { width: 100%; height: 100%; border-radius: 50%; display: block; }
+    #killFeed { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; max-width: 210px; }
+    .kf-entry { padding: 4px 8px; border-radius: 8px; background: rgba(10,17,11,0.84); border-right: 3px solid var(--gold); font-size: 10px; font-weight: 700; }
+
+    #playerHpWrap { position: absolute; bottom: max(16px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: min(290px, 52vw); padding: 7px 11px; border-radius: 14px; display: flex; flex-direction: column; gap: 4px; }
+    .hp-top-row { display: flex; justify-content: space-between; font-size: 11px; font-weight: 900; }
+    .hp-bar-track { width: 100%; height: 11px; border-radius: 999px; background: rgba(0,0,0,0.55); overflow: hidden; }
+    #hpMainFill { width: 100%; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #3bd646, #95f54c); transition: width 0.12s linear; }
+    #controlsHint { position: absolute; bottom: 72px; left: 50%; transform: translateX(-50%); padding: 5px 12px; border-radius: 999px; background: rgba(8,14,9,0.84); border: 1px solid rgba(246,196,69,0.45); color: #ffe8a3; font-size: 10px; font-weight: 800; white-space: nowrap; transition: opacity 0.8s; }
+
+    #floatingJoy { position: absolute; width: 110px; height: 110px; margin-left: -55px; margin-top: -55px; border-radius: 50%; background: rgba(12,24,14,0.48); border: 2px solid rgba(176,232,148,0.5); opacity: 0; pointer-events: none; transition: opacity 0.14s; }
+    #floatingJoy.visible { opacity: 1; }
+    #floatingJoyKnob { position: absolute; top: 50%; left: 50%; width: 44px; height: 44px; border-radius: 50%; transform: translate(-50%,-50%); background: radial-gradient(circle at 35% 30%, #d4ffaa, #589c34 72%, #295218); border: 2px solid rgba(245,255,238,0.85); }
+    #btnRecenter { pointer-events: auto; position: absolute; right: 164px; bottom: 22px; width: 42px; height: 42px; border-radius: 50%; border: 2px solid rgba(77,226,240,0.82); background: rgba(14,34,40,0.88); color: #b8f7ff; font-size: 17px; display: none; align-items: center; justify-content: center; cursor: pointer; }
+
+    #abilityCluster { position: absolute; bottom: max(14px, env(safe-area-inset-bottom)); right: 12px; width: 152px; height: 148px; pointer-events: none; }
+    .ab-btn { pointer-events: auto; position: absolute; border-radius: 50%; border: 2px solid rgba(232,255,214,0.58); display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-weight: 900; cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,0.55); overflow: hidden; }
+    .ab-btn:active, .ab-btn.active { transform: scale(0.91); }
+    .ab-btn.on-cd { filter: saturate(0.35) brightness(0.72); }
+    #btnBoost { width: 72px; height: 72px; right: 2px; bottom: 2px; background: radial-gradient(circle at 30% 25%, #ffc857, #d96b14 72%, #8a3605); }
+    #btnVenom { width: 56px; height: 56px; right: 10px; bottom: 82px; background: radial-gradient(circle at 30% 25%, #8cf748, #2da318 72%, #14590a); }
+    #btnCamo  { width: 56px; height: 56px; right: 82px; bottom: 10px; background: radial-gradient(circle at 30% 25%, #69d9c6, #1f7d6e 72%, #0e423a); }
+    .ab-lbl { font-size: 8px; text-transform: uppercase; margin-top: 2px; }
+    .cd-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.55); font-size: 15px; font-weight: 900; opacity: 0; pointer-events: none; }
+    .ab-btn.on-cd .cd-num { opacity: 1; }
+
+    /* 4. RESULTS SCREEN */
+    #resultsScreen { position: fixed; inset: 0; z-index: 90; display: none; align-items: center; justify-content: center; padding: 14px; background: rgba(5,9,6,0.92); backdrop-filter: blur(8px); }
+    #resultsScreen.open { display: flex; }
+    .results-box { width: 100%; max-width: 470px; padding: 20px 22px; border-radius: 22px; text-align: center; }
+    .res-title { font-size: clamp(22px, 5vw, 30px); font-weight: 900; letter-spacing: 2px; background: linear-gradient(180deg,#fff9d2,#f6c445 55%,#b57210); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .res-sub { font-size: 12px; color: #ff9c8a; font-weight: 700; margin: 4px 0 12px; }
+    .reward-row { display: flex; justify-content: center; gap: 10px; margin: 10px 0 12px; }
+    .reward-tag { padding: 7px 13px; border-radius: 11px; font-size: 12.5px; font-weight: 900; background: rgba(246,196,69,0.14); border: 1px solid rgba(246,196,69,0.45); color: #ffe382; }
+    .res-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- 1. SPLASH SCREEN -->
+  <div id="splashScreen">
+    <div class="studio-brand">APEX WILD STUDIOS</div>
+    <div class="splash-hero">
+      <div class="splash-crest">
+        <svg width="52" height="52" viewBox="0 0 64 64" fill="none">
+          <path d="M10 48C12 35 25 35 34 32C44 29 53 25 50 15C48 8 37 8 30 14C23 20 18 26 14 21" stroke="#8cf04e" stroke-width="7" stroke-linecap="round"/>
+          <path d="M10 48C12 35 25 35 34 32C44 29 53 25 50 15" stroke="#f6c445" stroke-width="2.2" stroke-dasharray="4 5" stroke-linecap="round"/>
+          <ellipse cx="49" cy="14.5" rx="7.5" ry="5.5" transform="rotate(-14 49 14.5)" fill="#2f6e18"/>
+          <circle cx="51.5" cy="13.2" r="1.7" fill="#ffe659"/>
+          <path d="M55.5 13.5L62 11.2M59 12.5L62 15.2" stroke="#ff4b3a" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="splash-title">SERPENT WILD: APEX</div>
+      <div class="splash-subtitle">50-SNAKE BATTLE ROYALE</div>
+    </div>
+    <div id="tapEnterWrap">
+      <button class="btn-gold" id="btnTapEnter" type="button">TAP TO ENTER JUNGLE</button>
+      <div style="font-size:11px;color:var(--text-muted);text-align:center;">Tap button or anywhere to enter</div>
+    </div>
+    <div id="loaderWrap">
+      <div class="loader-row"><span id="loaderStatus">Building Jungle Arena...</span><span id="loaderPct">0%</span></div>
+      <div class="loader-bar"><div id="loaderFill"></div></div>
+      <div id="loaderTip">Tip: Bite rival snakes to drain HP, or use Venom Spit for Poison DoT!</div>
+    </div>
+  </div>
+
+  <!-- 2. LOBBY -->
+  <div id="lobbyScreen">
+    <div id="lobbyTopBar">
+      <div id="profileBadge" class="glass">
+        <div class="avatar-box"><span id="lbAvatar">🐍</span><span class="lvl-tag" id="lbLvl">LV.1</span></div>
+        <div>
+          <div style="font-size:13px;font-weight:900;color:#fff;" id="lbName">ApexHunter</div>
+          <div style="font-size:10px;font-weight:800;color:var(--gold);"><span id="lbRank">Bronze Viper</span> • <span id="lbTitle" style="color:#bdd9b4;">Apex Predator</span></div>
+        </div>
+      </div>
+      <div class="top-right-tools">
+        <div class="curr-pill glass"><span>🪙</span><span id="lbCoins">1500</span></div>
+        <button class="tool-btn glass" id="btnLobbyAudio" type="button" title="Mute">🔊</button>
+        <button class="tool-btn glass" id="btnLobbySettings" type="button" title="Settings">⚙️</button>
+      </div>
+    </div>
+
+    <div id="lobbyRail">
+      <button class="rail-item glass" type="button" data-open-prof="tabProfile"><span>👤</span><span>Profile</span></button>
+      <button class="rail-item glass" type="button" data-open-prof="tabSnakes"><span>🐍</span><span>Snakes</span></button>
+      <button class="rail-item glass" type="button" data-open-prof="tabBiomes"><span>🗺️</span><span>Biomes</span></button>
+    </div>
+
+    <div id="showcasePill" class="glass">
+      <span style="font-size:12px;font-weight:900;color:var(--gold);text-transform:uppercase;" id="scSnake">King Cobra</span>
+      <span style="opacity:0.35;">|</span>
+      <span style="font-size:11px;font-weight:700;color:#cfe3c8;" id="scBiome">Amazon Rainforest</span>
+    </div>
+
+    <div id="startCluster">
+      <div id="modePill" class="mode-pill glass"><span class="mode-dot"></span><span id="modeLabel">50-Snake Safe Zone BR</span><span style="opacity:0.7;">▾</span></div>
+      <button class="btn-gold" id="btnStartMatch" type="button">START MATCH</button>
+    </div>
+  </div>
+
+  <!-- MATCHMAKING -->
+  <div id="matchmakingOverlay">
+    <div class="mm-card glass">
+      <div class="mm-spin"></div>
+      <div style="font-size:16px;font-weight:900;letter-spacing:1.4px;color:var(--gold);margin-bottom:6px;">MATCHMAKING...</div>
+      <div style="font-size:12.5px;font-weight:800;color:#d6ead0;" id="mmText">12 / 50 SNAKES READY</div>
+    </div>
+  </div>
+
+  <!-- PROFILE & ARMORY MODAL -->
+  <div class="modal-backdrop" id="profileModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <div class="modal-title">Apex Profile &amp; Armory</div>
+        <button class="close-btn" type="button" data-close="profileModal">✕</button>
+      </div>
+      <div class="modal-tabs" id="profileTabs">
+        <button class="tab-btn active" type="button" data-tab="tabProfile">Profile</button>
+        <button class="tab-btn" type="button" data-tab="tabSnakes">Snakes (6)</button>
+        <button class="tab-btn" type="button" data-tab="tabBiomes">Biomes</button>
+      </div>
+      <div class="modal-body">
+        <div class="tab-pane active" id="tabProfile">
+          <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:12px;border-radius:14px;background:rgba(255,255,255,0.04);margin-bottom:12px;">
+            <div class="avatar-box" style="width:52px;height:52px;font-size:26px;"><span id="prAv">🐍</span><span class="lvl-tag" id="prLv">LV.1</span></div>
+            <div style="flex:1;min-width:170px;">
+              <div class="section-lbl">Callsign</div>
+              <input type="text" id="prNameIn" class="text-input" maxlength="15" />
+              <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:800;color:#c2dbb8;margin-top:6px;"><span id="prRankTxt">Bronze Viper</span><span id="prXpTxt">0 / 180 XP</span></div>
+              <div class="xp-track"><div class="xp-fill" id="prXpBar" style="width:0%;"></div></div>
+            </div>
+          </div>
+          <div class="section-lbl">Avatar Emblem</div>
+          <div class="chip-row" id="avatarChips"></div>
+          <div class="section-lbl">Career Statistics</div>
+          <div class="stat-grid" id="careerGrid"></div>
+        </div>
+        <div class="tab-pane" id="tabSnakes"><div class="armory-grid" id="snakesGrid"></div></div>
+        <div class="tab-pane" id="tabBiomes"><div class="armory-grid" id="biomeGrid"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal-backdrop" id="settingsModal">
+    <div class="modal-box" style="max-width:440px;">
+      <div class="modal-head">
+        <div class="modal-title">Tactical Settings</div>
+        <button class="close-btn" type="button" data-close="settingsModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="setting-row">
+          <div><div style="font-size:13px;font-weight:800;">Sound FX Volume</div><div style="font-size:10px;color:var(--text-muted);">Bite, venom &amp; victory audio</div></div>
+          <input type="range" id="setSfxVol" min="0" max="100" value="80" style="width:115px;accent-color:#f6c445;" />
+        </div>
+        <div class="setting-row">
+          <div><div style="font-size:13px;font-weight:800;">Auto-Center Free-Look</div><div style="font-size:10px;color:var(--text-muted);">Snap camera back on release</div></div>
+          <button class="chip selected" id="btnAutoCenter" type="button">ON</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. IN-GAME HUD -->
+  <div id="hud">
+    <div id="stormVignette"></div>
+    <div id="hudTopLeft">
+      <div class="br-stats-bar glass">
+        <div class="br-stat"><span style="color:var(--green);">● ALIVE</span><strong id="hudAlive">50/50</strong></div>
+        <div style="width:1px;height:14px;background:rgba(255,255,255,0.16);"></div>
+        <div class="br-stat"><span>KILLS</span><strong id="hudKills" style="color:var(--gold);">0</strong></div>
+        <div style="width:1px;height:14px;background:rgba(255,255,255,0.16);"></div>
+        <div class="br-stat"><span>LEN</span><strong id="hudLen">115</strong></div>
+      </div>
+      <div class="zone-pill glass" id="zoneHudPill">
+        <span style="color:#52e5ff;">◎ ZONE <span id="hudZoneStage">1</span></span>
+        <span id="hudZoneTimer">0:35</span>
+      </div>
+      <div id="terrainTag"></div>
+    </div>
+
+    <div id="hudTopRight">
+      <div class="minimap-row">
+        <div style="display:flex;flex-direction:column;gap:5px;pointer-events:auto;">
+          <button class="tool-btn glass" id="hudAudioBtn" type="button" style="width:32px;height:32px;font-size:13px;">🔊</button>
+          <button class="tool-btn glass" id="hudLobbyBtn" type="button" style="width:32px;height:32px;font-size:12px;" title="Exit">✕</button>
+        </div>
+        <div id="minimapBox"><canvas id="minimapCanvas" width="160" height="160"></canvas></div>
+      </div>
+      <div id="killFeed"></div>
+    </div>
+
+    <div id="playerHpWrap" class="glass">
+      <div class="hp-top-row"><span id="hpStatusTxt" style="color:#95f54c;">♥ HEALTH</span><span id="hpNumTxt">120 / 120 HP</span></div>
+      <div class="hp-bar-track"><div id="hpMainFill"></div></div>
+    </div>
+
+    <div id="controlsHint">LEFT HALF: DRAG TO STEER • RIGHT HALF: SCOUT • SPACE/E/Q ABILITIES</div>
+    <div id="floatingJoy"><div id="floatingJoyKnob"></div></div>
+    <button id="btnRecenter" type="button" title="Center Camera">👁️</button>
+
+    <div id="abilityCluster">
+      <button class="ab-btn" id="btnVenom" type="button"><span>🧪</span><span class="ab-lbl">Venom</span><div class="cd-num" id="cdTxtVenom"></div></button>
+      <button class="ab-btn" id="btnCamo" type="button"><span>👁️</span><span class="ab-lbl">Camo</span><div class="cd-num" id="cdTxtCamo"></div></button>
+      <button class="ab-btn" id="btnBoost" type="button"><span>⚡</span><span class="ab-lbl">Boost</span></button>
+    </div>
+  </div>
+
+  <!-- 4. RESULTS SCREEN -->
+  <div id="resultsScreen">
+    <div class="results-box glass">
+      <div class="res-title" id="resTitle">#1 APEX PREDATOR!</div>
+      <div class="res-sub" id="resSub">Winner Winner Jungle Dinner</div>
+      <div class="stat-grid" style="grid-template-columns:repeat(4,1fr);">
+        <div class="stat-box"><div class="stat-val" id="resRank">#1</div><div class="stat-lbl">Rank</div></div>
+        <div class="stat-box"><div class="stat-val" id="resKills" style="color:var(--gold);">0</div><div class="stat-lbl">Kills</div></div>
+        <div class="stat-box"><div class="stat-val" id="resLen">0</div><div class="stat-lbl">Max Len</div></div>
+        <div class="stat-box"><div class="stat-val" id="resPrey">0</div><div class="stat-lbl">Prey</div></div>
+      </div>
+      <div class="reward-row">
+        <div class="reward-tag" id="resGold">+250 🪙 Gold</div>
+        <div class="reward-tag" id="resXp" style="color:#a8ff78;border-color:rgba(128,232,74,0.45);">+180 XP</div>
+      </div>
+      <div class="res-actions">
+        <button class="btn-ghost" id="btnResLobby" type="button">Lobby</button>
+        <button class="btn-gold" id="btnResAgain" type="button">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      // -------------------- CONSTANTS (50-SNAKE OPTIMIZED ARENA) --------------------
+      const TOTAL_SNAKES = 50;
+      const WORLD_SIZE = 7200;
+      const WORLD_CENTER = WORLD_SIZE / 2;
+      const ARENA_RADIUS = 3350;
+      const CELL_SIZE = 320;
+      const FREE_LOOK_MAX = 460;
+
+      const AVATARS = ['🐍', '🦅', '🐊', '🦂', '🦎', '🐾'];
+      const RANK_TIERS = [
+        { lv: 1, name: 'Bronze Viper' }, { lv: 3, name: 'Silver Cobra' },
+        { lv: 6, name: 'Gold Python' }, { lv: 10, name: 'Platinum Mamba' }, { lv: 15, name: 'Apex Predator' }
+      ];
+
+      const SPECIES = [
+        { id: 'cobra',    name: 'King Cobra',          base: '#4c6128', dark: '#1e2b0d', stripe: '#e8cd64', eye: '#f5be2c', speed: 84, turn: 84, bonusHp: 0,  girth: 1.0,  trait: '+25% Venom Poison DoT', price: 0 },
+        { id: 'boa',      name: 'Emerald Tree Boa',    base: '#1a8a44', dark: '#083b1c', stripe: '#f2fff0', eye: '#ffd83d', speed: 78, turn: 90, bonusHp: 20, girth: 1.12, trait: '+20 Max HP & Longer Camo', price: 0 },
+        { id: 'viper',    name: 'Desert Horned Viper', base: '#bd8f56', dark: '#4d3012', stripe: '#704218', eye: '#ff7b24', speed: 94, turn: 92, bonusHp: 0,  girth: 1.04, trait: '+20% Boost CRIT Bite', price: 0 },
+        { id: 'python',   name: 'Shadow Python',       base: '#2e2742', dark: '#0d0b14', stripe: '#9068cc', eye: '#d68cff', speed: 82, turn: 80, bonusHp: 15, girth: 1.1,  trait: '+20% Prey Heal & Mass', price: 450 },
+        { id: 'anaconda', name: 'Golden Anaconda',     base: '#a38f2c', dark: '#36300c', stripe: '#1c1908', eye: '#ffb829', speed: 76, turn: 76, bonusHp: 40, girth: 1.22, trait: '+40 Max HP & Fast Swimmer', price: 700 },
+        { id: 'krait',    name: 'Crimson Krait',       base: '#c41d1d', dark: '#141014', stripe: '#ffdb57', eye: '#ffe954', speed: 90, turn: 88, bonusHp: 10, girth: 0.96, trait: 'Fastest Venom Cooldown', price: 900 }
+      ];
+
+      const BIOMES = [
+        { id: 'amazon', name: 'Amazon Rainforest', floor: '#1d2d17', moss: 'rgba(54,96,34,0.42)', soil: 'rgba(66,48,29,0.34)', water: 'rgba(26,136,148,0.82)', mud: '#362415' },
+        { id: 'bayou',  name: 'Misty Bayou Swamp', floor: '#162420', moss: 'rgba(34,84,66,0.42)', soil: 'rgba(42,40,30,0.38)', water: 'rgba(32,118,112,0.82)', mud: '#292117' },
+        { id: 'canyon', name: 'Canyon Oasis',      floor: '#342619', moss: 'rgba(88,82,34,0.28)', soil: 'rgba(116,66,34,0.4)', water: 'rgba(44,142,152,0.82)', mud: '#4a331d' }
+      ];
+
+      const PREY_TYPES = [
+        { id: 'frog',   color: '#6cf046', r: 14, mass: 5.5, heal: 16, speed: 55 },
+        { id: 'mouse',  color: '#bda996', r: 12, mass: 5.0, heal: 14, speed: 82 },
+        { id: 'gecko',  color: '#91e33b', r: 13, mass: 6.0, heal: 18, speed: 92 },
+        { id: 'crab',   color: '#eb552d', r: 14, mass: 6.5, heal: 20, speed: 62 },
+        { id: 'beetle', color: '#f6c445', r: 11, mass: 7.5, heal: 26, speed: 50 },
+        { id: 'berry',  color: '#e8295c', r: 11, mass: 3.8, heal: 10, speed: 0 }
+      ];
+
+      const AI_PREFIX = ['King','Shadow','Venom','Apex','Wild','Toxic','Razor','Ghost','Iron','Gold','Dark','Swamp','Storm','Night'];
+      const AI_SUFFIX = ['Viper','Cobra','Mamba','Fang','Boa','Krait','Python','Taipan','Adder','Rattler','Titan','Strike'];
+
+      // -------------------- PROFILE STORAGE --------------------
+      const DEFAULT_PROFILE = {
+        name: 'ApexHunter', avatar: '🐍', title: 'Apex Predator',
+        level: 1, xp: 0, coins: 1500,
+        ownedSnakes: ['cobra', 'boa', 'viper'],
+        selectedSnake: 'cobra', selectedBiome: 'amazon', selectedMode: 'br',
+        settings: { sfxVol: 0.8, muted: false, autoCenter: true },
+        stats: { matches: 0, wins: 0, bestLength: 0, kills: 0, prey: 0 }
+      };
+
+      let profile = (() => {
+        try {
+          const raw = localStorage.getItem('serpent_wild_50_v1');
+          if (!raw) return JSON.parse(JSON.stringify(DEFAULT_PROFILE));
+          const d = JSON.parse(raw);
+          return { ...JSON.parse(JSON.stringify(DEFAULT_PROFILE)), ...d, settings: { ...DEFAULT_PROFILE.settings, ...(d.settings || {}) }, stats: { ...DEFAULT_PROFILE.stats, ...(d.stats || {}) } };
+        } catch (e) { return JSON.parse(JSON.stringify(DEFAULT_PROFILE)); }
+      })();
+
+      const saveProfile = () => { try { localStorage.setItem('serpent_wild_50_v1', JSON.stringify(profile)); } catch (e) {} };
+      const getRank = lv => { let n = RANK_TIERS[0].name; for (const r of RANK_TIERS) if (lv >= r.lv) n = r.name; return n; };
+      const getXpNeed = lv => 180 + (lv - 1) * 90;
+
+      // -------------------- MATH & AUDIO --------------------
+      const rand = (a, b) => a + Math.random() * (b - a);
+      const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+      const lerp = (a, b, t) => a + (b - a) * t;
+      const distSq = (x1, y1, x2, y2) => (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
+      const dist = (x1, y1, x2, y2) => Math.hypot(x2 - x1, y2 - y1);
+      const angleDiff = (a, b) => Math.atan2(Math.sin(a - b), Math.cos(a - b));
+      const randInCircle = (cx, cy, r, m = 120) => { const a = rand(0, Math.PI * 2), d = Math.sqrt(Math.random()) * Math.max(40, r - m); return { x: cx + Math.cos(a) * d, y: cy + Math.sin(a) * d }; };
+
+      const Sound = {
+        ctx: null,
+        init() {
+          try {
+            if (!this.ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) this.ctx = new AC(); }
+            if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
+          } catch (e) {}
+        },
+        tone(f1, f2, dur, type = 'sine', g = 0.1) {
+          const v = profile.settings.muted ? 0 : profile.settings.sfxVol;
+          if (v <= 0 || !this.ctx) return;
+          try {
+            const t = this.ctx.currentTime, o = this.ctx.createOscillator(), gn = this.ctx.createGain();
+            o.type = type; o.frequency.setValueAtTime(f1, t); o.frequency.exponentialRampToValueAtTime(Math.max(30, f2), t + dur);
+            gn.gain.setValueAtTime(g * v, t); gn.gain.exponentialRampToValueAtTime(0.001, t + dur);
+            o.connect(gn); gn.connect(this.ctx.destination); o.start(t); o.stop(t + dur);
+          } catch (e) {}
+        },
+        click()  { this.tone(560, 820, 0.05, 'triangle', 0.08); },
+        eat()    { this.tone(320, 560, 0.09, 'triangle', 0.1); },
+        bite(cr) { this.tone(cr ? 190 : 250, 75, 0.13, 'sawtooth', cr ? 0.14 : 0.1); },
+        venom()  { this.tone(620, 210, 0.14, 'sawtooth', 0.09); },
+        camo()   { this.tone(380, 760, 0.18, 'sine', 0.09); },
+        kill()   { this.tone(440, 880, 0.16, 'triangle', 0.14); },
+        win()    { [523,659,784,1046].forEach((f,i) => setTimeout(() => this.tone(f, f * 1.03, 0.22, 'triangle', 0.14), i * 110)); },
+        over()   { this.tone(260, 85, 0.42, 'sawtooth', 0.13); }
+      };
+
+      // -------------------- CANVAS & STATE --------------------
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      const miniCanvas = document.getElementById('minimapCanvas');
+      const miniCtx = miniCanvas.getContext('2d');
+
+      let appW = window.innerWidth, appH = window.innerHeight, dpr = 1;
+      let screenState = 'splash'; // 'splash' | 'lobby' | 'playing' | 'results'
+      let splashEntered = false;
+      let groundPattern = null;
+
+      let waterZones = [], mudZones = [], snakes = [], preyList = [], meatList = [], projectiles = [], particles = [], floatTexts = [];
+      let player = null, lobbySnake = null;
+      const camera = { x: WORLD_CENTER, y: WORLD_CENTER, zoom: 0.9, lookX: 0, lookY: 0 };
+      const safeZone = { active: true, cx: WORLD_CENTER, cy: WORLD_CENTER, r: ARENA_RADIUS, targetR: ARENA_RADIUS, stage: 1, timer: 35, shrinking: false };
+      const matchStats = { kills: 0, prey: 0, maxLen: 0, rank: 1, reason: '' };
+      let globalTime = 0, lastFrame = 0, hudTick = 0;
+
+      const ctrl = {
+        joyActive: false, joyTouchId: null, joyMouse: false, joyOx: 0, joyOy: 0, joyAngle: 0, joyMag: 0,
+        lookActive: false, lookTouchId: null, lookMouse: false, lookLastX: 0, lookLastY: 0,
+        boostHeld: false, keys: { up: false, down: false, left: false, right: false, boost: false }
+      };
+
+      function resizeCanvas() {
+        appW = window.innerWidth; appH = window.innerHeight;
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.max(1, Math.floor(appW * dpr));
+        canvas.height = Math.max(1, Math.floor(appH * dpr));
+      }
+
+      // -------------------- SPATIAL HASH GRID --------------------
+      const snakeGrid = new Map(), preyGrid = new Map();
+      const cellKey = (cx, cy) => ((cx & 0xFFFF) << 16) | (cy & 0xFFFF);
+
+      function rebuildGrids() {
+        snakeGrid.clear();
+        for (const s of snakes) {
+          if (!s.alive) continue;
+          const step = Math.max(1, Math.floor(s.segments.length / 8));
+          const seen = new Set();
+          for (let i = 0; i < s.segments.length; i += step) {
+            const k = cellKey(Math.floor(s.segments[i].x / CELL_SIZE), Math.floor(s.segments[i].y / CELL_SIZE));
+            if (seen.has(k)) continue;
+            seen.add(k);
+            let arr = snakeGrid.get(k); if (!arr) { arr = []; snakeGrid.set(k, arr); }
+            arr.push(s);
+          }
+        }
+        preyGrid.clear();
+        for (let i = 0; i < preyList.length; i++) {
+          const p = preyList[i];
+          const k = cellKey(Math.floor(p.x / CELL_SIZE), Math.floor(p.y / CELL_SIZE));
+          let arr = preyGrid.get(k); if (!arr) { arr = []; preyGrid.set(k, arr); }
+          arr.push(i);
+        }
+      }
+
+      function queryGrid(grid, x, y, r) {
+        const x0 = Math.floor((x - r) / CELL_SIZE), x1 = Math.floor((x + r) / CELL_SIZE);
+        const y0 = Math.floor((y - r) / CELL_SIZE), y1 = Math.floor((y + r) / CELL_SIZE);
+        const out = [];
+        for (let cx = x0; cx <= x1; cx++) for (let cy = y0; cy <= y1; cy++) {
+          const arr = grid.get(cellKey(cx, cy));
+          if (arr) for (let i = 0; i < arr.length; i++) out.push(arr[i]);
+        }
+        return out;
+      }
+
+      function isNearCam(x, y, pad = 750) {
+        const cx = camera.x + camera.lookX, cy = camera.y + camera.lookY;
+        return Math.abs(x - cx) < (appW / camera.zoom) * 0.6 + pad && Math.abs(y - cy) < (appH / camera.zoom) * 0.6 + pad;
+      }
+
+      // -------------------- WORLD GENERATION --------------------
+      function generateWorld(biomeId) {
+        const biome = BIOMES.find(b => b.id === biomeId) || BIOMES[0];
+        const tile = document.createElement('canvas');
+        tile.width = 512; tile.height = 512;
+        const t = tile.getContext('2d');
+        t.fillStyle = biome.floor; t.fillRect(0, 0, 512, 512);
+        for (let i = 0; i < 80; i++) {
+          const x = rand(0, 512), y = rand(0, 512), r = rand(26, 84);
+          const col = Math.random() < 0.55 ? biome.moss : biome.soil;
+          const g = t.createRadialGradient(x, y, 2, x, y, r);
+          g.addColorStop(0, col); g.addColorStop(1, 'rgba(0,0,0,0)');
+          t.fillStyle = g; t.beginPath(); t.arc(x, y, r, 0, Math.PI * 2); t.fill();
+        }
+        t.fillStyle = 'rgba(0,0,0,0.14)';
+        for (let i = 0; i < 320; i++) t.fillRect(rand(0, 512), rand(0, 512), 2, 2);
+        groundPattern = ctx.createPattern(tile, 'repeat');
+
+        waterZones = []; mudZones = [];
+        for (let r = 0; r < 3; r++) {
+          let rx = WORLD_CENTER + rand(-1600, 1600), ry = WORLD_CENTER + rand(-1600, 1600), a = rand(0, Math.PI * 2);
+          for (let s = 0; s < 12; s++) {
+            const rad = rand(120, 175);
+            if (dist(rx, ry, WORLD_CENTER, WORLD_CENTER) < ARENA_RADIUS - 280) waterZones.push({ x: rx, y: ry, r: rad });
+            a += rand(-0.4, 0.4); rx += Math.cos(a) * rad * 1.1; ry += Math.sin(a) * rad * 1.1;
+          }
+        }
+        for (let i = 0; i < 22; i++) {
+          const pt = randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 300);
+          const rad = rand(110, 180);
+          if (!waterZones.some(w => distSq(pt.x, pt.y, w.x, w.y) < (w.r + rad) ** 2)) mudZones.push({ x: pt.x, y: pt.y, r: rad });
+        }
+      }
+
+      function getTerrainAt(x, y) {
+        for (const w of waterZones) if (distSq(x, y, w.x, w.y) < w.r * w.r) return 'water';
+        for (const m of mudZones) if (distSq(x, y, m.x, m.y) < m.r * m.r) return 'mud';
+        return 'ground';
+      }
+
+      function spawnParticles(x, y, color, count = 6, spd = 90) {
+        if (particles.length > 180) return;
+        for (let i = 0; i < count; i++) {
+          const a = rand(0, Math.PI * 2), v = rand(spd * 0.3, spd);
+          particles.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: rand(0.25, 0.55), maxLife: 0.55, size: rand(2.5, 5.5), color });
+        }
+      }
+
+      function pushKillFeed(text) {
+        const feed = document.getElementById('killFeed');
+        if (!feed) return;
+        const div = document.createElement('div');
+        div.className = 'kf-entry';
+        div.textContent = text;
+        feed.prepend(div);
+        while (feed.children.length > 4) feed.lastChild.remove();
+        setTimeout(() => div.remove(), 4200);
+      }
+
+      // -------------------- SNAKE CLASS --------------------
+      class Snake {
+        constructor({ name, species, x, y, isPlayer = false, mass = 26 }) {
+          this.name = name; this.species = species; this.isPlayer = isPlayer; this.alive = true;
+          this.x = x; this.y = y; this.angle = rand(0, Math.PI * 2); this.targetAngle = this.angle;
+          this.mass = mass; this.kills = 0; this.terrain = 'ground';
+          this.maxHp = this.calcMaxHp(); this.hp = this.maxHp;
+          this.hitFlash = 0; this.biteCd = 0; this.poisonTimer = 0; this.poisonDps = 6; this.poisonOwner = null;
+          this.combatTimer = 0; this.stamina = 100; this.boosting = false;
+          this.venomCd = 0; this.venomMax = species.id === 'krait' ? 3.6 : 4.8;
+          this.camoCd = 0; this.camoMax = 11.0; this.camoTimer = 0; this.slowTimer = 0;
+          this.slitherPhase = rand(0, 6.28); this.aiTimer = rand(0, 0.5); this.aiWander = this.angle; this.aiBoost = 0;
+          this.segments = [];
+          const cnt = this.getSegCount();
+          for (let i = 0; i < cnt; i++) this.segments.push({ x: x - Math.cos(this.angle) * i * 6.5, y: y - Math.sin(this.angle) * i * 6.5 });
+        }
+        calcMaxHp() { return Math.min(340, Math.round(120 + this.species.bonusHp + Math.max(0, this.mass - 24) * 1.1)); }
+        getRadius() { return clamp(11.5 + Math.pow(this.mass, 0.44) * 1.4, 11.5, 29); }
+        getSegCount() { return Math.min(64, Math.floor(16 + this.mass * 0.5)); }
+        getLen() { return Math.floor(this.mass * 4.5); }
+        isCamo() { return this.camoTimer > 0; }
+
+        heal(amt, show = false) {
+          if (!this.alive || amt <= 0) return;
+          const prev = this.hp; this.hp = Math.min(this.maxHp, this.hp + amt);
+          const got = Math.round(this.hp - prev);
+          if (show && got > 0 && (this.isPlayer || isNearCam(this.x, this.y, 400))) {
+            floatTexts.push({ x: this.x, y: this.y - 24, text: `+${got} HP`, color: '#7dff66', life: 0.85, maxLife: 0.85 });
+          }
+        }
+
+        takeDamage(amt, attacker, tag = 'Bite', crit = false) {
+          if (!this.alive || amt <= 0) return;
+          this.hp = Math.max(0, this.hp - amt);
+          this.hitFlash = 0.2; this.combatTimer = 5.0;
+          if (attacker) attacker.combatTimer = 5.0;
+          if (this.isPlayer || (attacker && attacker.isPlayer) || isNearCam(this.x, this.y, 450)) {
+            floatTexts.push({
+              x: this.x + rand(-12, 12), y: this.y - 20,
+              text: crit ? `-${Math.round(amt)} CRIT!` : `-${Math.round(amt)}`,
+              color: tag === 'Venom' ? '#8cff42' : crit ? '#ffe052' : '#ff5a47', life: 0.9, maxLife: 0.9
+            });
+          }
+          if (this.hp <= 0) killSnake(this, attacker, tag);
+        }
+
+        activateVenom() {
+          if (!this.alive || this.venomCd > 0) return;
+          this.venomCd = this.venomMax;
+          const r = this.getRadius();
+          const sx = this.x + Math.cos(this.angle) * (r + 12), sy = this.y + Math.sin(this.angle) * (r + 12);
+          projectiles.push({
+            owner: this, x: sx, y: sy, vx: Math.cos(this.angle) * 610, vy: Math.sin(this.angle) * 610,
+            life: 0.85, r: 10, dmg: 24, dps: this.species.id === 'cobra' ? 8 : 6
+          });
+          if (isNearCam(sx, sy, 500)) spawnParticles(sx, sy, '#7eff3b', 7, 110);
+          if (this.isPlayer) Sound.venom();
+        }
+
+        activateCamo() {
+          if (!this.alive || this.camoCd > 0) return;
+          this.camoCd = this.camoMax;
+          this.camoTimer = this.species.id === 'boa' ? 4.8 : 3.6;
+          if (isNearCam(this.x, this.y, 500)) spawnParticles(this.x, this.y, '#7be3cb', 10, 90);
+          if (this.isPlayer) Sound.camo();
+        }
+
+        updateAI(dt, near) {
+          this.aiTimer -= dt;
+          if (this.aiBoost > 0) this.aiBoost -= dt;
+          const dZone = dist(this.x, this.y, safeZone.cx, safeZone.cy);
+          if (safeZone.active && dZone > safeZone.r - 190) {
+            this.targetAngle = Math.atan2(safeZone.cy - this.y, safeZone.cx - this.x);
+            this.boosting = dZone > safeZone.r;
+            return;
+          }
+          if (dist(this.x, this.y, WORLD_CENTER, WORLD_CENTER) > ARENA_RADIUS - 260) {
+            this.targetAngle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x);
+            this.boosting = false;
+            return;
+          }
+          if (this.aiTimer <= 0) {
+            this.aiTimer = near ? rand(0.28, 0.55) : rand(0.65, 1.2);
+            this.aiWander += rand(-1.0, 1.0);
+            this.targetAngle = this.aiWander;
+            const rivals = queryGrid(snakeGrid, this.x, this.y, 350);
+            let target = null, bestD = 340 * 340;
+            for (const o of rivals) {
+              if (o === this || !o.alive || o.isCamo()) continue;
+              const d2 = distSq(this.x, this.y, o.x, o.y);
+              if (d2 < bestD) { bestD = d2; target = o; }
+            }
+            if (target) {
+              if (this.hp < this.maxHp * 0.35) {
+                this.targetAngle = Math.atan2(this.y - target.y, this.x - target.x);
+                if (this.camoCd <= 0) this.activateCamo();
+                this.aiBoost = 0.5;
+              } else {
+                this.targetAngle = Math.atan2(target.y - this.y, target.x - this.x);
+                if (this.venomCd <= 0 && bestD < 260 * 260 && Math.abs(angleDiff(this.targetAngle, this.angle)) < 0.35) this.activateVenom();
+                if (bestD < 180 * 180 && this.stamina > 35) this.aiBoost = 0.4;
+              }
+            } else {
+              const pIdxs = queryGrid(preyGrid, this.x, this.y, 300);
+              let bestP = null, pD = 300 * 300;
+              for (const idx of pIdxs) {
+                const p = preyList[idx]; if (!p) continue;
+                const d2 = distSq(this.x, this.y, p.x, p.y);
+                if (d2 < pD) { pD = d2; bestP = p; }
+              }
+              if (bestP) this.targetAngle = Math.atan2(bestP.y - this.y, bestP.x - this.x);
+            }
+          }
+          this.boosting = this.aiBoost > 0 && this.stamina > 20;
+        }
+
+        update(dt) {
+          if (!this.alive) return;
+          const nm = this.calcMaxHp();
+          if (nm > this.maxHp) { this.hp += (nm - this.maxHp); this.maxHp = nm; }
+          if (this.hitFlash > 0) this.hitFlash = Math.max(0, this.hitFlash - dt);
+          if (this.biteCd > 0) this.biteCd = Math.max(0, this.biteCd - dt);
+          if (this.venomCd > 0) this.venomCd = Math.max(0, this.venomCd - dt);
+          if (this.camoCd > 0) this.camoCd = Math.max(0, this.camoCd - dt);
+          if (this.camoTimer > 0) this.camoTimer = Math.max(0, this.camoTimer - dt);
+          if (this.slowTimer > 0) this.slowTimer = Math.max(0, this.slowTimer - dt);
+
+          if (this.poisonTimer > 0) {
+            this.poisonTimer = Math.max(0, this.poisonTimer - dt);
+            this.combatTimer = 5.0;
+            this.hp -= this.poisonDps * dt;
+            if (this.hp <= 0) { killSnake(this, this.poisonOwner, 'Venom'); return; }
+          }
+          if (this.combatTimer > 0) this.combatTimer = Math.max(0, this.combatTimer - dt);
+          else if (this.hp < this.maxHp) this.hp = Math.min(this.maxHp, this.hp + 2.2 * dt);
+
+          const near = this.isPlayer || isNearCam(this.x, this.y, 700);
+          if (!this.isPlayer) this.updateAI(dt, near);
+
+          this.terrain = getTerrainAt(this.x, this.y);
+          const canBoost = this.boosting && this.stamina > 5 && this.mass > 14 && this.slowTimer <= 0;
+          if (canBoost) { this.stamina = Math.max(0, this.stamina - dt * 27); this.mass = Math.max(14, this.mass - dt * 1.4); }
+          else this.stamina = Math.min(100, this.stamina + dt * 18);
+
+          let spd = 175 + this.species.speed * 0.28;
+          if (canBoost) spd *= 1.58;
+          if (this.terrain === 'water') spd *= (this.species.id === 'anaconda' ? 1.32 : 1.18);
+          else if (this.terrain === 'mud') spd *= 0.7;
+          if (this.slowTimer > 0) spd *= 0.65;
+
+          const turnRate = 4.6 + this.species.turn * 0.016;
+          this.angle += clamp(angleDiff(this.targetAngle, this.angle), -turnRate * dt, turnRate * dt);
+          this.slitherPhase += dt * (canBoost ? 14 : 9.5);
+          const sAng = this.angle + Math.sin(this.slitherPhase) * 0.1;
+          this.x += Math.cos(sAng) * spd * dt;
+          this.y += Math.sin(sAng) * spd * dt;
+
+          const r = this.getRadius();
+          const dC = dist(this.x, this.y, WORLD_CENTER, WORLD_CENTER);
+          if (dC + r > ARENA_RADIUS) {
+            const a = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x);
+            this.x = WORLD_CENTER - Math.cos(a) * (ARENA_RADIUS - r);
+            this.y = WORLD_CENTER - Math.sin(a) * (ARENA_RADIUS - r);
+            this.takeDamage(16 * dt, null, 'Cliff');
+            if (!this.alive) return;
+          }
+
+          if (safeZone.active && dist(this.x, this.y, safeZone.cx, safeZone.cy) > safeZone.r) {
+            this.hp -= (5 + (safeZone.stage - 1) * 3) * dt;
+            this.combatTimer = 5.0;
+            if (this.hp <= 0) { killSnake(this, null, 'Storm'); return; }
+          }
+
+          this.segments[0].x = this.x; this.segments[0].y = this.y;
+          const spc = r * 0.54;
+          for (let i = 1; i < this.segments.length; i++) {
+            const p = this.segments[i - 1], c = this.segments[i];
+            const dx = c.x - p.x, dy = c.y - p.y, d = Math.hypot(dx, dy) || 0.001;
+            if (d > spc) { const rt = spc / d; c.x = p.x + dx * rt; c.y = p.y + dy * rt; }
+          }
+          const tLen = this.getSegCount();
+          while (this.segments.length < tLen) { const tl = this.segments[this.segments.length - 1]; this.segments.push({ x: tl.x, y: tl.y }); }
+          while (this.segments.length > tLen && this.segments.length > 12) this.segments.pop();
+        }
+
+        draw(c, showLabel = true) {
+          if (!this.alive || this.segments.length < 3) return;
+          const baseR = this.getRadius() * this.species.girth, len = this.segments.length;
+          c.save();
+          c.globalAlpha = this.isCamo() ? (this.isPlayer ? 0.38 : 0.16) : 1;
+
+          // Body segments from tail to head
+          for (let i = len - 1; i >= 0; i--) {
+            const seg = this.segments[i];
+            const t = i / (len - 1);
+            const r = baseR * (t > 0.6 ? lerp(1.0, 0.25, (t - 0.6) / 0.4) : 1.0);
+            c.fillStyle = this.hitFlash > 0 ? '#ffffff' : (i % 4 === 0 ? this.species.stripe : (i % 2 === 0 ? this.species.base : this.species.dark));
+            c.beginPath();
+            c.arc(seg.x, seg.y, r, 0, Math.PI * 2);
+            c.fill();
+          }
+
+          // Head + Eyes + Tongue
+          c.save();
+          c.translate(this.x, this.y);
+          c.rotate(this.angle);
+          if (Math.sin(this.slitherPhase * 0.6) > 0.65) {
+            c.strokeStyle = '#ff3b3b'; c.lineWidth = 2;
+            c.beginPath(); c.moveTo(baseR, 0); c.lineTo(baseR + 12, 0); c.lineTo(baseR + 16, -4); c.moveTo(baseR + 12, 0); c.lineTo(baseR + 16, 4); c.stroke();
+          }
+          c.fillStyle = this.hitFlash > 0 ? '#fff' : this.species.base;
+          c.beginPath(); c.ellipse(2, 0, baseR * 1.18, baseR * 0.92, 0, 0, Math.PI * 2); c.fill();
+          for (const side of [-1, 1]) {
+            c.fillStyle = this.species.eye; c.beginPath(); c.arc(baseR * 0.42, side * baseR * 0.48, baseR * 0.26, 0, Math.PI * 2); c.fill();
+            c.fillStyle = '#090909'; c.beginPath(); c.ellipse(baseR * 0.48, side * baseR * 0.48, baseR * 0.08, baseR * 0.2, 0, 0, Math.PI * 2); c.fill();
+          }
+          c.restore();
+
+          // Overhead Name & Enemy HP Bar
+          if (showLabel && !this.isPlayer) {
+            const bw = 42, bh = 5, bx = this.x - bw / 2, by = this.y - baseR - 16;
+            c.fillStyle = 'rgba(0,0,0,0.65)'; c.fillRect(bx, by, bw, bh);
+            c.fillStyle = this.poisonTimer > 0 ? '#84ff3b' : '#ff5247';
+            c.fillRect(bx, by, bw * clamp(this.hp / this.maxHp, 0, 1), bh);
+            c.font = 'bold 10px sans-serif'; c.textAlign = 'center'; c.fillStyle = '#e8f5e4';
+            c.fillText(this.name, this.x, by - 4);
+          }
+          c.restore();
+        }
+      }
+
+      // -------------------- COMBAT & GAME LOGIC --------------------
+      function killSnake(victim, killer, cause) {
+        if (!victim.alive) return;
+        victim.alive = false;
+        spawnParticles(victim.x, victim.y, victim.species.stripe, 14, 140);
+
+        // Drop meat orbs along body
+        for (let i = 0; i < victim.segments.length; i += 4) {
+          meatList.push({ x: victim.segments[i].x + rand(-8, 8), y: victim.segments[i].y + rand(-8, 8), r: 9, mass: 4.5, heal: 12, life: 22 });
+        }
+
+        if (killer && killer !== victim) {
+          killer.kills++;
+          killer.heal(25, true);
+          if (killer.isPlayer) { matchStats.kills++; Sound.kill(); }
+          pushKillFeed(`${killer.name} [${cause}] ${victim.name}`);
+        } else {
+          pushKillFeed(`${victim.name} eliminated (${cause})`);
+        }
+
+        const aliveCount = snakes.filter(s => s.alive).length;
+        if (victim.isPlayer) {
+          matchStats.rank = aliveCount + 1;
+          matchStats.reason = killer ? `Eliminated by ${killer.name} (${cause})` : `Eliminated by ${cause}`;
+          endMatch(false);
+        } else if (player && player.alive && aliveCount === 1) {
+          matchStats.rank = 1;
+          matchStats.reason = 'Last Serpent Standing — 50-Snake Champion!';
+          endMatch(true);
+        }
+      }
+
+      function spawnPrey(count = 1) {
+        for (let i = 0; i < count; i++) {
+          const t = PREY_TYPES[Math.floor(Math.random() * PREY_TYPES.length)];
+          const pt = randInCircle(safeZone.cx, safeZone.cy, Math.min(safeZone.r, ARENA_RADIUS), 120);
+          preyList.push({ ...t, x: pt.x, y: pt.y, angle: rand(0, Math.PI * 2), timer: rand(0.5, 2.5) });
+        }
+      }
+
+      function startMatch() {
+        screenState = 'playing';
+        document.getElementById('lobbyScreen').style.display = 'none';
+        document.getElementById('resultsScreen').classList.remove('open');
+        document.getElementById('hud').style.display = 'block';
+        document.getElementById('killFeed').innerHTML = '';
+
+        generateWorld(profile.selectedBiome);
+        snakes = []; preyList = []; meatList = []; projectiles = []; particles = []; floatTexts = [];
+        safeZone.active = profile.selectedMode === 'br';
+        safeZone.cx = WORLD_CENTER; safeZone.cy = WORLD_CENTER;
+        safeZone.r = ARENA_RADIUS; safeZone.targetR = ARENA_RADIUS * 0.72;
+        safeZone.stage = 1; safeZone.timer = 32; safeZone.shrinking = false;
+
+        matchStats.kills = 0; matchStats.prey = 0; matchStats.maxLen = 115; matchStats.rank = TOTAL_SNAKES; matchStats.reason = '';
+
+        const pSpec = SPECIES.find(s => s.id === profile.selectedSnake) || SPECIES[0];
+        const pSpawn = randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS * 0.65, 200);
+        player = new Snake({ name: profile.name, species: pSpec, x: pSpawn.x, y: pSpawn.y, isPlayer: true, mass: 26 });
+        snakes.push(player);
+
+        // Spawn 49 AI Snakes (Total = 50)
+        for (let i = 1; i < TOTAL_SNAKES; i++) {
+          const sp = SPECIES[Math.floor(Math.random() * SPECIES.length)];
+          const pt = randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 260);
+          const nm = AI_PREFIX[i % AI_PREFIX.length] + AI_SUFFIX[Math.floor(i / 3) % AI_SUFFIX.length];
+          snakes.push(new Snake({ name: nm, species: sp, x: pt.x, y: pt.y, mass: rand(22, 34) }));
+        }
+
+        spawnPrey(220);
+        camera.x = player.x; camera.y = player.y; camera.lookX = 0; camera.lookY = 0;
+        const hint = document.getElementById('controlsHint');
+        if (hint) { hint.style.opacity = '1'; setTimeout(() => { hint.style.opacity = '0'; }, 5500); }
+      }
+
+      function endMatch(isWin) {
+        screenState = 'results';
+        document.getElementById('hud').style.display = 'none';
+        const gold = (isWin ? 250 : Math.max(30, (TOTAL_SNAKES - matchStats.rank) * 4)) + matchStats.kills * 35;
+        const xp = (isWin ? 180 : 50) + matchStats.kills * 25 + matchStats.prey * 2;
+        profile.coins += gold; profile.xp += xp;
+        profile.stats.matches++;
+        if (isWin) profile.stats.wins++;
+        profile.stats.kills += matchStats.kills;
+        profile.stats.prey += matchStats.prey;
+        if (matchStats.maxLen > profile.stats.bestLength) profile.stats.bestLength = matchStats.maxLen;
+        while (profile.xp >= getXpNeed(profile.level)) { profile.xp -= getXpNeed(profile.level); profile.level++; }
+        saveProfile();
+
+        document.getElementById('resTitle').textContent = isWin ? '#1 APEX PREDATOR!' : `RANK #${matchStats.rank} / ${TOTAL_SNAKES}`;
+        document.getElementById('resSub').textContent = matchStats.reason;
+        document.getElementById('resRank').textContent = `#${matchStats.rank}`;
+        document.getElementById('resKills').textContent = matchStats.kills;
+        document.getElementById('resLen').textContent = matchStats.maxLen;
+        document.getElementById('resPrey').textContent = matchStats.prey;
+        document.getElementById('resGold').textContent = `+${gold} 🪙 Gold`;
+        document.getElementById('resXp').textContent = `+${xp} XP`;
+        document.getElementById('resultsScreen').classList.add('open');
+        isWin ? Sound.win() : Sound.over();
+      }
+
+      function enterLobby() {
+        screenState = 'lobby';
+        document.getElementById('hud').style.display = 'none';
+        document.getElementById('resultsScreen').classList.remove('open');
+        document.getElementById('lobbyScreen').style.display = 'block';
+        generateWorld(profile.selectedBiome);
+        const sp = SPECIES.find(s => s.id === profile.selectedSnake) || SPECIES[0];
+        lobbySnake = new Snake({ name: profile.name, species: sp, x: appW * 0.5, y: appH * 0.5, isPlayer: true, mass: 34 });
+        refreshLobbyUI();
+      }
+
+      // -------------------- UPDATE & RENDER LOOP --------------------
+      function updateGame(dt) {
+        // Player controls
+        if (player && player.alive) {
+          let kx = (ctrl.keys.right ? 1 : 0) - (ctrl.keys.left ? 1 : 0);
+          let ky = (ctrl.keys.down ? 1 : 0) - (ctrl.keys.up ? 1 : 0);
+          if (kx !== 0 || ky !== 0) player.targetAngle = Math.atan2(ky, kx);
+          else if (ctrl.joyActive && ctrl.joyMag > 8) player.targetAngle = ctrl.joyAngle;
+          player.boosting = ctrl.boostHeld || ctrl.keys.boost;
+          matchStats.maxLen = Math.max(matchStats.maxLen, player.getLen());
+        }
+
+        // Safe Zone timer & shrink
+        if (safeZone.active) {
+          safeZone.timer -= dt;
+          if (!safeZone.shrinking && safeZone.timer <= 0) {
+            safeZone.shrinking = true; safeZone.timer = 22;
+            safeZone.targetR = Math.max(420, safeZone.r * 0.65);
+          } else if (safeZone.shrinking) {
+            safeZone.r = Math.max(safeZone.targetR, safeZone.r - (ARENA_RADIUS * 0.015) * dt);
+            if (safeZone.timer <= 0 || safeZone.r <= safeZone.targetR) {
+              safeZone.shrinking = false; safeZone.stage = Math.min(6, safeZone.stage + 1); safeZone.timer = 28;
+            }
+          }
+        }
+
+        rebuildGrids();
+
+        for (const s of snakes) s.update(dt);
+
+        // Snake-to-Snake Bite Combat
+        for (const s of snakes) {
+          if (!s.alive || s.biteCd > 0) continue;
+          const r = s.getRadius();
+          const near = queryGrid(snakeGrid, s.x, s.y, r + 60);
+          for (const o of near) {
+            if (o === s || !o.alive) continue;
+            const oR = o.getRadius();
+            let hit = false;
+            for (let k = 0; k < o.segments.length; k += 2) {
+              if (distSq(s.x, s.y, o.segments[k].x, o.segments[k].y) < (r + oR * 0.85) ** 2) { hit = true; break; }
+            }
+            if (hit) {
+              s.biteCd = 0.55;
+              const isCrit = s.boosting && s.stamina > 8;
+              const baseDmg = isCrit ? (s.species.id === 'viper' ? 38 : 32) : 20;
+              o.takeDamage(baseDmg, s, isCrit ? 'CRIT Bite' : 'Bite', isCrit);
+              if (s.isPlayer || o.isPlayer) Sound.bite(isCrit);
+              break;
+            }
+          }
+        }
+
+        // Prey movement & eating
+        for (let i = preyList.length - 1; i >= 0; i--) {
+          const p = preyList[i];
+          if (p.speed > 0) {
+            p.timer -= dt;
+            if (p.timer <= 0) { p.angle += rand(-1.3, 1.3); p.timer = rand(0.8, 2.2); }
+            p.x += Math.cos(p.angle) * p.speed * dt;
+            p.y += Math.sin(p.angle) * p.speed * dt;
+            if (dist(p.x, p.y, WORLD_CENTER, WORLD_CENTER) > ARENA_RADIUS - 120) p.angle = Math.atan2(WORLD_CENTER - p.y, WORLD_CENTER - p.x);
+          }
+          const nearS = queryGrid(snakeGrid, p.x, p.y, 46);
+          for (const s of nearS) {
+            if (!s.alive) continue;
+            if (distSq(s.x, s.y, p.x, p.y) < (s.getRadius() + p.r) ** 2) {
+              const mult = s.species.id === 'python' ? 1.2 : 1.0;
+              s.mass += p.mass * mult;
+              s.heal(p.heal * mult, true);
+              if (s.isPlayer) { matchStats.prey++; Sound.eat(); }
+              preyList.splice(i, 1);
+              break;
+            }
+          }
+        }
+        if (preyList.length < 180) spawnPrey(6);
+
+        // Meat orbs
+        for (let i = meatList.length - 1; i >= 0; i--) {
+          const m = meatList[i]; m.life -= dt;
+          if (m.life <= 0) { meatList.splice(i, 1); continue; }
+          const nearS = queryGrid(snakeGrid, m.x, m.y, 44);
+          for (const s of nearS) {
+            if (!s.alive) continue;
+            if (distSq(s.x, s.y, m.x, m.y) < (s.getRadius() + m.r) ** 2) {
+              s.mass += m.mass; s.heal(m.heal, true);
+              if (s.isPlayer) Sound.eat();
+              meatList.splice(i, 1); break;
+            }
+          }
+        }
+
+        // Venom projectiles
+        for (let i = projectiles.length - 1; i >= 0; i--) {
+          const pr = projectiles[i];
+          pr.x += pr.vx * dt; pr.y += pr.vy * dt; pr.life -= dt;
+          if (pr.life <= 0) { projectiles.splice(i, 1); continue; }
+          const nearS = queryGrid(snakeGrid, pr.x, pr.y, 46);
+          for (const s of nearS) {
+            if (!s.alive || s === pr.owner) continue;
+            if (distSq(pr.x, pr.y, s.x, s.y) < (s.getRadius() + pr.r) ** 2) {
+              s.takeDamage(pr.dmg, pr.owner, 'Venom', false);
+              s.poisonTimer = 4.0; s.poisonDps = pr.dps; s.poisonOwner = pr.owner; s.slowTimer = 2.6;
+              projectiles.splice(i, 1); break;
+            }
+          }
+        }
+
+        // Particles & Floating Texts
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const pt = particles[i]; pt.x += pt.vx * dt; pt.y += pt.vy * dt; pt.life -= dt;
+          if (pt.life <= 0) particles.splice(i, 1);
+        }
+        for (let i = floatTexts.length - 1; i >= 0; i--) {
+          const ft = floatTexts[i]; ft.y -= 28 * dt; ft.life -= dt;
+          if (ft.life <= 0) floatTexts.splice(i, 1);
+        }
+
+        // Camera smooth follow
+        if (player && player.alive) {
+          camera.x = lerp(camera.x, player.x, clamp(dt * 8, 0, 1));
+          camera.y = lerp(camera.y, player.y, clamp(dt * 8, 0, 1));
+          if (!ctrl.lookActive && profile.settings.autoCenter) {
+            camera.lookX = lerp(camera.lookX, 0, clamp(dt * 7, 0, 1));
+            camera.lookY = lerp(camera.lookY, 0, clamp(dt * 7, 0, 1));
+          }
+          document.getElementById('btnRecenter').style.display = Math.hypot(camera.lookX, camera.lookY) > 35 ? 'flex' : 'none';
+        }
+
+        // Periodic HUD Update
+        hudTick -= dt;
+        if (hudTick <= 0 && player) {
+          hudTick = 0.1;
+          const alive = snakes.filter(s => s.alive).length;
+          document.getElementById('hudAlive').textContent = `${alive}/${TOTAL_SNAKES}`;
+          document.getElementById('hudKills').textContent = matchStats.kills;
+          document.getElementById('hudLen').textContent = player.getLen();
+          document.getElementById('hudZoneStage').textContent = safeZone.stage;
+          const zt = Math.max(0, Math.ceil(safeZone.timer));
+          document.getElementById('hudZoneTimer').textContent = `${Math.floor(zt / 60)}:${String(zt % 60).padStart(2, '0')}`;
+
+          const hpPct = clamp((player.hp / player.maxHp) * 100, 0, 100);
+          document.getElementById('hpMainFill').style.width = `${hpPct}%`;
+          document.getElementById('hpMainFill').style.background = hpPct < 30 ? '#ff4b3a' : (player.poisonTimer > 0 ? '#84ff3b' : 'linear-gradient(90deg,#3bd646,#95f54c)');
+          document.getElementById('hpNumTxt').textContent = `${Math.ceil(player.hp)} / ${player.maxHp} HP`;
+          document.getElementById('hpStatusTxt').textContent = player.poisonTimer > 0 ? '☠ POISONED' : (player.combatTimer <= 0 && player.hp < player.maxHp ? '✚ REGENERATING' : '♥ HEALTH');
+
+          const inStorm = safeZone.active && dist(player.x, player.y, safeZone.cx, safeZone.cy) > safeZone.r;
+          document.getElementById('stormVignette').style.opacity = inStorm ? '1' : '0';
+
+          const vBtn = document.getElementById('btnVenom'), cBtn = document.getElementById('btnCamo');
+          vBtn.classList.toggle('on-cd', player.venomCd > 0);
+          document.getElementById('cdTxtVenom').textContent = player.venomCd > 0 ? Math.ceil(player.venomCd) : '';
+          cBtn.classList.toggle('on-cd', player.camoCd > 0);
+          document.getElementById('cdTxtCamo').textContent = player.camoCd > 0 ? Math.ceil(player.camoCd) : '';
+
+          const tTag = document.getElementById('terrainTag');
+          if (player.terrain === 'water') { tTag.style.display = 'block'; tTag.style.background = 'rgba(26,136,148,0.85)'; tTag.textContent = '🌊 RIVER BOOST'; }
+          else if (player.terrain === 'mud') { tTag.style.display = 'block'; tTag.style.background = 'rgba(84,54,28,0.88)'; tTag.textContent = '🟤 MUD SLOW'; }
+          else tTag.style.display = 'none';
+
+          drawMinimap();
+        }
+      }
+
+      function drawMinimap() {
+        const w = miniCanvas.width, h = miniCanvas.height, sc = (w * 0.45) / ARENA_RADIUS, cx = w / 2, cy = h / 2;
+        miniCtx.clearRect(0, 0, w, h);
+        miniCtx.fillStyle = '#0d1b0f'; miniCtx.fillRect(0, 0, w, h);
+        if (safeZone.active) {
+          miniCtx.strokeStyle = '#4de2f0'; miniCtx.lineWidth = 2;
+          miniCtx.beginPath(); miniCtx.arc(cx + (safeZone.cx - WORLD_CENTER) * sc, cy + (safeZone.cy - WORLD_CENTER) * sc, safeZone.r * sc, 0, Math.PI * 2); miniCtx.stroke();
+        }
+        miniCtx.fillStyle = 'rgba(255,95,82,0.8)';
+        for (const s of snakes) {
+          if (!s.alive || s.isPlayer || s.isCamo()) continue;
+          miniCtx.fillRect(cx + (s.x - WORLD_CENTER) * sc - 1.2, cy + (s.y - WORLD_CENTER) * sc - 1.2, 2.5, 2.5);
+        }
+        if (player && player.alive) {
+          miniCtx.fillStyle = '#7ce846';
+          miniCtx.beginPath(); miniCtx.arc(cx + (player.x - WORLD_CENTER) * sc, cy + (player.y - WORLD_CENTER) * sc, 4, 0, Math.PI * 2); miniCtx.fill();
+        }
+      }
+
+      function renderGame() {
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.fillStyle = '#070d08'; ctx.fillRect(0, 0, appW, appH);
+
+        if (screenState !== 'playing') {
+          // Animated Lobby / Splash Showcase
+          const biome = BIOMES.find(b => b.id === profile.selectedBiome) || BIOMES[0];
+          ctx.fillStyle = biome.floor; ctx.fillRect(0, 0, appW, appH);
+          if (lobbySnake) {
+            lobbySnake.targetAngle = Math.sin(globalTime * 0.9) * 0.8 + globalTime * 0.35;
+            lobbySnake.x = appW * 0.5 + Math.cos(globalTime * 0.65) * Math.min(appW * 0.18, 120);
+            lobbySnake.y = appH * 0.5 + Math.sin(globalTime * 1.1) * Math.min(appH * 0.12, 70);
+            lobbySnake.angle = Math.atan2(Math.cos(globalTime * 1.1) * 70, -Math.sin(globalTime * 0.65) * 120);
+            lobbySnake.segments[0].x = lobbySnake.x; lobbySnake.segments[0].y = lobbySnake.y;
+            for (let i = 1; i < lobbySnake.segments.length; i++) {
+              const p = lobbySnake.segments[i - 1], c = lobbySnake.segments[i], dx = c.x - p.x, dy = c.y - p.y, d = Math.hypot(dx, dy) || 1;
+              if (d > 9) { c.x = p.x + (dx / d) * 9; c.y = p.y + (dy / d) * 9; }
+            }
+            lobbySnake.draw(ctx, false);
+          }
+          return;
+        }
+
+        const biome = BIOMES.find(b => b.id === profile.selectedBiome) || BIOMES[0];
+        ctx.save();
+        ctx.translate(appW / 2, appH / 2);
+        ctx.scale(camera.zoom, camera.zoom);
+        ctx.translate(-(camera.x + camera.lookX), -(camera.y + camera.lookY));
+
+        if (groundPattern) { ctx.fillStyle = groundPattern; ctx.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE); }
+
+        for (const m of mudZones) {
+          if (!isNearCam(m.x, m.y, m.r + 80)) continue;
+          ctx.fillStyle = biome.mud; ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2); ctx.fill();
+        }
+        for (const w of waterZones) {
+          if (!isNearCam(w.x, w.y, w.r + 80)) continue;
+          ctx.fillStyle = biome.water; ctx.beginPath(); ctx.arc(w.x, w.y, w.r, 0, Math.PI * 2); ctx.fill();
+        }
+
+        // Arena Boundary & Safe Zone Ring
+        ctx.strokeStyle = 'rgba(255,75,58,0.55)'; ctx.lineWidth = 14;
+        ctx.beginPath(); ctx.arc(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 0, Math.PI * 2); ctx.stroke();
+        if (safeZone.active) {
+          ctx.strokeStyle = 'rgba(77,226,240,0.85)'; ctx.lineWidth = 8;
+          ctx.beginPath(); ctx.arc(safeZone.cx, safeZone.cy, safeZone.r, 0, Math.PI * 2); ctx.stroke();
+        }
+
+        // Prey & Meat
+        for (const p of preyList) {
+          if (!isNearCam(p.x, p.y, 60)) continue;
+          ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(p.x + p.r * 0.4, p.y - 3, 2, 0, Math.PI * 2); ctx.arc(p.x + p.r * 0.4, p.y + 3, 2, 0, Math.PI * 2); ctx.fill();
+        }
+        for (const m of meatList) {
+          if (!isNearCam(m.x, m.y, 40)) continue;
+          ctx.fillStyle = '#ff9d3b'; ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2); ctx.fill();
+        }
+
+        // Snakes
+        for (const s of snakes) {
+          if (!s.alive || (!s.isPlayer && !isNearCam(s.x, s.y, 260))) continue;
+          s.draw(ctx, true);
+        }
+
+        // Projectiles & Particles
+        for (const pr of projectiles) {
+          ctx.fillStyle = '#84ff3b'; ctx.beginPath(); ctx.arc(pr.x, pr.y, pr.r, 0, Math.PI * 2); ctx.fill();
+        }
+        for (const pt of particles) {
+          ctx.globalAlpha = clamp(pt.life / pt.maxLife, 0, 1);
+          ctx.fillStyle = pt.color; ctx.beginPath(); ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        ctx.font = '900 13px sans-serif'; ctx.textAlign = 'center';
+        for (const ft of floatTexts) {
+          ctx.globalAlpha = clamp(ft.life / ft.maxLife, 0, 1);
+          ctx.fillStyle = ft.color; ctx.fillText(ft.text, ft.x, ft.y);
+        }
+        ctx.restore();
+      }
+
+      function mainLoop(ts) {
+        const dt = Math.min(0.05, (ts - (lastFrame || ts)) / 1000);
+        lastFrame = ts; globalTime += dt;
+        if (screenState === 'playing') updateGame(dt);
+        renderGame();
+        requestAnimationFrame(mainLoop);
+      }
+
+      // -------------------- UI & MODAL WIRING --------------------
+      function refreshLobbyUI() {
+        document.getElementById('lbAvatar').textContent = profile.avatar;
+        document.getElementById('lbLvl').textContent = `LV.${profile.level}`;
+        document.getElementById('lbName').textContent = profile.name;
+        document.getElementById('lbRank').textContent = getRank(profile.level);
+        document.getElementById('lbTitle').textContent = profile.title;
+        document.getElementById('lbCoins').textContent = profile.coins;
+        const sp = SPECIES.find(s => s.id === profile.selectedSnake) || SPECIES[0];
+        const bi = BIOMES.find(b => b.id === profile.selectedBiome) || BIOMES[0];
+        document.getElementById('scSnake').textContent = sp.name;
+        document.getElementById('scBiome').textContent = bi.name;
+        document.getElementById('modeLabel').textContent = profile.selectedMode === 'br' ? '50-Snake Safe Zone BR' : '50-Snake Endless Wild';
+        const muteIcon = profile.settings.muted ? '🔇' : '🔊';
+        document.getElementById('btnLobbyAudio').textContent = muteIcon;
+        document.getElementById('hudAudioBtn').textContent = muteIcon;
+      }
+
+      function renderProfileModal() {
+        document.getElementById('prAv').textContent = profile.avatar;
+        document.getElementById('prLv').textContent = `LV.${profile.level}`;
+        document.getElementById('prNameIn').value = profile.name;
+        document.getElementById('prRankTxt').textContent = getRank(profile.level);
+        const need = getXpNeed(profile.level);
+        document.getElementById('prXpTxt').textContent = `${profile.xp} / ${need} XP`;
+        document.getElementById('prXpBar').style.width = `${Math.min(100, (profile.xp / need) * 100)}%`;
+
+        const avWrap = document.getElementById('avatarChips'); avWrap.innerHTML = '';
+        AVATARS.forEach(a => {
+          const b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (profile.avatar === a ? ' selected' : '');
+          b.textContent = a; b.onclick = () => { profile.avatar = a; saveProfile(); renderProfileModal(); refreshLobbyUI(); Sound.click(); };
+          avWrap.appendChild(b);
+        });
+
+        document.getElementById('careerGrid').innerHTML = `
+          <div class="stat-box"><div class="stat-val">${profile.stats.matches}</div><div class="stat-lbl">Matches</div></div>
+          <div class="stat-box"><div class="stat-val" style="color:var(--gold);">${profile.stats.wins}</div><div class="stat-lbl">Wins</div></div>
+          <div class="stat-box"><div class="stat-val">${profile.stats.kills}</div><div class="stat-lbl">Kills</div></div>
+          <div class="stat-box"><div class="stat-val">${profile.stats.bestLength}</div><div class="stat-lbl">Max Len</div></div>`;
+
+        const sg = document.getElementById('snakesGrid'); sg.innerHTML = '';
+        SPECIES.forEach(s => {
+          const owned = profile.ownedSnakes.includes(s.id), sel = profile.selectedSnake === s.id;
+          const card = document.createElement('div'); card.className = 'card-item' + (sel ? ' selected' : '');
+          card.innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:center;"><strong style="color:${s.stripe};">${s.name}</strong><span style="width:16px;height:16px;border-radius:50%;background:${s.base};border:2px solid ${s.stripe};"></span></div>
+            <div style="font-size:11px;color:var(--text-muted);">${s.trait}</div>
+            <button type="button" class="btn-gold" style="padding:8px;font-size:11px;">${sel ? 'EQUIPPED' : (owned ? 'SELECT' : `UNLOCK ${s.price} 🪙`)}</button>`;
+          card.onclick = () => {
+            if (owned) { profile.selectedSnake = s.id; }
+            else if (profile.coins >= s.price) { profile.coins -= s.price; profile.ownedSnakes.push(s.id); profile.selectedSnake = s.id; }
+            else return;
+            saveProfile(); Sound.click(); renderProfileModal(); enterLobby();
+          };
+          sg.appendChild(card);
+        });
+
+        const bg = document.getElementById('biomeGrid'); bg.innerHTML = '';
+        BIOMES.forEach(b => {
+          const sel = profile.selectedBiome === b.id;
+          const card = document.createElement('div'); card.className = 'card-item' + (sel ? ' selected' : '');
+          card.innerHTML = `<strong style="color:var(--gold);">${b.name}</strong><div style="height:24px;border-radius:8px;background:${b.floor};border:1px solid ${b.water};"></div><div style="font-size:11px;color:var(--green);font-weight:800;">${sel ? 'ACTIVE BIOME' : 'TAP TO SELECT'}</div>`;
+          card.onclick = () => { profile.selectedBiome = b.id; saveProfile(); Sound.click(); renderProfileModal(); enterLobby(); };
+          bg.appendChild(card);
+        });
+      }
+
+      function openProfileModal(tabId) {
+        renderProfileModal();
+        document.querySelectorAll('#profileTabs .tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
+        document.querySelectorAll('#profileModal .tab-pane').forEach(p => p.classList.toggle('active', p.id === tabId));
+        document.getElementById('profileModal').classList.add('open');
+        Sound.click();
+      }
+
+      // -------------------- SPLASH ENTER (100% FIXED CLICK + TOUCH) --------------------
+      function handleSplashEnter(e) {
+        if (e) e.stopPropagation();
+        if (splashEntered) return;
+        splashEntered = true;
+        Sound.init();
+        Sound.click();
+        document.getElementById('tapEnterWrap').style.display = 'none';
+        document.getElementById('loaderWrap').style.display = 'flex';
+        let pct = 0;
+        const fill = document.getElementById('loaderFill'), txt = document.getElementById('loaderPct');
+        const iv = setInterval(() => {
+          pct = Math.min(100, pct + rand(14, 24));
+          fill.style.width = `${pct}%`; txt.textContent = `${Math.floor(pct)}%`;
+          if (pct >= 100) {
+            clearInterval(iv);
+            const sp = document.getElementById('splashScreen');
+            sp.classList.add('fade-out');
+            setTimeout(() => { sp.style.display = 'none'; enterLobby(); }, 350);
+          }
+        }, 90);
+      }
+
+      document.getElementById('btnTapEnter').addEventListener('click', handleSplashEnter);
+      document.getElementById('splashScreen').addEventListener('click', handleSplashEnter);
+
+      // Lobby & Modal Buttons
+      document.getElementById('profileBadge').addEventListener('click', () => openProfileModal('tabProfile'));
+      document.getElementById('showcasePill').addEventListener('click', () => openProfileModal('tabSnakes'));
+      document.querySelectorAll('[data-open-prof]').forEach(b => b.addEventListener('click', () => openProfileModal(b.dataset.openProf)));
+      document.querySelectorAll('#profileTabs .tab-btn').forEach(b => b.addEventListener('click', () => openProfileModal(b.dataset.tab)));
+      document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => { document.getElementById(b.dataset.close).classList.remove('open'); Sound.click(); }));
+      document.getElementById('prNameIn').addEventListener('input', e => { profile.name = e.target.value.trim() || 'ApexHunter'; saveProfile(); refreshLobbyUI(); });
+
+      document.getElementById('modePill').addEventListener('click', () => {
+        profile.selectedMode = profile.selectedMode === 'br' ? 'endless' : 'br';
+        saveProfile(); refreshLobbyUI(); Sound.click();
+      });
+
+      document.getElementById('btnStartMatch').addEventListener('click', () => {
+        Sound.init(); Sound.click();
+        const mm = document.getElementById('matchmakingOverlay'), mt = document.getElementById('mmText');
+        mm.classList.add('open');
+        let cnt = 8;
+        const iv = setInterval(() => {
+          cnt = Math.min(TOTAL_SNAKES, cnt + Math.floor(rand(8, 15)));
+          mt.textContent = `${cnt} / ${TOTAL_SNAKES} SNAKES READY`;
+          if (cnt >= TOTAL_SNAKES) { clearInterval(iv); setTimeout(() => { mm.classList.remove('open'); startMatch(); }, 250); }
+        }, 120);
+      });
+
+      const toggleMute = () => { profile.settings.muted = !profile.settings.muted; saveProfile(); refreshLobbyUI(); Sound.click(); };
+      document.getElementById('btnLobbyAudio').addEventListener('click', toggleMute);
+      document.getElementById('hudAudioBtn').addEventListener('click', toggleMute);
+      document.getElementById('hudLobbyBtn').addEventListener('click', () => { Sound.click(); enterLobby(); });
+      document.getElementById('btnLobbySettings').addEventListener('click', () => { document.getElementById('settingsModal').classList.add('open'); Sound.click(); });
+      document.getElementById('setSfxVol').addEventListener('input', e => { profile.settings.sfxVol = e.target.value / 100; saveProfile(); });
+      document.getElementById('btnAutoCenter').addEventListener('click', e => {
+        profile.settings.autoCenter = !profile.settings.autoCenter;
+        e.target.textContent = profile.settings.autoCenter ? 'ON' : 'OFF';
+        e.target.classList.toggle('selected', profile.settings.autoCenter);
+        saveProfile(); Sound.click();
+      });
+      document.getElementById('btnResLobby').addEventListener('click', () => { Sound.click(); enterLobby(); });
+      document.getElementById('btnResAgain').addEventListener('click', () => { Sound.click(); startMatch(); });
+
+      // -------------------- IN-GAME TOUCH, MOUSE & KEYBOARD CONTROLS --------------------
+      const joyEl = document.getElementById('floatingJoy'), joyKnob = document.getElementById('floatingJoyKnob');
+      function updateJoyVisual(x, y) {
+        const dx = x - ctrl.joyOx, dy = y - ctrl.joyOy, d = Math.hypot(dx, dy);
+        ctrl.joyMag = d; ctrl.joyAngle = Math.atan2(dy, dx);
+        const clamped = Math.min(d, 40);
+        joyKnob.style.transform = `translate(calc(-50% + ${Math.cos(ctrl.joyAngle) * clamped}px), calc(-50% + ${Math.sin(ctrl.joyAngle) * clamped}px))`;
+      }
+
+      canvas.addEventListener('touchstart', e => {
+        if (screenState !== 'playing') return;
+        e.preventDefault();
+        for (const t of e.changedTouches) {
+          if (t.clientX < appW * 0.5 && ctrl.joyTouchId === null) {
+            ctrl.joyTouchId = t.identifier; ctrl.joyActive = true; ctrl.joyOx = t.clientX; ctrl.joyOy = t.clientY;
+            joyEl.style.left = `${t.clientX}px`; joyEl.style.top = `${t.clientY}px`; joyEl.classList.add('visible');
+            updateJoyVisual(t.clientX, t.clientY);
+          } else if (t.clientX >= appW * 0.5 && ctrl.lookTouchId === null) {
+            ctrl.lookTouchId = t.identifier; ctrl.lookActive = true; ctrl.lookLastX = t.clientX; ctrl.lookLastY = t.clientY;
+          }
+        }
+      }, { passive: false });
+
+      canvas.addEventListener('touchmove', e => {
+        if (screenState !== 'playing') return;
+        e.preventDefault();
+        for (const t of e.changedTouches) {
+          if (t.identifier === ctrl.joyTouchId) updateJoyVisual(t.clientX, t.clientY);
+          else if (t.identifier === ctrl.lookTouchId) {
+            camera.lookX = clamp(camera.lookX - (t.clientX - ctrl.lookLastX) * 1.3, -FREE_LOOK_MAX, FREE_LOOK_MAX);
+            camera.lookY = clamp(camera.lookY - (t.clientY - ctrl.lookLastY) * 1.3, -FREE_LOOK_MAX, FREE_LOOK_MAX);
+            ctrl.lookLastX = t.clientX; ctrl.lookLastY = t.clientY;
+          }
+        }
+      }, { passive: false });
+
+      const endTouch = e => {
+        for (const t of e.changedTouches) {
+          if (t.identifier === ctrl.joyTouchId) { ctrl.joyTouchId = null; ctrl.joyActive = false; ctrl.joyMag = 0; joyEl.classList.remove('visible'); }
+          if (t.identifier === ctrl.lookTouchId) { ctrl.lookTouchId = null; ctrl.lookActive = false; }
+        }
+      };
+      canvas.addEventListener('touchend', endTouch);
+      canvas.addEventListener('touchcancel', endTouch);
+
+      // Mouse Steering for Desktop
+      canvas.addEventListener('mousedown', e => {
+        if (screenState !== 'playing') return;
+        ctrl.joyMouse = true; ctrl.joyActive = true; ctrl.joyOx = appW / 2; ctrl.joyOy = appH / 2;
+        updateJoyVisual(e.clientX, e.clientY);
+      });
+      window.addEventListener('mousemove', e => { if (ctrl.joyMouse && screenState === 'playing') updateJoyVisual(e.clientX, e.clientY); });
+      window.addEventListener('mouseup', () => { ctrl.joyMouse = false; ctrl.joyActive = false; ctrl.joyMag = 0; });
+
+      // Ability Buttons
+      const btnBoost = document.getElementById('btnBoost');
+      const setBoost = on => { ctrl.boostHeld = on; btnBoost.classList.toggle('active', on); };
+      btnBoost.addEventListener('touchstart', e => { e.preventDefault(); setBoost(true); }, { passive: false });
+      btnBoost.addEventListener('touchend', e => { e.preventDefault(); setBoost(false); });
+      btnBoost.addEventListener('mousedown', () => setBoost(true));
+      window.addEventListener('mouseup', () => setBoost(false));
+      document.getElementById('btnVenom').addEventListener('click', () => player && player.activateVenom());
+      document.getElementById('btnCamo').addEventListener('click', () => player && player.activateCamo());
+      document.getElementById('btnRecenter').addEventListener('click', () => { camera.lookX = 0; camera.lookY = 0; });
+
+      window.addEventListener('keydown', e => {
+        if (e.code === 'KeyW' || e.code === 'ArrowUp') ctrl.keys.up = true;
+        if (e.code === 'KeyS' || e.code === 'ArrowDown') ctrl.keys.down = true;
+        if (e.code === 'KeyA' || e.code === 'ArrowLeft') ctrl.keys.left = true;
+        if (e.code === 'KeyD' || e.code === 'ArrowRight') ctrl.keys.right = true;
+        if (e.code === 'Space') ctrl.keys.boost = true;
+        if (e.code === 'KeyE' && player) player.activateVenom();
+        if (e.code === 'KeyQ' && player) player.activateCamo();
+      });
+      window.addEventListener('keyup', e => {
+        if (e.code === 'KeyW' || e.code === 'ArrowUp') ctrl.keys.up = false;
+        if (e.code === 'KeyS' || e.code === 'ArrowDown') ctrl.keys.down = false;
+        if (e.code === 'KeyA' || e.code === 'ArrowLeft') ctrl.keys.left = false;
+        if (e.code === 'KeyD' || e.code === 'ArrowRight') ctrl.keys.right = false;
+        if (e.code === 'Space') ctrl.keys.boost = false;
+      });
+
+      // Boot
+      window.addEventListener('resize', resizeCanvas);
+      resizeCanvas();
+      generateWorld(profile.selectedBiome);
+      const initSpec = SPECIES.find(s => s.id === profile.selectedSnake) || SPECIES[0];
+      lobbySnake = new Snake({ name: profile.name, species: initSpec, x: appW * 0.5, y: appH * 0.5, isPlayer: true, mass: 34 });
+      requestAnimationFrame(mainLoop);
+    })();
+  </script>
+</body>
+</html>
