@@ -1,4 +1,4 @@
-name: Build Serpent-Wild v19 Endless Growth & Notifications APK
+name: Build Serpent-Wild v20 7-Maps & Giant Growth APK
 
 on:
   push:
@@ -91,7 +91,7 @@ jobs:
               wf.writeframes(data)
           PYEOF
 
-      - name: Generate Serpent-Wild v19 Android Project
+      - name: Generate Serpent-Wild v20 Android Project
         run: |
           mkdir -p app/src/main/java/com/apexwild/serpent app/src/main/assets app/src/main/res/values
 
@@ -138,8 +138,8 @@ jobs:
                   applicationId = "com.apexwild.serpent.royale"
                   minSdk = 26
                   targetSdk = 35
-                  versionCode = 19
-                  versionName = "19.0.0"
+                  versionCode = 20
+                  versionName = "20.0.0"
               }
               signingConfigs {
                   create("release") {
@@ -268,7 +268,7 @@ jobs:
                       val notif = NotificationCompat.Builder(context, CHANNEL_ID)
                           .setSmallIcon(iconRes)
                           .setContentTitle("🐍 Serpent Wild: Apex Awaits!")
-                          .setContentText("Your Daily Coins & Diamonds are ready! Enter the 18KM Jungle and become #1!")
+                          .setContentText("7 Ultra-Realistic Maps & Daily Rewards are ready! Become the #1 Apex King!")
                           .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                           .setAutoCancel(true)
                           .setContentIntent(pi)
@@ -514,7 +514,7 @@ jobs:
           <head>
             <meta charset="UTF-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-            <title>SERPENT WILD: APEX — v19 Endless Growth &amp; Notifications</title>
+            <title>SERPENT WILD: APEX — v20 7-Maps &amp; Giant Growth</title>
             <style>
               :root {
                 --bg-dark: #060b07;
@@ -786,16 +786,16 @@ jobs:
                   </svg>
                 </div>
                 <div class="splash-title">SERPENT WILD: APEX</div>
-                <div class="splash-subtitle">v19 • ENDLESS GROWTH • ULTRA JUNGLE • ALERTS</div>
+                <div class="splash-subtitle">v20 • 7 ULTRA MAPS • GIANT GROWTH • KING CROWN</div>
               </div>
               <div id="tapEnterWrap">
                 <button class="btn-gold" id="btnTapEnter" type="button">TAP TO ENTER JUNGLE</button>
                 <div style="font-size:10.5px;color:var(--text-muted);text-align:center;">Press the button above to enter</div>
               </div>
               <div id="loaderWrap">
-                <div class="loader-row"><span id="loaderStatus">Loading Endless Growth &amp; Living 18KM Jungle...</span><span id="loaderPct">0%</span></div>
+                <div class="loader-row"><span id="loaderStatus">Loading 7 Ultra-Realistic Maps &amp; Giant Growth...</span><span id="loaderPct">0%</span></div>
                 <div class="loader-bar"><div id="loaderFill"></div></div>
-                <div id="loaderTip">Tip: Keep eating to grow endlessly longer and thicker!</div>
+                <div id="loaderTip">Tip: Reach #1 on the leaderboard to wear the glowing Golden Apex Crown!</div>
               </div>
             </div>
 
@@ -820,7 +820,7 @@ jobs:
                 <button class="rail-item glass shop-hl" type="button" data-open-prof="tabShop"><span>🛒</span><span>Shop</span></button>
                 <button class="rail-item glass" type="button" data-open-prof="tabSnakes"><span>🦁</span><span>Animals (50)</span></button>
                 <button class="rail-item glass" type="button" data-open-prof="tabUpgrades"><span>⚡</span><span>Upgrades</span></button>
-                <button class="rail-item glass" type="button" data-open-prof="tabDecor"><span>🍎</span><span>Arena Decor</span></button>
+                <button class="rail-item glass" type="button" data-open-prof="tabDecor"><span>🗺️</span><span>7 Maps &amp; Decor</span></button>
                 <button class="rail-item glass" type="button" data-open-prof="tabAch"><span>🏆</span><span>Trophies</span></button>
               </div>
 
@@ -857,7 +857,7 @@ jobs:
                 <div class="modal-tabs" id="profileTabs">
                   <button class="tab-btn active" type="button" data-tab="tabSnakes">🦁 Animals (50)</button>
                   <button class="tab-btn" type="button" data-tab="tabUpgrades">⚡ Upgrades &amp; Potions</button>
-                  <button class="tab-btn" type="button" data-tab="tabDecor">🍎 Arena Decor</button>
+                  <button class="tab-btn" type="button" data-tab="tabDecor">🗺️ 7 Maps &amp; Decor</button>
                   <button class="tab-btn" type="button" data-tab="tabAch">🏆 Trophies</button>
                   <button class="tab-btn" type="button" data-tab="tabShop">🛒 Gold &amp; Diamond Shop</button>
                   <button class="tab-btn" type="button" data-tab="tabProfile">👤 Profile</button>
@@ -888,7 +888,7 @@ jobs:
                   <div class="tab-pane" id="tabDecor">
                     <div class="section-lbl">Food &amp; Prey Style</div>
                     <div class="armory-grid" id="foodStyleGrid" style="margin-bottom:12px;"></div>
-                    <div class="section-lbl">Arena Biome</div>
+                    <div class="section-lbl">7 Ultra-Realistic Arena Maps (All Free to Play!)</div>
                     <div class="armory-grid" id="biomeGrid"></div>
                   </div>
 
@@ -980,7 +980,7 @@ jobs:
                     <input type="range" id="setSfxVol" min="0" max="100" value="80" style="width:120px;accent-color:#f6c445;" />
                   </div>
                   <div class="setting-row">
-                    <div><div style="font-size:12.5px;font-weight:800;">Graphics Quality</div><div style="font-size:9.5px;color:var(--text-muted);">High/Ultra enables clouds, butterflies &amp; glow</div></div>
+                    <div><div style="font-size:12.5px;font-weight:800;">Graphics Quality</div><div style="font-size:9.5px;color:var(--text-muted);">High/Ultra enables weather, clouds &amp; glow</div></div>
                     <div class="chip-row" id="setGfxRow" style="margin:0;"></div>
                   </div>
                   <div class="setting-row">
@@ -1128,12 +1128,12 @@ jobs:
                 const FREE_LOOK_MAX = 640;
 
                 const REGIONS = [
-                  { id: 'basin',  name: 'Emerald Basin',  x: 9000,  y: 9000,  r: 2800, col: 'rgba(56,120,38,0.18)' },
-                  { id: 'ruins',  name: 'Ancient Ruins',  x: 5000,  y: 5000,  r: 2600, col: 'rgba(110,115,96,0.2)' },
-                  { id: 'swamp',  name: 'Venom Swamp',    x: 13000, y: 5200,  r: 2700, col: 'rgba(30,84,58,0.24)' },
-                  { id: 'river',  name: 'Crystal River',  x: 3800,  y: 9600,  r: 2600, col: 'rgba(26,128,144,0.18)' },
-                  { id: 'canyon', name: 'Red Canyon',     x: 5200,  y: 13200, r: 2700, col: 'rgba(148,74,34,0.24)' },
-                  { id: 'delta',  name: 'Golden Delta',   x: 12800, y: 12800, r: 2800, col: 'rgba(164,132,44,0.2)' }
+                  { id: 'basin',  name: 'Emerald Basin',  x: 9000,  y: 9000,  r: 2800, col: 'rgba(56,120,38,0.16)' },
+                  { id: 'ruins',  name: 'Ancient Ruins',  x: 5000,  y: 5000,  r: 2600, col: 'rgba(110,115,96,0.18)' },
+                  { id: 'swamp',  name: 'Venom Swamp',    x: 13000, y: 5200,  r: 2700, col: 'rgba(30,84,58,0.2)' },
+                  { id: 'river',  name: 'Crystal River',  x: 3800,  y: 9600,  r: 2600, col: 'rgba(26,128,144,0.16)' },
+                  { id: 'canyon', name: 'Red Canyon',     x: 5200,  y: 13200, r: 2700, col: 'rgba(148,74,34,0.2)' },
+                  { id: 'delta',  name: 'Golden Delta',   x: 12800, y: 12800, r: 2800, col: 'rgba(164,132,44,0.18)' }
                 ];
 
                 const AVATARS = ['🐍', '🦁', '🐯', '🐺', '🦈', '🐉'];
@@ -1177,6 +1177,17 @@ jobs:
                   { id: 'p100', name: 'Hungry Hunter',   desc: 'Eat 100 jungle animals',       stat: 'prey',       goal: 100,  coins: 300,  dias: 4 },
                   { id: 'l500', name: 'Giant Serpent',   desc: 'Reach 500m Length in a match', stat: 'bestLength', goal: 500,  coins: 600,  dias: 8 },
                   { id: 'w1',   name: 'Jungle Champion', desc: 'Win 1 Classic Royale match',   stat: 'wins',       goal: 1,    coins: 1000, dias: 12 }
+                ];
+
+                // 7 ULTRA-REALISTIC ARENA MAPS WITH UNIQUE WEATHER, RIVERS & TREES!
+                const BIOMES = [
+                  { id: 'amazon',  name: '🌿 Amazon Rainforest', desc: 'Lush emerald jungle, rivers & butterflies',   floor: '#182812', moss: 'rgba(54,104,34,0.48)',  soil: 'rgba(66,48,29,0.38)',   water: '#1a7d8a', waterDeep: '#0d4e59', shore: 'rgba(130,115,82,0.52)', mud: '#362415', tree1: '#1b521a', tree2: '#266b22', tree3: '#36852c', fx: 'butterfly' },
+                  { id: 'tundra',  name: '❄️ Frozen Tundra',     desc: 'Snowy glaciers, ice rivers & snowfall',       floor: '#cbdceb', moss: 'rgba(240,248,255,0.6)', soil: 'rgba(145,175,200,0.38)',water: '#2b95c4', waterDeep: '#125a82', shore: 'rgba(220,240,255,0.75)',mud: '#7d92a6', tree1: '#1a4a3a', tree2: '#25614d', tree3: '#e8f5ff', fx: 'snow' },
+                  { id: 'volcano', name: '🌋 Volcanic Caldera',  desc: 'Black basalt, molten lava rivers & embers',   floor: '#1a1514', moss: 'rgba(56,34,28,0.55)',   soil: 'rgba(38,28,26,0.5)',    water: '#ff4e14', waterDeep: '#ffae19', shore: 'rgba(110,36,16,0.72)',  mud: '#2e1d19', tree1: '#332421', tree2: '#472c24', tree3: '#ff6b24', fx: 'embers' },
+                  { id: 'sakura',  name: '🌸 Sakura Valley',     desc: 'Spring meadow, pink cherry trees & petals',   floor: '#284522', moss: 'rgba(84,142,58,0.45)',  soil: 'rgba(110,82,54,0.3)',   water: '#2299b5', waterDeep: '#11637a', shore: 'rgba(186,164,124,0.55)',mud: '#4d3a2b', tree1: '#d95b8b', tree2: '#f285b0', tree3: '#ffc2da', fx: 'petals' },
+                  { id: 'sahara',  name: '🏜️ Sahara Dunes',      desc: 'Golden desert sands, oasis & sandstone',      floor: '#b58d52', moss: 'rgba(218,176,104,0.52)',soil: 'rgba(150,104,48,0.42)', water: '#1ea3a8', waterDeep: '#0f6a73', shore: 'rgba(235,204,142,0.7)', mud: '#8a6232', tree1: '#2d6e29', tree2: '#3f8a36', tree3: '#5ca847', fx: 'sand' },
+                  { id: 'bayou',   name: '🌫️ Misty Bayou Swamp', desc: 'Dark cypress marsh & glowing fireflies',      floor: '#12201c', moss: 'rgba(34,88,68,0.48)',   soil: 'rgba(42,40,30,0.4)',    water: '#1e6e68', waterDeep: '#0e4240', shore: 'rgba(90,84,64,0.5)',    mud: '#292117', tree1: '#143d30', tree2: '#1f5443', tree3: '#2e705a', fx: 'butterfly' },
+                  { id: 'canyon',  name: '🪨 Red Canyon Oasis',  desc: 'Terracotta mesas & turquoise rivers',         floor: '#3b2416', moss: 'rgba(110,68,36,0.45)',  soil: 'rgba(148,74,34,0.42)',  water: '#248594', waterDeep: '#125361', shore: 'rgba(176,134,84,0.55)', mud: '#4a331d', tree1: '#2c5924', tree2: '#3d7530', tree3: '#55943f', fx: 'sand' }
                 ];
 
                 const RAW_SPECIES = [
@@ -1243,11 +1254,6 @@ jobs:
                   dragon: (r[3].startsWith('d_') || r[2] === 'Mythic')
                 }));
 
-                const BIOMES = [
-                  { id: 'amazon', name: 'Amazon Rainforest', floor: '#182812', moss: 'rgba(54,104,34,0.48)', soil: 'rgba(66,48,29,0.38)', water: '#1a7d8a', waterDeep: '#0d4e59', shore: 'rgba(130,115,82,0.52)', mud: '#362415' },
-                  { id: 'bayou',  name: 'Misty Bayou Swamp', floor: '#12201c', moss: 'rgba(34,88,68,0.48)',  soil: 'rgba(42,40,30,0.4)',  water: '#1e6e68', waterDeep: '#0e4240', shore: 'rgba(90,84,64,0.5)',   mud: '#292117' },
-                  { id: 'canyon', name: 'Canyon Oasis',      floor: '#302114', moss: 'rgba(88,82,34,0.34)',  soil: 'rgba(118,66,34,0.44)',water: '#248594', waterDeep: '#125361', shore: 'rgba(176,134,84,0.55)',mud: '#4a331d' }
-                ];
                 const PREY_TYPES = [
                   { id: 'frog',   emoji: '🍎', col: '#ff4b3a', r: 23, mass: 11.5, speed: 58 },
                   { id: 'rabbit', emoji: '🍕', col: '#ffb838', r: 24, mass: 12.5, speed: 84 },
@@ -1278,7 +1284,7 @@ jobs:
 
                 let profile = (() => {
                   try {
-                    const raw = localStorage.getItem('serpent_wild_v19') || localStorage.getItem('serpent_wild_v18') || localStorage.getItem('serpent_wild_v17');
+                    const raw = localStorage.getItem('serpent_wild_v20') || localStorage.getItem('serpent_wild_v19') || localStorage.getItem('serpent_wild_v18');
                     if (!raw) return JSON.parse(JSON.stringify(DEFAULT_PROFILE));
                     const d = JSON.parse(raw);
                     const merged = {
@@ -1293,7 +1299,7 @@ jobs:
                   } catch (e) { return JSON.parse(JSON.stringify(DEFAULT_PROFILE)); }
                 })();
 
-                const saveProfile = () => { try { localStorage.setItem('serpent_wild_v19', JSON.stringify(profile)); } catch (e) {} };
+                const saveProfile = () => { try { localStorage.setItem('serpent_wild_v20', JSON.stringify(profile)); } catch (e) {} };
                 const getRank = lv => { let n = RANK_TIERS[0].name; for (const r of RANK_TIERS) if (lv >= r.lv) n = r.name; return n; };
                 const getXpNeed = lv => 1000 + (lv - 1) * 500;
 
@@ -1391,9 +1397,9 @@ jobs:
                 let previewSnakeId = profile.selectedSnake, previewSnake = null, groundPattern = null;
 
                 let rivers = [], waterZones = [], lilyPads = [], mudZones = [], worldProps = [], trees = [], tracks = [], ripples = [];
-                let clouds = [], butterflies = [];
+                let clouds = [], ambientFx = [];
                 let snakes = [], preyList = [], meatList = [], potions = [], feastDrops = [], particles = [], floatTexts = [], rainDrops = [], fireflies = [];
-                let player = null, lobbySnake = null;
+                let player = null, lobbySnake = null, leaderSnake = null;
                 let activePotion = { id: null, label: '', timer: 0 };
                 let mission = { goal: 40, done: false };
                 let emojiIdx = 0, killStreak = 0, streakTimer = 0;
@@ -1419,7 +1425,7 @@ jobs:
                   fireflies = Array.from({ length: 24 }, () => ({ x: rand(0, appW), y: rand(0, appH), ph: rand(0, 6.28), vx: rand(-14, 14), vy: rand(-14, 14) }));
                   clouds = Array.from({ length: 6 }, () => ({ x: rand(0, appW), y: rand(0, appH), r: rand(130, 240), vx: rand(10, 22) }));
                   const bCols = ['#ffe85c', '#ff85d4', '#61f0ff', '#ff9947'];
-                  butterflies = Array.from({ length: 12 }, (_, i) => ({ x: rand(0, appW), y: rand(0, appH), vx: rand(-26, 26), vy: rand(-22, 22), ph: rand(0, 6.28), col: bCols[i % bCols.length] }));
+                  ambientFx = Array.from({ length: 28 }, (_, i) => ({ x: rand(0, appW), y: rand(0, appH), vx: rand(-24, 24), vy: rand(18, 46), sz: rand(2.5, 5.5), ph: rand(0, 6.28), col: bCols[i % bCols.length] }));
                 }
 
                 const snakeGrid = new Map(), preyGrid = new Map();
@@ -1492,22 +1498,23 @@ jobs:
                     }
                   }
                   for (let i = 0; i < 620; i++) {
-                    t.fillStyle = Math.random() < 0.5 ? 'rgba(0,0,0,0.22)' : 'rgba(200,210,160,0.1)';
+                    t.fillStyle = Math.random() < 0.5 ? 'rgba(0,0,0,0.18)' : 'rgba(255,255,255,0.09)';
                     t.fillRect(rand(0, 512), rand(0, 512), rand(1.2, 2.8), rand(1.2, 2.8));
                   }
-                  for (let i = 0; i < 95; i++) {
-                    const gx = rand(12, 500), gy = rand(14, 500);
-                    t.strokeStyle = 'rgba(86, 162, 50, 0.46)'; t.lineWidth = 1.4;
-                    for (let b = -1; b <= 1; b++) { t.beginPath(); t.moveTo(gx, gy); t.quadraticCurveTo(gx + b * 4, gy - 7, gx + b * 8, gy - 12); t.stroke(); }
-                  }
-                  for (let i = 0; i < 28; i++) {
-                    t.fillStyle = 'rgba(115,120,108,0.48)';
-                    t.beginPath(); t.ellipse(rand(8, 504), rand(8, 504), rand(3, 6), rand(2, 4), rand(0, 3), 0, Math.PI * 2); t.fill();
-                  }
-                  const fCols = ['#ffe866', '#ff85a8', '#85e3ff', '#ffffff'];
-                  for (let i = 0; i < 36; i++) {
-                    t.fillStyle = fCols[i % fCols.length];
-                    t.beginPath(); t.arc(rand(6, 506), rand(6, 506), rand(2.0, 3.2), 0, Math.PI * 2); t.fill();
+                  if (biome.id !== 'tundra' && biome.id !== 'volcano' && biome.id !== 'sahara') {
+                    for (let i = 0; i < 95; i++) {
+                      const gx = rand(12, 500), gy = rand(14, 500);
+                      t.strokeStyle = 'rgba(86, 162, 50, 0.46)'; t.lineWidth = 1.4;
+                      for (let b = -1; b <= 1; b++) { t.beginPath(); t.moveTo(gx, gy); t.quadraticCurveTo(gx + b * 4, gy - 7, gx + b * 8, gy - 12); t.stroke(); }
+                    }
+                    const fCols = biome.id === 'sakura' ? ['#ffb8d6', '#ff85b3', '#ffffff', '#ffe866'] : ['#ffe866', '#ff85a8', '#85e3ff', '#ffffff'];
+                    for (let i = 0; i < 36; i++) {
+                      t.fillStyle = fCols[i % fCols.length];
+                      t.beginPath(); t.arc(rand(6, 506), rand(6, 506), rand(2.0, 3.2), 0, Math.PI * 2); t.fill();
+                    }
+                  } else if (biome.id === 'volcano') {
+                    t.strokeStyle = 'rgba(255, 82, 20, 0.25)'; t.lineWidth = 1.5;
+                    for (let i = 0; i < 24; i++) { const cx = rand(20, 490), cy = rand(20, 490); t.beginPath(); t.moveTo(cx, cy); t.lineTo(cx + rand(-30, 30), cy + rand(-30, 30)); t.stroke(); }
                   }
                   groundPattern = ctx.createPattern(tile, 'repeat');
 
@@ -1519,7 +1526,7 @@ jobs:
                       if (dist(rx, ry, WORLD_CENTER, WORLD_CENTER) < ARENA_RADIUS - 380) {
                         pts.push({ x: rx, y: ry });
                         waterZones.push({ x: rx, y: ry, r: width * 0.52 });
-                        if (Math.random() < 0.7) {
+                        if (biome.id !== 'volcano' && biome.id !== 'tundra' && Math.random() < 0.7) {
                           for (let l = 0; l < 2; l++) {
                             const la = rand(0, 6.28), ld = rand(15, width * 0.32);
                             lilyPads.push({ x: rx + Math.cos(la) * ld, y: ry + Math.sin(la) * ld, r: rand(14, 24), rot: rand(0, 6.28), lotus: Math.random() < 0.45 });
@@ -1781,7 +1788,7 @@ jobs:
                   tc.restore();
                 }
 
-                // ENDLESS LENGTH & THICKNESS GROWTH SERPENT (GROWS WAY LONGER THAN THICKER!)
+                // BALANCED GIANT GROWTH SERPENT (GROWS VISIBLY THICKER + LONGER LIKE AN APEX ANACONDA!)
                 class Snake {
                   constructor({ name, species, x, y, isPlayer = false, mass = 16 }) {
                     this.name = name; this.species = species; this.isPlayer = isPlayer; this.alive = true;
@@ -1795,19 +1802,19 @@ jobs:
                     this.aiTimer = rand(0, 0.5); this.aiWander = this.angle; this.aiBoost = 0;
                     this.segments = [];
                     const cnt = this.getSegCount();
-                    for (let i = 0; i < cnt; i++) this.segments.push({ x: x - Math.cos(this.angle) * i * 4.5, y: y - Math.sin(this.angle) * i * 4.5 });
+                    for (let i = 0; i < cnt; i++) this.segments.push({ x: x - Math.cos(this.angle) * i * 4.8, y: y - Math.sin(this.angle) * i * 4.8 });
                   }
 
-                  // Sleek controlled thickness + ENDLESS length scaling!
-                  getRadius() { return clamp(9.5 + Math.pow(this.mass, 0.36) * 1.18, 9.5, 44); }
-                  getSegCount() { return Math.min(320, Math.floor(18 + this.mass * 0.92)); }
-                  getLen() { return Math.floor(10 + this.mass * 0.9); }
+                  // 1.6x MORE VISIBLE THICKNESS + BALANCED ENDLESS LENGTH!
+                  getRadius() { return clamp(10.0 + Math.pow(this.mass, 0.44) * 1.92, 10.0, 56); }
+                  getSegCount() { return Math.min(250, Math.floor(16 + this.mass * 0.66)); }
+                  getLen() { return Math.floor(10 + this.mass * 0.72); }
 
                   getHalfWidth(i, len, baseR) {
                     const t = i / Math.max(1, len - 1);
                     let pw = t < 0.06 ? lerp(0.92, 1.0, t / 0.06)
                            : t < 0.82 ? (1.0 + Math.sin(((t - 0.06) / 0.76) * Math.PI) * 0.08)
-                           : lerp(1.0, 0.65, (t - 0.82) / 0.18);
+                           : lerp(1.0, 0.66, (t - 0.82) / 0.18);
                     let hood = 1.0;
                     if (this.species.hood && this.hoodFlare > 0.04 && i >= 1 && i <= 7) {
                       hood = 1 + Math.sin(clamp((i - 0.5) / 6.5, 0, 1) * Math.PI) * 0.82 * this.hoodFlare;
@@ -1888,9 +1895,8 @@ jobs:
                     }
 
                     this.segments[0].x = this.x; this.segments[0].y = this.y;
-                    // Dynamic spacing stretches body endlessly even past 320 segments!
-                    const extraStretch = this.mass > 330 ? clamp((this.mass - 330) * 0.0008, 0, 0.25) : 0;
-                    const spc = r * (0.42 + extraStretch);
+                    const extraStretch = this.mass > 350 ? clamp((this.mass - 350) * 0.0007, 0, 0.22) : 0;
+                    const spc = r * (0.40 + extraStretch);
                     for (let i = 1; i < this.segments.length; i++) {
                       const p = this.segments[i - 1], c = this.segments[i];
                       if (i === 1) {
@@ -1938,7 +1944,7 @@ jobs:
                     const baseR = this.getRadius(), len = this.segments.length;
                     const detail = profile.settings.gfx !== 'low';
                     const fx = this.species.fx, pwr = this.species.fxPower, seed = this.species.fxSeed;
-                    const fxStep = len > 140 ? 4 : 2;
+                    const fxStep = len > 130 ? 4 : 2;
 
                     const pts = new Array(len);
                     for (let i = 0; i < len; i++) {
@@ -2061,10 +2067,21 @@ jobs:
                     if (this.isPlayer && showLabel) { c.fillStyle = 'rgba(255, 148, 36, 0.9)'; c.beginPath(); c.moveTo(hr * 2.55, 0); c.lineTo(hr * 2.0, -hr * 0.42); c.lineTo(hr * 2.15, 0); c.lineTo(hr * 2.0, hr * 0.42); c.closePath(); c.fill(); }
                     c.restore();
 
+                    // LIVE #1 APEX KING CROWN!
+                    if (showLabel && this === leaderSnake) {
+                      const bob = Math.sin(globalTime * 5) * 3;
+                      c.save();
+                      c.font = `${Math.round(clamp(hr * 0.95, 16, 30))}px sans-serif`;
+                      c.textAlign = 'center'; c.textBaseline = 'middle';
+                      c.shadowColor = '#ffe047'; c.shadowBlur = 12;
+                      c.fillText('👑', this.x, this.y - hr - 22 + bob);
+                      c.restore();
+                    }
+
                     if (showLabel && !this.isPlayer) {
                       c.font = 'bold 10.5px sans-serif'; c.textAlign = 'center';
                       c.fillStyle = 'rgba(0,0,0,0.78)'; c.fillText(this.name, this.x + 1, this.y - hr - 11);
-                      c.fillStyle = '#eef7eb'; c.fillText(this.name, this.x, this.y - hr - 12);
+                      c.fillStyle = this === leaderSnake ? '#ffe45c' : '#eef7eb'; c.fillText(this.name, this.x, this.y - hr - 12);
                     }
                     c.restore();
                   }
@@ -2151,7 +2168,7 @@ jobs:
                   screenState = 'playing'; tacMapOpen = false;
                   activePotion = { id: null, label: '', timer: 0 };
                   mission = { goal: 40, done: false };
-                  killStreak = 0; streakTimer = 0;
+                  killStreak = 0; streakTimer = 0; leaderSnake = null;
                   document.getElementById('tacMapOverlay').classList.remove('open');
                   document.getElementById('lobbyScreen').style.display = 'none';
                   document.getElementById('resultsScreen').classList.remove('open');
@@ -2166,7 +2183,7 @@ jobs:
                   safeZone.stage = 1; safeZone.timer = 85; safeZone.shrinking = false;
                   dayCycle = 0; weatherRain = false; weatherTimer = 36; dropTimer = profile.selectedMode === 'treasure' ? 6 : 20;
 
-                  matchStats.kills = 0; matchStats.prey = 0; matchStats.xp = 0; matchStats.maxLen = 24; matchStats.rank = TOTAL_SNAKES; matchStats.reason = '';
+                  matchStats.kills = 0; matchStats.prey = 0; matchStats.xp = 0; matchStats.maxLen = 21; matchStats.rank = TOTAL_SNAKES; matchStats.reason = '';
 
                   const pSpec = SPECIES.find(s => s.id === profile.selectedSnake) || SPECIES[0];
                   const pSpawn = randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS * 0.55, 350);
@@ -2266,7 +2283,7 @@ jobs:
                   for (const s of snakes) {
                     if (!s.alive || s.spawnShield > 0) continue;
                     const hr = s.getRadius() * 0.85;
-                    const near = queryGrid(snakeGrid, s.x, s.y, hr + 85);
+                    const near = queryGrid(snakeGrid, s.x, s.y, hr + 90);
                     for (const o of near) {
                       if (o === s || !o.alive || o.spawnShield > 0) continue;
                       const oR = o.getRadius() * 0.85;
@@ -2296,7 +2313,7 @@ jobs:
                   for (let i = feastDrops.length - 1; i >= 0; i--) {
                     const f = feastDrops[i]; f.life -= dt;
                     if (f.life <= 0) { feastDrops.splice(i, 1); continue; }
-                    const nearS = queryGrid(snakeGrid, f.x, f.y, 65);
+                    const nearS = queryGrid(snakeGrid, f.x, f.y, 70);
                     for (const s of nearS) {
                       if (!s.alive) continue;
                       if (distSq(s.x, s.y, f.x, f.y) < (s.getRadius() + f.r) ** 2) {
@@ -2321,7 +2338,7 @@ jobs:
                       if (dist(p.x, p.y, WORLD_CENTER, WORLD_CENTER) > ARENA_RADIUS - 200) p.angle = Math.atan2(WORLD_CENTER - p.y, WORLD_CENTER - p.x);
                     }
                     if (magR > 50 && player && player.alive && distSq(player.x, player.y, p.x, p.y) < magR * magR) { p.x = lerp(p.x, player.x, dt * 6.5); p.y = lerp(p.y, player.y, dt * 6.5); }
-                    const nearS = queryGrid(snakeGrid, p.x, p.y, 58);
+                    const nearS = queryGrid(snakeGrid, p.x, p.y, 65);
                     for (const s of nearS) {
                       if (!s.alive) continue;
                       if (distSq(s.x, s.y, p.x, p.y) < (s.getRadius() * 1.25 + p.r) ** 2) {
@@ -2341,7 +2358,7 @@ jobs:
                     const m = meatList[i]; m.life -= dt;
                     if (m.life <= 0) { meatList.splice(i, 1); continue; }
                     if (magR > 50 && player && player.alive && distSq(player.x, player.y, m.x, m.y) < magR * magR) { m.x = lerp(m.x, player.x, dt * 7.5); m.y = lerp(m.y, player.y, dt * 7.5); }
-                    const nearS = queryGrid(snakeGrid, m.x, m.y, 55);
+                    const nearS = queryGrid(snakeGrid, m.x, m.y, 65);
                     for (const s of nearS) {
                       if (!s.alive) continue;
                       if (distSq(s.x, s.y, m.x, m.y) < (s.getRadius() * 1.25 + m.r) ** 2) {
@@ -2398,9 +2415,10 @@ jobs:
                     else pb.style.display = 'none';
 
                     aliveArr.sort((a, b) => b.mass - a.mass);
+                    leaderSnake = aliveArr[0] || null;
                     const lb = document.getElementById('leaderBox');
                     lb.innerHTML = aliveArr.slice(0, 5).map((s, idx) =>
-                      `<div class="lb-row${s.isPlayer ? ' me' : ''}"><span>${idx + 1}. ${s.name.slice(0, 10)}</span><span>${s.getLen()}m</span></div>`
+                      `<div class="lb-row${s.isPlayer ? ' me' : ''}"><span>${idx === 0 ? '👑 ' : (idx + 1) + '. '}${s.name.slice(0, 9)}</span><span>${s.getLen()}m</span></div>`
                     ).join('');
 
                     const stRing = document.getElementById('staminaRing');
@@ -2410,9 +2428,10 @@ jobs:
                     document.getElementById('regionPill').textContent = getRegionAt(player.x, player.y).name;
                     if (profile.settings.showFps) document.getElementById('fpsPill').textContent = `${fpsVal} FPS`;
 
+                    const biome = BIOMES.find(b => b.id === profile.selectedBiome) || BIOMES[0];
                     const tTag = document.getElementById('terrainTag');
-                    if (player.inBush) { tTag.style.display = 'block'; tTag.style.background = 'rgba(34,115,44,0.88)'; tTag.textContent = '🌿 JUNGLE SHADE'; }
-                    else if (player.terrain === 'water') { tTag.style.display = 'block'; tTag.style.background = 'rgba(26,136,148,0.85)'; tTag.textContent = '🌊 RIVER BOOST'; }
+                    if (player.inBush) { tTag.style.display = 'block'; tTag.style.background = 'rgba(34,115,44,0.88)'; tTag.textContent = '🌿 CANOPY SHADE'; }
+                    else if (player.terrain === 'water') { tTag.style.display = 'block'; tTag.style.background = biome.id === 'volcano' ? 'rgba(210,60,18,0.88)' : 'rgba(26,136,148,0.85)'; tTag.textContent = biome.id === 'volcano' ? '🔥 LAVA BOOST' : '🌊 RIVER BOOST'; }
                     else if (player.terrain === 'mud') { tTag.style.display = 'block'; tTag.style.background = 'rgba(84,54,28,0.88)'; tTag.textContent = '🟤 MUD SLOW'; }
                     else tTag.style.display = 'none';
 
@@ -2422,16 +2441,18 @@ jobs:
                 }
 
                 function drawRadar(rc, w, h, showLabels) {
+                  const biome = BIOMES.find(b => b.id === profile.selectedBiome) || BIOMES[0];
                   const sc = (w * 0.45) / ARENA_RADIUS, cx = w / 2, cy = h / 2;
                   rc.clearRect(0, 0, w, h); rc.fillStyle = '#0c180d'; rc.fillRect(0, 0, w, h);
                   for (const r of REGIONS) { const rx = cx + (r.x - WORLD_CENTER) * sc, ry = cy + (r.y - WORLD_CENTER) * sc; rc.fillStyle = r.col; rc.beginPath(); rc.arc(rx, ry, r.r * sc, 0, Math.PI * 2); rc.fill(); }
-                  rc.strokeStyle = 'rgba(38,165,180,0.55)'; rc.lineCap = 'round'; rc.lineJoin = 'round';
+                  rc.strokeStyle = biome.water; rc.globalAlpha = 0.65; rc.lineCap = 'round'; rc.lineJoin = 'round';
                   for (const rv of rivers) {
                     rc.lineWidth = Math.max(2, rv.width * sc);
                     rc.beginPath();
                     rv.pts.forEach((pt, idx) => { const px = cx + (pt.x - WORLD_CENTER) * sc, py = cy + (pt.y - WORLD_CENTER) * sc; idx === 0 ? rc.moveTo(px, py) : rc.lineTo(px, py); });
                     rc.stroke();
                   }
+                  rc.globalAlpha = 1;
                   rc.strokeStyle = 'rgba(255,75,58,0.5)'; rc.lineWidth = showLabels ? 2.5 : 1.5; rc.beginPath(); rc.arc(cx, cy, ARENA_RADIUS * sc, 0, Math.PI * 2); rc.stroke();
                   if (safeZone.active) { rc.strokeStyle = '#4de2f0'; rc.lineWidth = showLabels ? 3 : 2; rc.beginPath(); rc.arc(cx + (safeZone.cx - WORLD_CENTER) * sc, cy + (safeZone.cy - WORLD_CENTER) * sc, safeZone.r * sc, 0, Math.PI * 2); rc.stroke(); }
                   if (showLabels) { rc.font = 'bold 10px sans-serif'; rc.textAlign = 'center'; rc.fillStyle = 'rgba(255,235,160,0.88)'; for (const r of REGIONS) rc.fillText(r.name.toUpperCase(), cx + (r.x - WORLD_CENTER) * sc, cy + (r.y - WORLD_CENTER) * sc); }
@@ -2461,7 +2482,7 @@ jobs:
                     traceRiver(rv); ctx.strokeStyle = biome.water; ctx.lineWidth = rv.width; ctx.stroke();
                     traceRiver(rv); ctx.strokeStyle = biome.waterDeep; ctx.lineWidth = rv.width * 0.58; ctx.stroke();
                     ctx.save(); ctx.setLineDash([45, 75]); ctx.lineDashOffset = -globalTime * 48;
-                    traceRiver(rv); ctx.strokeStyle = 'rgba(200,248,255,0.16)'; ctx.lineWidth = 10; ctx.stroke();
+                    traceRiver(rv); ctx.strokeStyle = biome.id === 'volcano' ? 'rgba(255,245,140,0.42)' : 'rgba(200,248,255,0.18)'; ctx.lineWidth = 10; ctx.stroke();
                     ctx.restore();
                   }
                   ctx.restore();
@@ -2486,9 +2507,11 @@ jobs:
                     previewSnake.draw(wsCtx, false);
                   }
 
+                  const biome = BIOMES.find(b => b.id === profile.selectedBiome) || BIOMES[0];
+
                   if (screenState !== 'playing') {
                     if (groundPattern) { ctx.fillStyle = groundPattern; ctx.fillRect(0, 0, appW, appH); }
-                    else { ctx.fillStyle = '#182812'; ctx.fillRect(0, 0, appW, appH); }
+                    else { ctx.fillStyle = biome.floor; ctx.fillRect(0, 0, appW, appH); }
                     const g = ctx.createRadialGradient(appW * 0.5, appH * 0.48, 20, appW * 0.5, appH * 0.48, Math.max(appW, appH) * 0.56);
                     g.addColorStop(0, 'rgba(180, 235, 110, 0.14)'); g.addColorStop(1, 'rgba(4,9,5,0.68)');
                     ctx.fillStyle = g; ctx.fillRect(0, 0, appW, appH);
@@ -2515,7 +2538,6 @@ jobs:
                     return;
                   }
 
-                  const biome = BIOMES.find(b => b.id === profile.selectedBiome) || BIOMES[0];
                   const shX = camera.shake > 0 ? rand(-camera.shake, camera.shake) : 0;
                   const shY = camera.shake > 0 ? rand(-camera.shake, camera.shake) : 0;
 
@@ -2544,30 +2566,29 @@ jobs:
                   }
                   for (const rp of ripples) {
                     if (!isNearCam(rp.x, rp.y, rp.maxR)) continue;
-                    ctx.strokeStyle = `rgba(195, 245, 255, ${(rp.life / rp.maxLife) * 0.42})`; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2); ctx.stroke();
+                    ctx.strokeStyle = biome.id === 'volcano' ? `rgba(255,215,90,${(rp.life / rp.maxLife) * 0.5})` : `rgba(195,245,255,${(rp.life / rp.maxLife) * 0.42})`;
+                    ctx.lineWidth = 1.8; ctx.beginPath(); ctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2); ctx.stroke();
                   }
                   for (const pr of worldProps) {
                     if (!isNearCam(pr.x, pr.y, pr.sz + 50)) continue;
                     ctx.save(); ctx.translate(pr.x, pr.y); ctx.rotate(pr.rot);
                     if (pr.kind === 'log') {
                       ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(-pr.sz + 4, -pr.sz * 0.24 + 5, pr.sz * 2, pr.sz * 0.48);
-                      ctx.fillStyle = '#4a3019'; ctx.fillRect(-pr.sz, -pr.sz * 0.24, pr.sz * 2, pr.sz * 0.48);
-                      ctx.strokeStyle = '#29180a'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(-pr.sz * 0.8, -3); ctx.lineTo(pr.sz * 0.7, -3); ctx.moveTo(-pr.sz * 0.5, 4); ctx.lineTo(pr.sz * 0.9, 4); ctx.stroke();
-                      ctx.fillStyle = 'rgba(76,138,44,0.78)'; ctx.beginPath(); ctx.ellipse(-pr.sz * 0.2, -3, pr.sz * 0.36, pr.sz * 0.19, 0.2, 0, Math.PI * 2); ctx.fill();
-                      ctx.fillStyle = '#e83838'; ctx.beginPath(); ctx.arc(pr.sz * 0.35, -pr.sz * 0.2, 5, 0, Math.PI * 2); ctx.fill();
-                      ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(pr.sz * 0.35, -pr.sz * 0.21, 1.5, 0, Math.PI * 2); ctx.fill();
+                      ctx.fillStyle = biome.id === 'volcano' ? '#2e2522' : '#4a3019'; ctx.fillRect(-pr.sz, -pr.sz * 0.24, pr.sz * 2, pr.sz * 0.48);
+                      ctx.strokeStyle = '#1a0f07'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(-pr.sz * 0.8, -3); ctx.lineTo(pr.sz * 0.7, -3); ctx.moveTo(-pr.sz * 0.5, 4); ctx.lineTo(pr.sz * 0.9, 4); ctx.stroke();
+                      ctx.fillStyle = biome.id === 'tundra' ? 'rgba(235,245,255,0.85)' : 'rgba(76,138,44,0.78)'; ctx.beginPath(); ctx.ellipse(-pr.sz * 0.2, -3, pr.sz * 0.36, pr.sz * 0.19, 0.2, 0, Math.PI * 2); ctx.fill();
                     } else if (pr.kind === 'rock') {
                       ctx.fillStyle = 'rgba(0,0,0,0.42)'; ctx.beginPath(); ctx.ellipse(4, 6, pr.sz * 0.78, pr.sz * 0.62, 0, 0, Math.PI * 2); ctx.fill();
-                      ctx.fillStyle = '#5c6358'; ctx.beginPath(); ctx.moveTo(pr.sz * 0.75, 0); ctx.lineTo(pr.sz * 0.42, -pr.sz * 0.56); ctx.lineTo(-pr.sz * 0.38, -pr.sz * 0.52); ctx.lineTo(-pr.sz * 0.76, -pr.sz * 0.08); ctx.lineTo(-pr.sz * 0.46, pr.sz * 0.54); ctx.lineTo(pr.sz * 0.36, pr.sz * 0.5); ctx.closePath(); ctx.fill();
-                      ctx.strokeStyle = 'rgba(22,26,20,0.65)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(-pr.sz * 0.3, -pr.sz * 0.15); ctx.lineTo(pr.sz * 0.1, pr.sz * 0.05); ctx.lineTo(pr.sz * 0.35, -pr.sz * 0.2); ctx.stroke();
-                      ctx.fillStyle = 'rgba(68,122,42,0.66)'; ctx.beginPath(); ctx.arc(-pr.sz * 0.24, -pr.sz * 0.2, pr.sz * 0.28, 0, Math.PI * 2); ctx.fill();
+                      ctx.fillStyle = biome.id === 'sahara' ? '#a67b46' : (biome.id === 'volcano' ? '#362e2c' : '#5c6358');
+                      ctx.beginPath(); ctx.moveTo(pr.sz * 0.75, 0); ctx.lineTo(pr.sz * 0.42, -pr.sz * 0.56); ctx.lineTo(-pr.sz * 0.38, -pr.sz * 0.52); ctx.lineTo(-pr.sz * 0.76, -pr.sz * 0.08); ctx.lineTo(-pr.sz * 0.46, pr.sz * 0.54); ctx.lineTo(pr.sz * 0.36, pr.sz * 0.5); ctx.closePath(); ctx.fill();
+                      ctx.fillStyle = biome.id === 'tundra' ? 'rgba(240,248,255,0.8)' : (biome.id === 'volcano' ? 'rgba(255,95,20,0.45)' : 'rgba(68,122,42,0.66)');
+                      ctx.beginPath(); ctx.arc(-pr.sz * 0.24, -pr.sz * 0.2, pr.sz * 0.28, 0, Math.PI * 2); ctx.fill();
                     } else if (pr.kind === 'ruin') {
                       ctx.fillStyle = 'rgba(0,0,0,0.42)'; ctx.fillRect(-pr.sz * 0.8 + 5, -pr.sz * 0.55 + 6, pr.sz * 1.6, pr.sz * 1.1);
-                      ctx.fillStyle = '#6c7065'; ctx.fillRect(-pr.sz * 0.8, -pr.sz * 0.55, pr.sz * 1.6, pr.sz * 1.1);
+                      ctx.fillStyle = biome.id === 'sahara' ? '#ba935a' : '#6c7065'; ctx.fillRect(-pr.sz * 0.8, -pr.sz * 0.55, pr.sz * 1.6, pr.sz * 1.1);
                       ctx.strokeStyle = 'rgba(28,32,26,0.75)'; ctx.lineWidth = 2; ctx.strokeRect(-pr.sz * 0.68, -pr.sz * 0.44, pr.sz * 1.36, pr.sz * 0.88);
-                      ctx.fillStyle = 'rgba(64,116,40,0.72)'; ctx.beginPath(); ctx.arc(-pr.sz * 0.45, -pr.sz * 0.3, pr.sz * 0.28, 0, Math.PI * 2); ctx.fill();
                     } else {
-                      for (let f = 0; f < 6; f++) { ctx.rotate(Math.PI / 3); ctx.fillStyle = f % 2 === 0 ? '#2b6e24' : '#3d8c30'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(pr.sz * 0.45, -pr.sz * 0.22, pr.sz * 0.85, 0); ctx.quadraticCurveTo(pr.sz * 0.45, pr.sz * 0.22, 0, 0); ctx.fill(); }
+                      for (let f = 0; f < 6; f++) { ctx.rotate(Math.PI / 3); ctx.fillStyle = f % 2 === 0 ? biome.tree1 : biome.tree2; ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(pr.sz * 0.45, -pr.sz * 0.22, pr.sz * 0.85, 0); ctx.quadraticCurveTo(pr.sz * 0.45, pr.sz * 0.22, 0, 0); ctx.fill(); }
                     }
                     ctx.restore();
                   }
@@ -2605,38 +2626,53 @@ jobs:
                     ctx.fillStyle = '#4de2f0'; ctx.beginPath(); ctx.moveTo(12, 0); ctx.lineTo(-6, -8); ctx.lineTo(-3, 0); ctx.lineTo(-6, 8); ctx.closePath(); ctx.fill(); ctx.restore();
                   }
 
+                  // BIOME-THEMED TREE CANOPIES (Emerald, Snowy Pine, Pink Sakura, Volcanic, Palm!)
                   for (const tr of trees) {
                     if (!isNearCam(tr.x, tr.y, tr.r + 40)) continue;
                     const pUnder = player && player.alive && distSq(player.x, player.y, tr.x, tr.y) < (tr.r * 1.15) ** 2;
                     ctx.save(); ctx.translate(tr.x + Math.sin(globalTime * 1.3 + tr.ph) * 3, tr.y);
-                    ctx.globalAlpha = pUnder ? 0.16 : 0.72;
-                    for (let l = 0; l < 5; l++) { const a = (l / 5) * Math.PI * 2 + tr.ph; ctx.fillStyle = l % 2 === 0 ? '#1b521a' : '#266b22'; ctx.beginPath(); ctx.arc(Math.cos(a) * tr.r * 0.36, Math.sin(a) * tr.r * 0.36, tr.r * 0.56, 0, Math.PI * 2); ctx.fill(); }
-                    ctx.fillStyle = '#36852c'; ctx.beginPath(); ctx.arc(-tr.r * 0.1, -tr.r * 0.1, tr.r * 0.42, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+                    ctx.globalAlpha = pUnder ? 0.16 : 0.74;
+                    for (let l = 0; l < 5; l++) { const a = (l / 5) * Math.PI * 2 + tr.ph; ctx.fillStyle = l % 2 === 0 ? biome.tree1 : biome.tree2; ctx.beginPath(); ctx.arc(Math.cos(a) * tr.r * 0.36, Math.sin(a) * tr.r * 0.36, tr.r * 0.56, 0, Math.PI * 2); ctx.fill(); }
+                    ctx.fillStyle = biome.tree3; ctx.beginPath(); ctx.arc(-tr.r * 0.1, -tr.r * 0.1, tr.r * 0.42, 0, Math.PI * 2); ctx.fill(); ctx.restore();
                   }
 
                   ctx.globalAlpha = 1; ctx.font = '900 14px sans-serif'; ctx.textAlign = 'center';
                   for (const ft of floatTexts) { ctx.globalAlpha = clamp(ft.life / ft.maxLife, 0, 1); ctx.fillStyle = ft.color; ctx.fillText(ft.text, ft.x, ft.y); }
                   ctx.restore();
 
-                  // LIVING JUNGLE ATMOSPHERE: Drifting Cloud Shadows, Glowing Butterflies & Boost Speed Lines!
+                  // BIOME-SPECIFIC LIVING WEATHER (Snow, Fire Embers, Sakura Petals, Sand, Butterflies!)
                   if (profile.settings.gfx !== 'low') {
-                    ctx.fillStyle = 'rgba(0, 12, 4, 0.08)';
+                    ctx.fillStyle = 'rgba(0, 12, 4, 0.07)';
                     for (const cl of clouds) {
                       cl.x += cl.vx * dt; if (cl.x - cl.r > appW) cl.x = -cl.r;
                       ctx.beginPath(); ctx.ellipse(cl.x, cl.y, cl.r, cl.r * 0.52, 0.15, 0, Math.PI * 2); ctx.fill();
                     }
-                    for (const bf of butterflies) {
-                      bf.x = (bf.x + bf.vx * dt + appW) % appW; bf.y = (bf.y + bf.vy * dt + appH) % appH;
-                      const fl = Math.abs(Math.sin(globalTime * 16 + bf.ph));
-                      ctx.fillStyle = bf.col; ctx.globalAlpha = 0.72;
-                      ctx.beginPath(); ctx.ellipse(bf.x - 3, bf.y, 4 * fl + 1, 2.5, -0.3, 0, Math.PI * 2); ctx.ellipse(bf.x + 3, bf.y, 4 * fl + 1, 2.5, 0.3, 0, Math.PI * 2); ctx.fill();
+                    for (const af of ambientFx) {
+                      if (biome.fx === 'snow') {
+                        af.x = (af.x + Math.sin(globalTime + af.ph) * 18 * dt + appW) % appW;
+                        af.y = (af.y + af.vy * dt) % appH;
+                        ctx.fillStyle = 'rgba(255,255,255,0.82)'; ctx.beginPath(); ctx.arc(af.x, af.y, af.sz * 0.65, 0, Math.PI * 2); ctx.fill();
+                      } else if (biome.fx === 'embers') {
+                        af.x = (af.x + Math.sin(globalTime * 2 + af.ph) * 24 * dt + appW) % appW;
+                        af.y = (af.y - af.vy * 1.15 * dt + appH) % appH;
+                        ctx.fillStyle = af.ph > 3 ? '#ff5e1a' : '#ffe047'; ctx.globalAlpha = 0.78;
+                        ctx.beginPath(); ctx.arc(af.x, af.y, af.sz * 0.55, 0, Math.PI * 2); ctx.fill();
+                      } else if (biome.fx === 'petals') {
+                        af.x = (af.x + (22 + Math.sin(globalTime + af.ph) * 16) * dt) % appW;
+                        af.y = (af.y + af.vy * 0.75 * dt) % appH;
+                        ctx.fillStyle = '#ffb8d6'; ctx.globalAlpha = 0.82;
+                        ctx.beginPath(); ctx.ellipse(af.x, af.y, af.sz, af.sz * 0.5, globalTime + af.ph, 0, Math.PI * 2); ctx.fill();
+                      } else if (biome.fx === 'sand') {
+                        af.x = (af.x + 85 * dt) % appW; af.y = (af.y + 10 * dt) % appH;
+                        ctx.fillStyle = 'rgba(245,212,140,0.35)'; ctx.fillRect(af.x, af.y, af.sz * 2.5, 1.5);
+                      } else {
+                        af.x = (af.x + af.vx * dt + appW) % appW; af.y = (af.y + Math.sin(globalTime + af.ph) * 18 * dt + appH) % appH;
+                        const fl = Math.abs(Math.sin(globalTime * 16 + af.ph));
+                        ctx.fillStyle = af.col; ctx.globalAlpha = 0.7;
+                        ctx.beginPath(); ctx.ellipse(af.x - 3, af.y, 4 * fl + 1, 2.5, -0.3, 0, Math.PI * 2); ctx.ellipse(af.x + 3, af.y, 4 * fl + 1, 2.5, 0.3, 0, Math.PI * 2); ctx.fill();
+                      }
                     }
                     ctx.globalAlpha = 1;
-                    for (const ff of fireflies) {
-                      ff.x = (ff.x + ff.vx * dt + appW) % appW; ff.y = (ff.y + ff.vy * dt + appH) % appH;
-                      ctx.fillStyle = `rgba(215, 255, 160, ${0.14 + 0.25 * (0.5 + 0.5 * Math.sin(globalTime * 3 + ff.ph))})`;
-                      ctx.beginPath(); ctx.arc(ff.x, ff.y, 1.8, 0, Math.PI * 2); ctx.fill();
-                    }
                   }
                   if (player && player.alive && player.boosting && player.stamina > 6) {
                     ctx.strokeStyle = 'rgba(255, 240, 160, 0.18)'; ctx.lineWidth = 2;
@@ -2659,7 +2695,7 @@ jobs:
                     if (dusk > 0.02) { ctx.fillStyle = `rgba(180, 90, 25, ${dusk * 0.14})`; ctx.fillRect(0, 0, appW, appH); }
                     if (night > 0.02) { ctx.fillStyle = `rgba(6, 14, 30, ${night * 0.28})`; ctx.fillRect(0, 0, appW, appH); }
                   }
-                  if (profile.settings.gfx !== 'low' && weatherRain) {
+                  if (profile.settings.gfx !== 'low' && weatherRain && biome.id !== 'volcano' && biome.id !== 'sahara') {
                     ctx.strokeStyle = 'rgba(180, 225, 255, 0.25)'; ctx.lineWidth = 1.2; ctx.beginPath();
                     for (const rd of rainDrops) { rd.x -= rd.v * 0.2 * dt; rd.y += rd.v * dt; if (rd.y > appH) { rd.y = -20; rd.x = rand(0, appW + 100); } ctx.moveTo(rd.x, rd.y); ctx.lineTo(rd.x - 4, rd.y + rd.l); }
                     ctx.stroke();
@@ -2871,7 +2907,11 @@ jobs:
                   BIOMES.forEach(b => {
                     const sel = profile.selectedBiome === b.id;
                     const card = document.createElement('div'); card.className = 'card-item' + (sel ? ' selected' : '');
-                    card.innerHTML = `<strong style="color:var(--gold);">${b.name}</strong><div style="height:22px;border-radius:8px;background:${b.floor};border:1px solid ${b.water};"></div><div style="font-size:10.5px;color:var(--green);font-weight:800;">${sel ? 'ACTIVE BIOME' : 'TAP TO SELECT'}</div>`;
+                    card.innerHTML = `
+                      <strong style="color:var(--gold);font-size:12px;">${b.name}</strong>
+                      <div style="font-size:9.5px;color:#b8d1b4;">${b.desc}</div>
+                      <div style="height:22px;border-radius:8px;background:linear-gradient(90deg, ${b.floor} 0%, ${b.water} 55%, ${b.tree3} 100%);border:1px solid rgba(255,255,255,0.28);"></div>
+                      <div style="font-size:10px;color:var(--green);font-weight:800;">${sel ? 'ACTIVE MAP ✅' : 'TAP TO SELECT'}</div>`;
                     card.onclick = () => { profile.selectedBiome = b.id; saveProfile(); Sound.click(); renderProfileModal(); enterLobby(); };
                     bg.appendChild(card);
                   });
