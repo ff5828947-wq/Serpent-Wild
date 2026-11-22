@@ -1,4 +1,4 @@
-name: Build Serpent-Wild Pro Landscape APK
+name: Build Serpent-Wild Ultra-Realism APK
 
 on:
   push:
@@ -29,7 +29,7 @@ jobs:
             yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null 2>&1 || true
           fi
 
-      - name: Generate Serpent-Wild Pro Landscape Android Project
+      - name: Generate Serpent-Wild Ultra-Realism Android Project
         run: |
           mkdir -p app/src/main/java/com/apexwild/serpent app/src/main/assets app/src/main/res/values
 
@@ -76,8 +76,8 @@ jobs:
                   applicationId = "com.apexwild.serpent.royale"
                   minSdk = 26
                   targetSdk = 35
-                  versionCode = 3
-                  versionName = "3.0.0"
+                  versionCode = 4
+                  versionName = "4.0.0"
               }
               signingConfigs {
                   create("release") {
@@ -270,7 +270,7 @@ jobs:
           <head>
             <meta charset="UTF-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-            <title>SERPENT WILD: APEX — Pro Landscape Royale</title>
+            <title>SERPENT WILD: APEX — Ultra Realism Edition</title>
             <style>
               :root {
                 --bg-dark: #060b07;
@@ -300,12 +300,12 @@ jobs:
                 background: rgba(255,255,255,0.08); color: #dcead7; font-size: 12.5px; font-weight: 800; text-transform: uppercase; cursor: pointer;
               }
 
-              /* 1. SPLASH SCREEN (LANDSCAPE OPTIMIZED) */
+              /* 1. SPLASH SCREEN */
               #splashScreen {
                 position: fixed; inset: 0; z-index: 120; display: flex; flex-direction: column;
                 align-items: center; justify-content: space-between;
                 padding: 18px 24px 26px;
-                background: radial-gradient(circle at 50% 40%, rgba(28, 62, 26, 0.9), rgba(5, 10, 6, 0.99) 76%);
+                background: radial-gradient(circle at 50% 40%, rgba(28, 62, 26, 0.92), rgba(5, 10, 6, 0.99) 76%);
                 cursor: pointer; transition: opacity 0.4s ease;
               }
               #splashScreen.fade-out { opacity: 0; pointer-events: none; }
@@ -332,7 +332,7 @@ jobs:
               #loaderFill { width: 0%; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #5ed128, #a7f554, #f6c445); transition: width 0.12s linear; }
               #loaderTip { font-size: 10.5px; color: var(--text-muted); text-align: center; }
 
-              /* 2. LOBBY (LANDSCAPE BATTLE ROYALE LAYOUT) */
+              /* 2. LOBBY */
               #lobbyScreen { position: fixed; inset: 0; z-index: 30; display: none; pointer-events: none; }
               #lobbyTopBar { position: absolute; top: 10px; left: max(12px, env(safe-area-inset-left)); right: max(12px, env(safe-area-inset-right)); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
               #profileBadge { pointer-events: auto; display: flex; align-items: center; gap: 8px; padding: 5px 12px 5px 5px; border-radius: 13px; cursor: pointer; }
@@ -382,11 +382,9 @@ jobs:
               .xp-track { width: 100%; height: 7px; border-radius: 999px; background: rgba(255,255,255,0.1); overflow: hidden; margin-top: 4px; }
               .xp-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #62de3a, #f6c445); }
 
-              /* 3. IN-GAME HUD (PUBG/FREE FIRE LANDSCAPE PRO LAYOUT) */
+              /* 3. IN-GAME HUD */
               #hud { position: fixed; inset: 0; z-index: 20; display: none; pointer-events: none; }
               #stormVignette { position: absolute; inset: 0; box-shadow: inset 0 0 90px rgba(255,48,36,0.72); opacity: 0; transition: opacity 0.25s; }
-
-              /* TOP-LEFT: COMPACT TACTICAL MINI MAP */
               #hudTopLeft { position: absolute; top: 8px; left: max(10px, env(safe-area-inset-left)); display: flex; align-items: flex-start; gap: 8px; }
               #minimapBox {
                 pointer-events: auto; cursor: pointer; position: relative;
@@ -406,7 +404,6 @@ jobs:
               #terrainTag { display: none; padding: 3px 8px; border-radius: 8px; font-size: 8.5px; font-weight: 900; text-transform: uppercase; width: fit-content; }
               #fpsPill { display: none; padding: 2px 7px; border-radius: 7px; font-size: 8.5px; font-weight: 900; color: #84ff54; width: fit-content; }
 
-              /* TOP-CENTER: STATS + HP BAR + ZONE (ZERO OVERLAP) */
               #hudTopCenter {
                 position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
                 display: flex; flex-direction: column; align-items: center; gap: 4px; width: 250px;
@@ -421,7 +418,6 @@ jobs:
               .zone-pill { display: flex; align-items: center; gap: 6px; padding: 2px 9px; border-radius: 999px; font-size: 9px; font-weight: 800; color: #b8f2ff; }
               #dropAlert { display: none; padding: 3px 10px; border-radius: 999px; background: rgba(246,196,69,0.22); border: 1px solid var(--gold); color: #ffe98a; font-size: 9px; font-weight: 900; }
 
-              /* TOP-RIGHT: TOOLS + KILL FEED */
               #hudTopRight { position: absolute; top: 8px; right: max(10px, env(safe-area-inset-right)); display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
               .tr-tools { display: flex; gap: 5px; pointer-events: auto; }
               #killFeed { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; max-width: 195px; }
@@ -479,16 +475,16 @@ jobs:
                   </svg>
                 </div>
                 <div class="splash-title">SERPENT WILD: APEX</div>
-                <div class="splash-subtitle">PRO LANDSCAPE • 50-SNAKE • 12KM MAP</div>
+                <div class="splash-subtitle">ULTRA REALISM • 50-SNAKE • 12KM JUNGLE</div>
               </div>
               <div id="tapEnterWrap">
                 <button class="btn-gold" id="btnTapEnter" type="button">TAP TO ENTER JUNGLE</button>
-                <div style="font-size:10.5px;color:var(--text-muted);text-align:center;">6 Unique Realistic Species • Day/Night Cycle • Supply Drops</div>
+                <div style="font-size:10.5px;color:var(--text-muted);text-align:center;">3-Row Reptile Scales • Tree Ambush Stealth • Ancient Ruins</div>
               </div>
               <div id="loaderWrap">
-                <div class="loader-row"><span id="loaderStatus">Loading 6 Realistic Reptile Models...</span><span id="loaderPct">0%</span></div>
+                <div class="loader-row"><span id="loaderStatus">Sculpting 3D Reptile Scales &amp; 12KM Jungle...</span><span id="loaderPct">0%</span></div>
                 <div class="loader-bar"><div id="loaderFill"></div></div>
-                <div id="loaderTip">Tip: Watch for Golden Feast Drops on the Top-Left Mini Map for massive HP &amp; Growth!</div>
+                <div id="loaderTip">Tip: Hide under Jungle Tree Canopies for Stealth Ambush (+30% First Bite Damage)!</div>
               </div>
             </div>
 
@@ -567,7 +563,6 @@ jobs:
               </div>
             </div>
 
-            <!-- IMPROVED PRO SETTINGS MODAL -->
             <div class="modal-backdrop" id="settingsModal">
               <div class="modal-box" style="max-width:520px;">
                 <div class="modal-head">
@@ -576,7 +571,7 @@ jobs:
                 </div>
                 <div class="modal-body">
                   <div class="setting-row">
-                    <div><div style="font-size:12.5px;font-weight:800;">Graphics Quality</div><div style="font-size:9.5px;color:var(--text-muted);">Ultra adds rain, fireflies &amp; full scale details</div></div>
+                    <div><div style="font-size:12.5px;font-weight:800;">Graphics Quality</div><div style="font-size:9.5px;color:var(--text-muted);">Ultra adds 3-row scales, swaying trees &amp; rain</div></div>
                     <div class="chip-row" id="setGfxRow" style="margin:0;"></div>
                   </div>
                   <div class="setting-row">
@@ -652,7 +647,7 @@ jobs:
                 <div id="killFeed"></div>
               </div>
 
-              <div id="controlsHint">LEFT: STEER • RIGHT: SCOUT • TAP TOP-LEFT MAP</div>
+              <div id="controlsHint">LEFT: STEER • RIGHT: SCOUT • HIDE UNDER TREES FOR AMBUSH</div>
               <div id="floatingJoy"><div id="floatingJoyKnob"></div></div>
               <button id="btnRecenter" type="button" title="Center Camera">👁️</button>
 
@@ -710,12 +705,12 @@ jobs:
                 const FREE_LOOK_MAX = 560;
 
                 const REGIONS = [
-                  { id: 'basin',  name: 'Emerald Basin',  x: 6000, y: 6000, r: 1900, col: 'rgba(56,120,38,0.22)' },
-                  { id: 'ruins',  name: 'Ancient Ruins',  x: 3400, y: 3400, r: 1750, col: 'rgba(110,115,96,0.24)' },
-                  { id: 'swamp',  name: 'Venom Swamp',    x: 8600, y: 3500, r: 1800, col: 'rgba(34,86,62,0.3)' },
-                  { id: 'river',  name: 'Crystal River',  x: 2600, y: 6500, r: 1800, col: 'rgba(28,130,145,0.22)' },
-                  { id: 'canyon', name: 'Red Canyon',     x: 3600, y: 8800, r: 1800, col: 'rgba(145,76,36,0.3)' },
-                  { id: 'delta',  name: 'Golden Delta',   x: 8500, y: 8500, r: 1850, col: 'rgba(164,132,44,0.24)' }
+                  { id: 'basin',  name: 'Emerald Basin',  x: 6000, y: 6000, r: 1900, col: 'rgba(56,120,38,0.2)' },
+                  { id: 'ruins',  name: 'Ancient Ruins',  x: 3400, y: 3400, r: 1750, col: 'rgba(110,115,96,0.22)' },
+                  { id: 'swamp',  name: 'Venom Swamp',    x: 8600, y: 3500, r: 1800, col: 'rgba(30,84,58,0.28)' },
+                  { id: 'river',  name: 'Crystal River',  x: 2600, y: 6500, r: 1800, col: 'rgba(26,128,144,0.2)' },
+                  { id: 'canyon', name: 'Red Canyon',     x: 3600, y: 8800, r: 1800, col: 'rgba(148,74,34,0.26)' },
+                  { id: 'delta',  name: 'Golden Delta',   x: 8500, y: 8500, r: 1850, col: 'rgba(164,132,44,0.22)' }
                 ];
 
                 const AVATARS = ['🐍', '🦅', '🐊', '🦂', '🦎', '🐾'];
@@ -724,20 +719,20 @@ jobs:
                   { lv: 6, name: 'Gold Python' }, { lv: 10, name: 'Platinum Mamba' }, { lv: 15, name: 'Apex Predator' }
                 ];
 
-                // 6 COMPLETELY DISTINCT REALISTIC SPECIES (UNIQUE HEADS, PATTERNS & ANATOMY)
+                // 6 HYPER-REALISTIC NATURAL WILDLIFE SPECIES
                 const SPECIES = [
-                  { id: 'cobra',    name: 'King Cobra',          hood: true,  rattle: false, horns: false, base: '#5a632b', dark: '#1e240c', accent: '#d9c26c', belly: '#c4ba78', eye: '#ffba26', speed: 84, turn: 85, bonusHp: 0,  girth: 1.0,  trait: 'Spectacle Flare Hood • +25% Venom DoT', price: 0 },
-                  { id: 'boa',      name: 'Emerald Tree Boa',    hood: false, rattle: false, horns: false, base: '#148f44', dark: '#053b1a', accent: '#f2fff0', belly: '#c4eb52', eye: '#ffe03b', speed: 79, turn: 90, bonusHp: 20, girth: 1.12, trait: 'Heart Head & White Saddles • +20 HP', price: 0 },
-                  { id: 'viper',    name: 'Desert Horned Viper', hood: false, rattle: true,  horns: true,  base: '#c4965c', dark: '#4f3214', accent: '#693c14', belly: '#e8d4ad', eye: '#ff731c', speed: 94, turn: 92, bonusHp: 0,  girth: 1.08, trait: 'Brow Horns & Rattle Tail • +20% CRIT', price: 0 },
-                  { id: 'python',   name: 'Shadow Python',       hood: false, rattle: false, horns: false, base: '#242038', dark: '#0a0812', accent: '#68d4ff', belly: '#4d4663', eye: '#d278ff', speed: 82, turn: 80, bonusHp: 15, girth: 1.14, trait: 'Iridescent Hex Net • +20% Prey Heal', price: 450 },
-                  { id: 'anaconda', name: 'Golden Anaconda',     hood: false, rattle: false, horns: false, base: '#9e8c28', dark: '#38300a', accent: '#1c1806', belly: '#dfd070', eye: '#ffb324', speed: 77, turn: 76, bonusHp: 40, girth: 1.26, trait: 'Massive Aquatic Titan • +40 Max HP', price: 700 },
-                  { id: 'krait',    name: 'Crimson Krait',       hood: false, rattle: false, horns: false, base: '#c71818', dark: '#120f14', accent: '#ffda47', belly: '#f0dfbc', eye: '#ffeb47', speed: 90, turn: 88, bonusHp: 10, girth: 0.94, trait: 'Glossy Tri-Bands • Fastest Venom CD', price: 900 }
+                  { id: 'cobra',    name: 'King Cobra',          hood: true,  rattle: false, horns: false, base: '#59632b', mid: '#3e471a', dark: '#1a1f0a', accent: '#dec66f', belly: '#c9bd7e', eye: '#ffb924', speed: 84, turn: 85, bonusHp: 0,  girth: 1.0,  trait: 'Spectacle Hood • +25% Venom DoT', price: 0 },
+                  { id: 'boa',      name: 'Emerald Tree Boa',    hood: false, rattle: false, horns: false, base: '#1a8f43', mid: '#10662e', dark: '#052e13', accent: '#f2ffed', belly: '#b8e055', eye: '#ffde38', speed: 79, turn: 90, bonusHp: 20, girth: 1.12, trait: 'White Saddles • +20 HP & Stealth', price: 0 },
+                  { id: 'viper',    name: 'Desert Horned Viper', hood: false, rattle: true,  horns: true,  base: '#c79b63', mid: '#9e723d', dark: '#4a2e10', accent: '#5c3310', belly: '#ebd8b3', eye: '#ff771c', speed: 94, turn: 92, bonusHp: 0,  girth: 1.08, trait: 'Horns & Rattle • +20% CRIT Bite', price: 0 },
+                  { id: 'python',   name: 'Reticulated Python',  hood: false, rattle: false, horns: false, base: '#4a3d2f', mid: '#2f261d', dark: '#120e0a', accent: '#c9a66b', belly: '#a8977d', eye: '#ff9d3b', speed: 82, turn: 80, bonusHp: 15, girth: 1.15, trait: 'Natural Retic Scales • +20% Prey Heal', price: 450 },
+                  { id: 'anaconda', name: 'Green Anaconda',      hood: false, rattle: false, horns: false, base: '#6e7329', mid: '#4e541a', dark: '#212408', accent: '#1c1a0a', belly: '#b8b062', eye: '#f2ad24', speed: 77, turn: 76, bonusHp: 40, girth: 1.26, trait: 'Swamp Titan • +40 Max HP & Swim+', price: 700 },
+                  { id: 'krait',    name: 'Banded Crimson Krait',hood: false, rattle: false, horns: false, base: '#bd1e1e', mid: '#871111', dark: '#110f12', accent: '#f5d44c', belly: '#ebe0c5', eye: '#ffe647', speed: 90, turn: 88, bonusHp: 10, girth: 0.94, trait: 'Porcelain Gloss • Fastest Venom', price: 900 }
                 ];
 
                 const BIOMES = [
-                  { id: 'amazon', name: 'Amazon Rainforest', floor: '#1b2b15', moss: 'rgba(54,96,34,0.42)', soil: 'rgba(66,48,29,0.34)', water: 'rgba(26,136,148,0.82)', mud: '#362415' },
-                  { id: 'bayou',  name: 'Misty Bayou Swamp', floor: '#14221e', moss: 'rgba(34,84,66,0.42)', soil: 'rgba(42,40,30,0.38)', water: 'rgba(32,118,112,0.82)', mud: '#292117' },
-                  { id: 'canyon', name: 'Canyon Oasis',      floor: '#322316', moss: 'rgba(88,82,34,0.28)', soil: 'rgba(116,66,34,0.4)', water: 'rgba(44,142,152,0.82)', mud: '#4a331d' }
+                  { id: 'amazon', name: 'Amazon Rainforest', floor: '#1b2b15', moss: 'rgba(54,96,34,0.44)', soil: 'rgba(66,48,29,0.36)', water: '#1a7d8a', waterDeep: '#0d4e59', shore: 'rgba(130,115,82,0.52)', mud: '#362415' },
+                  { id: 'bayou',  name: 'Misty Bayou Swamp', floor: '#14221e', moss: 'rgba(34,84,66,0.44)', soil: 'rgba(42,40,30,0.4)',  water: '#1e6e68', waterDeep: '#0e4240', shore: 'rgba(90,84,64,0.5)',   mud: '#292117' },
+                  { id: 'canyon', name: 'Canyon Oasis',      floor: '#322316', moss: 'rgba(88,82,34,0.3)',  soil: 'rgba(118,66,34,0.42)',water: '#248594', waterDeep: '#125361', shore: 'rgba(176,134,84,0.55)',mud: '#4a331d' }
                 ];
 
                 const PREY_TYPES = [
@@ -763,14 +758,14 @@ jobs:
 
                 let profile = (() => {
                   try {
-                    const raw = localStorage.getItem('serpent_wild_pro_v3');
+                    const raw = localStorage.getItem('serpent_wild_pro_v4');
                     if (!raw) return JSON.parse(JSON.stringify(DEFAULT_PROFILE));
                     const d = JSON.parse(raw);
                     return { ...JSON.parse(JSON.stringify(DEFAULT_PROFILE)), ...d, settings: { ...DEFAULT_PROFILE.settings, ...(d.settings || {}) }, stats: { ...DEFAULT_PROFILE.stats, ...(d.stats || {}) } };
                   } catch (e) { return JSON.parse(JSON.stringify(DEFAULT_PROFILE)); }
                 })();
 
-                const saveProfile = () => { try { localStorage.setItem('serpent_wild_pro_v3', JSON.stringify(profile)); } catch (e) {} };
+                const saveProfile = () => { try { localStorage.setItem('serpent_wild_pro_v4', JSON.stringify(profile)); } catch (e) {} };
                 const getRank = lv => { let n = RANK_TIERS[0].name; for (const r of RANK_TIERS) if (lv >= r.lv) n = r.name; return n; };
                 const getXpNeed = lv => 180 + (lv - 1) * 90;
 
@@ -824,7 +819,8 @@ jobs:
                 let splashEntered = false, tacMapOpen = false;
                 let groundPattern = null;
 
-                let waterZones = [], mudZones = [], worldProps = [], snakes = [], preyList = [], meatList = [], feastDrops = [], projectiles = [], particles = [], floatTexts = [], rainDrops = [], fireflies = [];
+                let waterZones = [], lilyPads = [], mudZones = [], worldProps = [], trees = [], tracks = [], ripples = [];
+                let snakes = [], preyList = [], meatList = [], feastDrops = [], projectiles = [], particles = [], floatTexts = [], rainDrops = [], fireflies = [];
                 let player = null, lobbySnake = null;
                 const camera = { x: WORLD_CENTER, y: WORLD_CENTER, zoom: profile.settings.zoom, lookX: 0, lookY: 0, shake: 0 };
                 const safeZone = { active: true, cx: WORLD_CENTER, cy: WORLD_CENTER, r: ARENA_RADIUS, targetR: ARENA_RADIUS, stage: 1, timer: 40, shrinking: false };
@@ -844,7 +840,7 @@ jobs:
                   canvas.width = Math.max(1, Math.floor(appW * dpr));
                   canvas.height = Math.max(1, Math.floor(appH * dpr));
                   rainDrops = Array.from({ length: 48 }, () => ({ x: rand(0, appW), y: rand(0, appH), l: rand(12, 24), v: rand(420, 620) }));
-                  fireflies = Array.from({ length: 24 }, () => ({ x: rand(0, appW), y: rand(0, appH), ph: rand(0, 6.28), vx: rand(-14, 14), vy: rand(-14, 14) }));
+                  fireflies = Array.from({ length: 26 }, () => ({ x: rand(0, appW), y: rand(0, appH), ph: rand(0, 6.28), vx: rand(-14, 14), vy: rand(-14, 14) }));
                 }
 
                 const snakeGrid = new Map(), preyGrid = new Map();
@@ -889,53 +885,84 @@ jobs:
                   return Math.abs(x - cx) < (appW / camera.zoom) * 0.6 + pad && Math.abs(y - cy) < (appH / camera.zoom) * 0.6 + pad;
                 }
 
+                // -------------------- ADVANCED REALISTIC 12KM JUNGLE WORLD --------------------
                 function generateWorld(biomeId) {
                   const biome = BIOMES.find(b => b.id === biomeId) || BIOMES[0];
+                  // High-detail seamless 512x512 organic forest floor tile
                   const tile = document.createElement('canvas');
                   tile.width = 512; tile.height = 512;
                   const t = tile.getContext('2d');
                   t.fillStyle = biome.floor; t.fillRect(0, 0, 512, 512);
-                  for (let i = 0; i < 85; i++) {
-                    const x = rand(0, 512), y = rand(0, 512), r = rand(26, 86);
+                  for (let i = 0; i < 95; i++) {
+                    const x = rand(0, 512), y = rand(0, 512), r = rand(24, 90);
                     const col = Math.random() < 0.55 ? biome.moss : biome.soil;
                     const g = t.createRadialGradient(x, y, 2, x, y, r);
                     g.addColorStop(0, col); g.addColorStop(1, 'rgba(0,0,0,0)');
                     t.fillStyle = g; t.beginPath(); t.arc(x, y, r, 0, Math.PI * 2); t.fill();
                   }
-                  t.fillStyle = 'rgba(0,0,0,0.14)';
-                  for (let i = 0; i < 360; i++) t.fillRect(rand(0, 512), rand(0, 512), 2, 2);
-                  for (let i = 0; i < 36; i++) {
+                  // Micro pebbles & soil grain
+                  for (let i = 0; i < 420; i++) {
+                    t.fillStyle = Math.random() < 0.5 ? 'rgba(0,0,0,0.18)' : 'rgba(180,190,140,0.08)';
+                    t.fillRect(rand(0, 512), rand(0, 512), rand(1.2, 2.6), rand(1.2, 2.6));
+                  }
+                  // Grass blades & fallen dry leaves
+                  for (let i = 0; i < 55; i++) {
+                    const gx = rand(0, 512), gy = rand(0, 512);
+                    t.strokeStyle = 'rgba(72, 130, 44, 0.32)'; t.lineWidth = 1.2;
+                    for (let b = -1; b <= 1; b++) {
+                      t.beginPath(); t.moveTo(gx, gy); t.quadraticCurveTo(gx + b * 4, gy - 6, gx + b * 7, gy - 10); t.stroke();
+                    }
+                  }
+                  for (let i = 0; i < 40; i++) {
                     t.save(); t.translate(rand(0, 512), rand(0, 512)); t.rotate(rand(0, 6.28));
-                    t.fillStyle = Math.random() < 0.5 ? 'rgba(128,96,42,0.34)' : 'rgba(64,112,40,0.32)';
-                    t.beginPath(); t.ellipse(0, 0, rand(5, 10), rand(2, 4), 0, 0, Math.PI * 2); t.fill();
+                    t.fillStyle = Math.random() < 0.5 ? 'rgba(138,98,42,0.36)' : 'rgba(64,116,38,0.34)';
+                    t.beginPath(); t.ellipse(0, 0, rand(5, 10), rand(2, 3.8), 0, 0, Math.PI * 2); t.fill();
                     t.restore();
                   }
                   groundPattern = ctx.createPattern(tile, 'repeat');
 
-                  waterZones = []; mudZones = []; worldProps = [];
+                  waterZones = []; lilyPads = []; mudZones = []; worldProps = []; trees = []; tracks = []; ripples = [];
                   const addRiver = (sx, sy, ang, steps, baseR) => {
                     let rx = sx, ry = sy, a = ang;
                     for (let s = 0; s < steps; s++) {
                       const rad = baseR + rand(-25, 35);
-                      if (dist(rx, ry, WORLD_CENTER, WORLD_CENTER) < ARENA_RADIUS - 320) waterZones.push({ x: rx, y: ry, r: rad });
-                      a += rand(-0.36, 0.36); rx += Math.cos(a) * rad * 1.12; ry += Math.sin(a) * rad * 1.12;
+                      if (dist(rx, ry, WORLD_CENTER, WORLD_CENTER) < ARENA_RADIUS - 320) {
+                        waterZones.push({ x: rx, y: ry, r: rad });
+                        if (Math.random() < 0.72) {
+                          for (let l = 0; l < 3; l++) {
+                            const la = rand(0, 6.28), ld = rand(18, rad * 0.65);
+                            lilyPads.push({ x: rx + Math.cos(la) * ld, y: ry + Math.sin(la) * ld, r: rand(12, 22), rot: rand(0, 6.28), lotus: Math.random() < 0.42 });
+                          }
+                        }
+                      }
+                      a += rand(-0.35, 0.35); rx += Math.cos(a) * rad * 1.1; ry += Math.sin(a) * rad * 1.1;
                     }
                   };
-                  addRiver(1800, 4400, 0.42, 20, 175);
-                  addRiver(6200, 8600, -1.25, 14, 155);
-                  addRiver(8800, 8800, -2.3, 14, 150);
+                  addRiver(1800, 4400, 0.42, 20, 180);
+                  addRiver(6200, 8600, -1.25, 15, 160);
+                  addRiver(8800, 8800, -2.3, 14, 155);
 
                   for (let i = 0; i < 36; i++) {
                     const pt = i < 12 ? randInCircle(8600, 3500, 1500, 140) : randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 400);
-                    const rad = rand(125, 220);
+                    const rad = rand(130, 225);
                     if (!waterZones.some(w => distSq(pt.x, pt.y, w.x, w.y) < (w.r + rad) ** 2)) mudZones.push({ x: pt.x, y: pt.y, r: rad });
                   }
 
-                  for (let i = 0; i < 190; i++) {
+                  // Realistic Cracked Boulders, Bark Logs, Ancient Stone Ruins & Lush Ferns
+                  for (let i = 0; i < 230; i++) {
                     const pt = randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 260);
-                    if (waterZones.some(w => distSq(pt.x, pt.y, w.x, w.y) < (w.r + 60) ** 2)) continue;
+                    if (waterZones.some(w => distSq(pt.x, pt.y, w.x, w.y) < (w.r + 65) ** 2)) continue;
+                    const nearRuins = dist(pt.x, pt.y, 3400, 3400) < 1700;
                     const r = Math.random();
-                    worldProps.push({ x: pt.x, y: pt.y, kind: r < 0.33 ? 'log' : r < 0.65 ? 'rock' : 'fern', sz: rand(22, 46), rot: rand(0, 6.28) });
+                    const kind = (nearRuins && r < 0.55) ? 'ruin' : (r < 0.28 ? 'log' : r < 0.56 ? 'rock' : r < 0.68 ? 'ruin' : 'fern');
+                    worldProps.push({ x: pt.x, y: pt.y, kind, sz: rand(26, 52), rot: rand(0, 6.28) });
+                  }
+
+                  // Swaying Overhead Jungle Tree Canopies (Walk Under for Ambush Stealth!)
+                  for (let i = 0; i < 95; i++) {
+                    const pt = randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 340);
+                    if (waterZones.some(w => distSq(pt.x, pt.y, w.x, w.y) < (w.r + 95) ** 2)) continue;
+                    trees.push({ x: pt.x, y: pt.y, r: rand(88, 138), ph: rand(0, 6.28), hue: rand(-10, 10) });
                   }
                 }
 
@@ -949,6 +976,11 @@ jobs:
                   for (const w of waterZones) if (distSq(x, y, w.x, w.y) < w.r * w.r) return 'water';
                   for (const m of mudZones) if (distSq(x, y, m.x, m.y) < m.r * m.r) return 'mud';
                   return 'ground';
+                }
+
+                function isUnderTree(x, y) {
+                  for (const tr of trees) if (distSq(x, y, tr.x, tr.y) < (tr.r * 0.78) ** 2) return true;
+                  return false;
                 }
 
                 function spawnParticles(x, y, color, count = 6, spd = 90) {
@@ -974,13 +1006,15 @@ jobs:
                   c.save();
                   c.translate(p.x, p.y);
                   c.rotate(p.angle);
-                  c.fillStyle = 'rgba(0,0,0,0.34)';
-                  c.beginPath(); c.ellipse(2, 4, p.r * 0.9, p.r * 0.65, 0, 0, Math.PI * 2); c.fill();
+                  c.fillStyle = 'rgba(0,0,0,0.38)';
+                  c.beginPath(); c.ellipse(2, 5, p.r * 0.9, p.r * 0.65, 0, 0, Math.PI * 2); c.fill();
 
                   if (p.id === 'frog') {
                     c.fillStyle = '#2d7a1d';
                     for (const s of [-1, 1]) { c.beginPath(); c.ellipse(-7, s * 8, 7, 3.5, s * 0.4, 0, Math.PI * 2); c.fill(); }
-                    c.fillStyle = '#5ee63d'; c.beginPath(); c.ellipse(0, 0, 12, 9.5, 0, 0, Math.PI * 2); c.fill();
+                    const fg = c.createRadialGradient(2, -2, 2, 0, 0, 12);
+                    fg.addColorStop(0, '#78f24b'); fg.addColorStop(1, '#267518');
+                    c.fillStyle = fg; c.beginPath(); c.ellipse(0, 0, 12, 9.5, 0, 0, Math.PI * 2); c.fill();
                     c.fillStyle = '#ffe552'; c.beginPath(); c.arc(7, -4.5, 3, 0, Math.PI * 2); c.arc(7, 4.5, 3, 0, Math.PI * 2); c.fill();
                     c.fillStyle = '#111'; c.beginPath(); c.arc(8, -4.5, 1.4, 0, Math.PI * 2); c.arc(8, 4.5, 1.4, 0, Math.PI * 2); c.fill();
                   } else if (p.id === 'mouse') {
@@ -1011,22 +1045,23 @@ jobs:
                   c.restore();
                 }
 
-                // -------------------- HYPER-REALISTIC 6-SPECIES SNAKE CLASS --------------------
+                // -------------------- ULTRA-REALISTIC 3-ROW SCALE REPTILE CLASS --------------------
                 class Snake {
                   constructor({ name, species, x, y, isPlayer = false, mass = 28 }) {
                     this.name = name; this.species = species; this.isPlayer = isPlayer; this.alive = true;
                     this.x = x; this.y = y; this.angle = rand(0, Math.PI * 2); this.targetAngle = this.angle;
-                    this.mass = mass; this.kills = 0; this.terrain = 'ground';
+                    this.mass = mass; this.kills = 0; this.terrain = 'ground'; this.inBush = false;
                     this.maxHp = this.calcMaxHp(); this.hp = this.maxHp;
                     this.spawnShield = isPlayer ? 3.2 : 1.5;
                     this.hitFlash = 0; this.biteCd = 0; this.biteLunge = 0;
                     this.poisonTimer = 0; this.poisonDps = 6; this.poisonOwner = null;
                     this.combatTimer = 0; this.stamina = 100; this.boosting = false;
                     this.vxKnock = 0; this.vyKnock = 0;
-                    this.hoodFlare = species.hood ? 0.35 : 0; this.spitTimer = 0;
+                    this.hoodFlare = species.hood ? 0.45 : 0; this.spitTimer = 0;
                     this.venomCd = 0; this.venomMax = species.id === 'krait' ? 3.6 : 4.8;
                     this.camoCd = 0; this.camoMax = 11.0; this.camoTimer = 0; this.slowTimer = 0;
                     this.slitherPhase = rand(0, 6.28); this.tongueTimer = rand(0.6, 2.0); this.tongueExt = 0;
+                    this.trackCd = 0; this.rippleCd = 0;
                     this.aiTimer = rand(0, 0.5); this.aiWander = this.angle; this.aiBoost = 0;
                     this.segments = [];
                     const cnt = this.getSegCount();
@@ -1034,19 +1069,20 @@ jobs:
                   }
 
                   calcMaxHp() { return Math.min(360, Math.round(130 + this.species.bonusHp + Math.max(0, this.mass - 24) * 1.15)); }
-                  getRadius() { return clamp(11.5 + Math.pow(this.mass, 0.44) * 1.4, 11.5, 30); }
-                  getSegCount() { return Math.min(70, Math.floor(18 + this.mass * 0.52)); }
+                  getRadius() { return clamp(11.0 + Math.pow(this.mass, 0.44) * 1.38, 11.0, 29); }
+                  getSegCount() { return Math.min(72, Math.floor(20 + this.mass * 0.54)); }
                   getLen() { return Math.floor(this.mass * 4.5); }
-                  isCamo() { return this.camoTimer > 0; }
+                  isCamo() { return this.camoTimer > 0 || this.inBush; }
 
+                  // Real anatomical silhouette: tapered neck behind skull -> thick muscular mid-body -> whip tail
                   getHalfWidth(i, len, baseR) {
                     const t = i / Math.max(1, len - 1);
-                    let pw = t < 0.08 ? lerp(0.72, 1.0, t / 0.08)
-                           : t < 0.58 ? (1.0 + Math.sin(((t - 0.08) / 0.5) * Math.PI) * 0.14)
-                           : lerp(1.0, this.species.rattle ? 0.24 : 0.1, Math.pow((t - 0.58) / 0.42, 1.2));
+                    let pw = t < 0.09 ? lerp(0.58, 0.96, t / 0.09)
+                           : t < 0.55 ? (0.96 + Math.sin(((t - 0.09) / 0.46) * Math.PI) * 0.16)
+                           : lerp(0.96, this.species.rattle ? 0.22 : 0.08, Math.pow((t - 0.55) / 0.45, 1.15));
                     let hood = 1.0;
                     if (this.species.hood && this.hoodFlare > 0.04 && i >= 1 && i <= 8) {
-                      hood = 1 + Math.sin(clamp((i - 0.5) / 7.5, 0, 1) * Math.PI) * 0.92 * this.hoodFlare;
+                      hood = 1 + Math.sin(clamp((i - 0.5) / 7.5, 0, 1) * Math.PI) * 0.95 * this.hoodFlare;
                     }
                     return baseR * this.species.girth * pw * hood;
                   }
@@ -1151,7 +1187,7 @@ jobs:
                     if (this.spawnShield > 0) this.spawnShield = Math.max(0, this.spawnShield - dt);
                     if (this.hitFlash > 0) this.hitFlash = Math.max(0, this.hitFlash - dt);
                     if (this.biteCd > 0) this.biteCd = Math.max(0, this.biteCd - dt);
-                    if (this.biteLunge > 0) this.biteLunge = Math.max(0, this.biteLunge - dt * 4);
+                    if (this.biteLunge > 0) this.biteLunge = Math.max(0, this.biteLunge - dt * 3.5);
                     if (this.venomCd > 0) this.venomCd = Math.max(0, this.venomCd - dt);
                     if (this.camoCd > 0) this.camoCd = Math.max(0, this.camoCd - dt);
                     if (this.camoTimer > 0) this.camoTimer = Math.max(0, this.camoTimer - dt);
@@ -1171,6 +1207,7 @@ jobs:
                     if (!this.isPlayer) this.updateAI(dt, near);
 
                     this.terrain = getTerrainAt(this.x, this.y);
+                    this.inBush = isUnderTree(this.x, this.y);
                     const canBoost = this.boosting && this.stamina > 5 && this.mass > 14 && this.slowTimer <= 0;
                     if (canBoost) { this.stamina = Math.max(0, this.stamina - dt * 26); this.mass = Math.max(14, this.mass - dt * 1.2); }
                     else this.stamina = Math.min(100, this.stamina + dt * 19);
@@ -1210,7 +1247,7 @@ jobs:
                     }
 
                     this.segments[0].x = this.x; this.segments[0].y = this.y;
-                    const spc = r * 0.52;
+                    const spc = r * 0.5;
                     for (let i = 1; i < this.segments.length; i++) {
                       const p = this.segments[i - 1], c = this.segments[i];
                       const dx = c.x - p.x, dy = c.y - p.y, d = Math.hypot(dx, dy) || 0.001;
@@ -1221,7 +1258,7 @@ jobs:
                     while (this.segments.length > tLen && this.segments.length > 14) this.segments.pop();
 
                     if (near) {
-                      const wantHood = this.species.hood ? ((canBoost || this.spitTimer > 0) ? 1.0 : 0.35) : 0;
+                      const wantHood = this.species.hood ? ((canBoost || this.spitTimer > 0) ? 1.0 : 0.45) : 0;
                       this.hoodFlare = lerp(this.hoodFlare, wantHood, dt * 6);
                       this.tongueTimer -= dt;
                       if (this.tongueTimer <= 0) {
@@ -1229,21 +1266,35 @@ jobs:
                         if (p < 1) this.tongueExt = Math.sin(p * Math.PI);
                         else { this.tongueExt = 0; this.tongueTimer = rand(1.0, 2.4); }
                       } else this.tongueExt = 0;
+
+                      // Dynamic Water Ripples & Mud Slither Tracks
+                      this.rippleCd -= dt;
+                      if (this.terrain === 'water' && this.rippleCd <= 0 && ripples.length < 40) {
+                        ripples.push({ x: this.x, y: this.y, r: r * 0.7, maxR: r * 3.2, life: 0.75, maxLife: 0.75 });
+                        this.rippleCd = 0.16;
+                      }
+                      this.trackCd -= dt;
+                      if ((this.terrain === 'mud' || canBoost) && this.trackCd <= 0 && tracks.length < 90) {
+                        tracks.push({ x: this.segments[3].x, y: this.segments[3].y, r: r * 0.85, ang: this.angle, life: 3.5, maxLife: 3.5, mud: this.terrain === 'mud' });
+                        this.trackCd = 0.1;
+                      }
                     }
                   }
 
                   draw(c, showLabel = true) {
                     if (!this.alive || this.segments.length < 4) return;
                     const baseR = this.getRadius(), len = this.segments.length;
+                    const ultra = profile.settings.gfx === 'ultra';
                     const detail = profile.settings.gfx !== 'low';
+
                     const pts = new Array(len);
                     for (let i = 0; i < len; i++) {
                       const seg = this.segments[i];
                       const prev = this.segments[Math.max(0, i - 1)], next = this.segments[Math.min(len - 1, i + 1)];
                       const ang = i === 0 ? this.angle : Math.atan2(prev.y - next.y, prev.x - next.x);
                       const nx = -Math.sin(ang), ny = Math.cos(ang);
-                      const mask = i < 2 ? 0 : Math.min(1, (i - 1) / 4) * (1 - (i / len) * 0.25);
-                      const wave = Math.sin(this.slitherPhase - i * 0.42) * (baseR * 0.2 * mask);
+                      const mask = i < 2 ? 0 : Math.min(1, (i - 1) / 4) * (1 - (i / len) * 0.2);
+                      const wave = Math.sin(this.slitherPhase - i * 0.42) * (baseR * 0.22 * mask);
                       pts[i] = { x: seg.x + nx * wave, y: seg.y + ny * wave, ang, nx, ny, w: this.getHalfWidth(i, len, baseR) };
                     }
 
@@ -1258,7 +1309,7 @@ jobs:
                         c.quadraticCurveTo(ax, ay, (ax + bx) * 0.5, (ay + by) * 0.5);
                       }
                       const tl = pts[len - 1];
-                      c.lineTo(tl.x - Math.cos(tl.ang) * tl.w * 2.2 + ox, tl.y - Math.sin(tl.ang) * tl.w * 2.2 + oy);
+                      c.lineTo(tl.x - Math.cos(tl.ang) * tl.w * 2.4 + ox, tl.y - Math.sin(tl.ang) * tl.w * 2.4 + oy);
                       for (let i = len - 2; i >= 1; i--) {
                         const a = pts[i], b = pts[i - 1];
                         const ax = a.x - a.nx * a.w * sw + ox, ay = a.y - a.ny * a.w * sw + oy;
@@ -1268,36 +1319,36 @@ jobs:
                       c.closePath();
                     };
 
+                    const alpha = this.camoTimer > 0 ? (this.isPlayer ? 0.35 : 0.14) : (this.inBush ? (this.isPlayer ? 0.62 : 0.22) : 1);
                     c.save();
-                    c.globalAlpha = this.isCamo() ? (this.isPlayer ? 0.36 : 0.14) : 1;
+                    c.globalAlpha = alpha;
 
-                    // 1. Soft Ambient Ground Shadow
+                    // 1. Soft Ground Drop Shadow
                     if (detail) {
-                      traceBody(6, 9, 1.05);
-                      c.fillStyle = 'rgba(0,0,0,0.4)';
+                      traceBody(5, 8, 1.05);
+                      c.fillStyle = 'rgba(0,0,0,0.42)';
                       c.fill();
                     }
 
-                    // 2. Organic Continuous Cylindrical Body + Unique Species Skin
+                    // 2. Cylindrical 3D Body Volume + Interlocking 3-Row Reptile Scales
                     c.save();
                     traceBody(0, 0, 1.0);
                     c.fillStyle = this.species.dark;
                     c.fill();
                     c.clip();
 
-                    // Belly-rim tint + Mid-body tone for 3D cylindrical volume
+                    // Layered cylindrical gradient shading (belly rim -> mid flank -> sunlit dorsum)
                     traceBody(0, 0, 0.92);
-                    c.fillStyle = this.species.belly;
-                    c.globalAlpha *= 0.35;
+                    c.fillStyle = this.species.mid;
                     c.fill();
-                    c.globalAlpha = this.isCamo() ? (this.isPlayer ? 0.36 : 0.14) : 1;
 
-                    traceBody(-1.2, -1.2, 0.84);
+                    traceBody(-1.2, -1.2, 0.78);
                     c.fillStyle = this.species.base;
                     c.fill();
 
-                    // SPECIES-SPECIFIC REALISTIC SKIN PATTERNS
                     const sid = this.species.id;
+
+                    // Draw natural species markings FIRST (under the fine scale relief!)
                     for (let i = 2; i < len - 1; i++) {
                       const p = pts[i];
                       c.save();
@@ -1305,70 +1356,82 @@ jobs:
                       c.rotate(p.ang);
 
                       if (sid === 'cobra') {
-                        // King Cobra: Spectacle marks on flared hood + subtle banded body rings
-                        if (i === 4 && this.hoodFlare > 0.2) {
-                          c.strokeStyle = this.species.accent; c.lineWidth = Math.max(2, p.w * 0.14);
-                          c.beginPath(); c.arc(0, -p.w * 0.42, p.w * 0.22, 0, Math.PI * 2); c.stroke();
-                          c.beginPath(); c.arc(0, p.w * 0.42, p.w * 0.22, 0, Math.PI * 2); c.stroke();
-                          c.beginPath(); c.moveTo(-p.w * 0.12, -p.w * 0.2); c.quadraticCurveTo(-p.w * 0.35, 0, -p.w * 0.12, p.w * 0.2); c.stroke();
+                        if (i === 4 && this.hoodFlare > 0.25) {
+                          c.strokeStyle = this.species.accent; c.lineWidth = Math.max(2, p.w * 0.13);
+                          c.beginPath(); c.arc(0, -p.w * 0.4, p.w * 0.21, 0, Math.PI * 2); c.stroke();
+                          c.beginPath(); c.arc(0, p.w * 0.4, p.w * 0.21, 0, Math.PI * 2); c.stroke();
+                          c.beginPath(); c.moveTo(-p.w * 0.1, -p.w * 0.2); c.quadraticCurveTo(-p.w * 0.35, 0, -p.w * 0.1, p.w * 0.2); c.stroke();
                         } else if (i > 7 && i % 4 === 0) {
-                          c.strokeStyle = 'rgba(225, 206, 120, 0.55)'; c.lineWidth = Math.max(1.8, p.w * 0.18);
-                          c.beginPath(); c.moveTo(-p.w * 0.15, -p.w * 0.95); c.quadraticCurveTo(p.w * 0.25, 0, -p.w * 0.15, p.w * 0.95); c.stroke();
+                          c.strokeStyle = 'rgba(225, 206, 125, 0.5)'; c.lineWidth = Math.max(1.8, p.w * 0.16);
+                          c.beginPath(); c.moveTo(-p.w * 0.12, -p.w * 0.95); c.quadraticCurveTo(p.w * 0.28, 0, -p.w * 0.12, p.w * 0.95); c.stroke();
                         }
                       } else if (sid === 'boa') {
-                        // Emerald Tree Boa: Crisp white lightning saddles + yellow dorsal stripe
                         if (i % 4 === 0) {
                           c.fillStyle = this.species.accent;
                           c.beginPath();
-                          c.moveTo(p.w * 0.32, 0); c.lineTo(0, -p.w * 0.78); c.lineTo(-p.w * 0.22, -p.w * 0.32);
-                          c.lineTo(-p.w * 0.38, 0); c.lineTo(-p.w * 0.22, p.w * 0.32); c.lineTo(0, p.w * 0.78);
+                          c.moveTo(p.w * 0.3, 0); c.lineTo(0, -p.w * 0.76); c.lineTo(-p.w * 0.2, -p.w * 0.28);
+                          c.lineTo(-p.w * 0.35, 0); c.lineTo(-p.w * 0.2, p.w * 0.28); c.lineTo(0, p.w * 0.76);
                           c.closePath(); c.fill();
                         }
                       } else if (sid === 'viper') {
-                        // Desert Horned Viper: Linked dark brown diamond blotches with pale tan outlines
                         if (i % 3 === 0) {
-                          c.fillStyle = this.species.accent;
-                          c.strokeStyle = '#edd8b0'; c.lineWidth = 1.2;
-                          c.beginPath();
-                          c.moveTo(p.w * 0.58, 0); c.lineTo(0, -p.w * 0.62); c.lineTo(-p.w * 0.58, 0); c.lineTo(0, p.w * 0.62);
-                          c.closePath(); c.fill(); c.stroke();
+                          c.fillStyle = this.species.accent; c.strokeStyle = '#efe0be'; c.lineWidth = 1.1;
+                          c.beginPath(); c.moveTo(p.w * 0.56, 0); c.lineTo(0, -p.w * 0.58); c.lineTo(-p.w * 0.56, 0); c.lineTo(0, p.w * 0.58); c.closePath();
+                          c.fill(); c.stroke();
                         }
                       } else if (sid === 'python') {
-                        // Shadow Python: Reticulated iridescent hexagonal diamond-net mesh!
-                        if (i % 2 === 0) {
-                          c.strokeStyle = i % 4 === 0 ? 'rgba(110, 212, 255, 0.55)' : 'rgba(176, 118, 255, 0.55)';
-                          c.lineWidth = 1.6;
+                        // REAL Reticulated Python: Organic brown/gold diamond saddles with dark borders & pale side blotches
+                        if (i % 4 === 0) {
+                          c.fillStyle = this.species.accent; c.strokeStyle = '#17110b'; c.lineWidth = 2.0;
                           c.beginPath();
-                          c.moveTo(p.w * 0.55, 0); c.lineTo(p.w * 0.18, -p.w * 0.68); c.lineTo(-p.w * 0.38, -p.w * 0.68);
-                          c.lineTo(-p.w * 0.55, 0); c.lineTo(-p.w * 0.38, p.w * 0.68); c.lineTo(p.w * 0.18, p.w * 0.68);
-                          c.closePath(); c.stroke();
+                          c.moveTo(p.w * 0.65, 0); c.lineTo(0, -p.w * 0.54); c.lineTo(-p.w * 0.65, 0); c.lineTo(0, p.w * 0.54);
+                          c.closePath(); c.fill(); c.stroke();
+                          c.fillStyle = '#e0cca6';
+                          c.beginPath(); c.arc(0, -p.w * 0.74, p.w * 0.18, 0, Math.PI * 2); c.arc(0, p.w * 0.74, p.w * 0.18, 0, Math.PI * 2); c.fill();
                         }
                       } else if (sid === 'anaconda') {
-                        // Golden Anaconda: Alternating dark dorsal ovals + yellow-ringed side ocelli
                         if (i % 3 === 0) {
                           const sgn = i % 6 === 0 ? -1 : 1;
                           c.fillStyle = this.species.accent;
-                          c.beginPath(); c.ellipse(0, sgn * p.w * 0.28, p.w * 0.52, p.w * 0.34, sgn * 0.2, 0, Math.PI * 2); c.fill();
-                          c.fillStyle = '#e8d768'; c.beginPath(); c.arc(-p.w * 0.1, -sgn * p.w * 0.66, p.w * 0.2, 0, Math.PI * 2); c.fill();
-                          c.fillStyle = '#1c1806'; c.beginPath(); c.arc(-p.w * 0.1, -sgn * p.w * 0.66, p.w * 0.11, 0, Math.PI * 2); c.fill();
+                          c.beginPath(); c.ellipse(0, sgn * p.w * 0.28, p.w * 0.48, p.w * 0.34, sgn * 0.2, 0, Math.PI * 2); c.fill();
+                          c.fillStyle = '#d6c865'; c.beginPath(); c.arc(-p.w * 0.1, -sgn * p.w * 0.66, p.w * 0.19, 0, Math.PI * 2); c.fill();
+                          c.fillStyle = '#1c1806'; c.beginPath(); c.arc(-p.w * 0.1, -sgn * p.w * 0.66, p.w * 0.1, 0, Math.PI * 2); c.fill();
                         }
                       } else if (sid === 'krait') {
-                        // Crimson Krait: High-gloss jet-black, crimson & gold tri-color bands
                         if (i % 4 === 0) { c.fillStyle = '#0c0a0e'; c.fillRect(-p.w * 0.48, -p.w * 1.15, p.w * 0.96, p.w * 2.3); }
                         else if (i % 4 === 1) { c.fillStyle = this.species.accent; c.fillRect(-p.w * 0.18, -p.w * 1.15, p.w * 0.36, p.w * 2.3); }
                       }
 
-                      // Realistic Overlapping Reptile Scale Rim
-                      if (detail && i % 2 === 0) {
-                        c.strokeStyle = 'rgba(0,0,0,0.22)'; c.lineWidth = 1;
-                        c.beginPath(); c.arc(-p.w * 0.12, 0, p.w * 0.78, -1.15, 1.15); c.stroke();
+                      // TRUE 3-ROW INTERLOCKING OVERLAPPING REPTILE SCALES (Ultra / High)
+                      if (detail && p.w > 4) {
+                        const sr = p.w * 0.34;
+                        const stagger = (i % 2 === 0) ? 0 : sr * 0.65;
+                        c.strokeStyle = 'rgba(0,0,0,0.28)';
+                        c.lineWidth = 0.9;
+                        // Central dorsal diamond scale
+                        c.beginPath();
+                        c.arc(-stagger * 0.2, 0, sr, -1.25, 1.25);
+                        c.stroke();
+                        if (ultra) {
+                          // Flanking left & right lateral scales
+                          for (const side of [-1, 1]) {
+                            c.beginPath();
+                            c.arc(-sr * 0.55, side * p.w * 0.52, sr * 0.88, -1.2, 1.2);
+                            c.stroke();
+                          }
+                          // Subtle individual wet-scale highlight dot
+                          if (i % 2 === 0) {
+                            c.fillStyle = 'rgba(255,255,245,0.16)';
+                            c.beginPath(); c.ellipse(sr * 0.2, -p.w * 0.16, sr * 0.38, sr * 0.16, 0, 0, Math.PI * 2); c.fill();
+                          }
+                        }
                       }
                       c.restore();
                     }
 
-                    // Cylindrical Dorsal Specular Wet-Gloss Highlight
-                    traceBody(-baseR * 0.16, -baseR * 0.16, sid === 'krait' ? 0.38 : 0.28);
-                    c.fillStyle = sid === 'krait' ? 'rgba(255,255,255,0.34)' : 'rgba(255,255,245,0.18)';
+                    // Smooth Soft Cylindrical Dorsal Sheen (Wet Organic Reptile Skin)
+                    traceBody(-baseR * 0.14, -baseR * 0.14, sid === 'krait' ? 0.34 : 0.24);
+                    c.fillStyle = sid === 'krait' ? 'rgba(255,255,255,0.32)' : 'rgba(255,255,240,0.15)';
                     c.fill();
 
                     if (this.hitFlash > 0) {
@@ -1378,7 +1441,7 @@ jobs:
                     }
                     c.restore();
 
-                    // Desert Viper Segmented Vibrating Rattle Tail
+                    // Desert Viper Vibrating Rattle Tail
                     if (this.species.rattle) {
                       const tl = pts[len - 1];
                       c.save();
@@ -1392,120 +1455,126 @@ jobs:
                       c.restore();
                     }
 
-                    // 3. SPECIES-UNIQUE SCULPTED REALISTIC HEAD & FACE
+                    // 3. SEAMLESSLY INTEGRATED REALISTIC PREDATOR HEAD + FANGS
                     const hr = baseR * this.species.girth * (1 + this.biteLunge * 0.12);
                     c.save();
                     c.translate(pts[0].x, pts[0].y);
                     c.rotate(this.angle);
 
+                    // Open Jaw & White Fangs during Bite/Venom Strike
+                    if (this.biteLunge > 0.15) {
+                      const ext = this.biteLunge * hr * 0.55;
+                      c.fillStyle = '#6e1620';
+                      c.beginPath(); c.ellipse(hr * 0.95 + ext * 0.5, 0, hr * 0.52, hr * 0.45, 0, 0, Math.PI * 2); c.fill();
+                      c.fillStyle = '#fffdf5';
+                      for (const s of [-1, 1]) {
+                        c.beginPath();
+                        c.moveTo(hr * 1.15, s * hr * 0.28);
+                        c.lineTo(hr * 1.55 + ext, s * hr * 0.18);
+                        c.lineTo(hr * 1.12, s * hr * 0.12);
+                        c.closePath(); c.fill();
+                      }
+                    }
+
                     // Flickering Forked Red Tongue
-                    if (this.tongueExt > 0.05) {
+                    if (this.tongueExt > 0.05 && this.biteLunge < 0.2) {
                       const tl = hr * 1.1 + this.tongueExt * hr * 1.25;
-                      c.strokeStyle = '#ff2e3b'; c.lineWidth = 1.9; c.lineCap = 'round';
+                      c.strokeStyle = '#e82534'; c.lineWidth = 1.8; c.lineCap = 'round';
                       c.beginPath(); c.moveTo(hr * 0.9, 0); c.lineTo(tl, 0);
                       c.lineTo(tl + 6, -4.5); c.moveTo(tl, 0); c.lineTo(tl + 6, 4.5); c.stroke();
                     }
 
-                    const hg = c.createRadialGradient(hr * 0.25, -hr * 0.2, 2, 0, 0, hr * 1.5);
-                    hg.addColorStop(0, this.species.base); hg.addColorStop(1, this.species.dark);
+                    const hg = c.createRadialGradient(hr * 0.3, -hr * 0.2, 2, 0, 0, hr * 1.55);
+                    hg.addColorStop(0, this.species.base); hg.addColorStop(0.7, this.species.mid); hg.addColorStop(1, this.species.dark);
                     c.fillStyle = hg;
                     c.beginPath();
 
                     if (sid === 'viper') {
-                      // Wide triangular venomous viper arrowhead
                       c.moveTo(hr * 1.48, 0);
-                      c.lineTo(hr * 0.4, -hr * 1.25);
-                      c.quadraticCurveTo(-hr * 0.9, -hr * 1.18, -hr * 0.95, -hr * 0.65);
-                      c.quadraticCurveTo(-hr * 1.12, 0, -hr * 0.95, hr * 0.65);
-                      c.quadraticCurveTo(-hr * 0.9, hr * 1.18, hr * 0.4, hr * 1.25);
+                      c.quadraticCurveTo(hr * 0.85, -hr * 0.85, hr * 0.1, -hr * 1.22);
+                      c.quadraticCurveTo(-hr * 0.85, -hr * 1.15, -hr * 0.95, -hr * 0.48);
+                      c.quadraticCurveTo(-hr * 1.15, 0, -hr * 0.95, hr * 0.48);
+                      c.quadraticCurveTo(-hr * 0.85, hr * 1.15, hr * 0.1, hr * 1.22);
+                      c.quadraticCurveTo(hr * 0.85, hr * 0.85, hr * 1.48, 0);
                     } else if (sid === 'boa') {
-                      // Muscular heart/pear-shaped Emerald Boa head
-                      c.moveTo(hr * 1.4, 0);
+                      c.moveTo(hr * 1.42, 0);
                       c.quadraticCurveTo(hr * 0.85, -hr * 0.72, 0, -hr * 1.12);
-                      c.quadraticCurveTo(-hr * 1.05, -hr * 1.08, -hr * 0.92, 0);
-                      c.quadraticCurveTo(-hr * 1.05, hr * 1.08, 0, hr * 1.12);
-                      c.quadraticCurveTo(hr * 0.85, hr * 0.72, hr * 1.4, 0);
+                      c.quadraticCurveTo(-hr * 0.95, -hr * 1.05, -hr * 0.95, -hr * 0.45);
+                      c.quadraticCurveTo(-hr * 1.1, 0, -hr * 0.95, hr * 0.45);
+                      c.quadraticCurveTo(-hr * 0.95, hr * 1.05, 0, hr * 1.12);
+                      c.quadraticCurveTo(hr * 0.85, hr * 0.72, hr * 1.42, 0);
                     } else if (sid === 'anaconda') {
-                      // Heavy broad rounded aquatic titan snout
-                      c.moveTo(hr * 1.42, -hr * 0.26);
-                      c.quadraticCurveTo(hr * 1.6, 0, hr * 1.42, hr * 0.26);
-                      c.quadraticCurveTo(hr * 0.7, hr * 1.08, -hr * 0.85, hr * 0.98);
-                      c.quadraticCurveTo(-hr * 1.15, 0, -hr * 0.85, -hr * 0.98);
-                      c.quadraticCurveTo(hr * 0.7, -hr * 1.08, hr * 1.42, -hr * 0.26);
+                      c.moveTo(hr * 1.42, -hr * 0.25);
+                      c.quadraticCurveTo(hr * 1.62, 0, hr * 1.42, hr * 0.25);
+                      c.quadraticCurveTo(hr * 0.7, hr * 1.05, -hr * 0.85, hr * 0.82);
+                      c.quadraticCurveTo(-hr * 1.18, 0, -hr * 0.85, -hr * 0.82);
+                      c.quadraticCurveTo(hr * 0.7, -hr * 1.05, hr * 1.42, -hr * 0.25);
                     } else if (sid === 'krait') {
-                      // Narrow sleek venomous krait head
                       c.moveTo(hr * 1.55, 0);
-                      c.quadraticCurveTo(hr * 0.9, -hr * 0.75, -hr * 0.8, -hr * 0.72);
-                      c.quadraticCurveTo(-hr * 1.05, 0, -hr * 0.8, hr * 0.72);
-                      c.quadraticCurveTo(hr * 0.9, hr * 0.75, hr * 1.55, 0);
+                      c.quadraticCurveTo(hr * 0.9, -hr * 0.74, -hr * 0.82, -hr * 0.68);
+                      c.quadraticCurveTo(-hr * 1.08, 0, -hr * 0.82, hr * 0.68);
+                      c.quadraticCurveTo(hr * 0.9, hr * 0.74, hr * 1.55, 0);
                     } else if (sid === 'python') {
-                      // Elongated tapered reticulated python skull
-                      c.moveTo(hr * 1.62, 0);
-                      c.quadraticCurveTo(hr * 0.75, -hr * 0.85, -hr * 0.75, -hr * 0.92);
-                      c.quadraticCurveTo(-hr * 1.08, 0, -hr * 0.75, hr * 0.92);
-                      c.quadraticCurveTo(hr * 0.75, hr * 0.85, hr * 1.62, 0);
+                      c.moveTo(hr * 1.6, 0);
+                      c.quadraticCurveTo(hr * 0.8, -hr * 0.78, -hr * 0.65, -hr * 0.95);
+                      c.quadraticCurveTo(-hr * 1.05, -hr * 0.5, -hr * 1.05, 0);
+                      c.quadraticCurveTo(-hr * 1.05, hr * 0.5, -hr * 0.65, hr * 0.95);
+                      c.quadraticCurveTo(hr * 0.8, hr * 0.78, hr * 1.6, 0);
                     } else {
-                      // King Cobra: Armored royal crown head with defined brows
                       c.moveTo(hr * 1.5, 0);
-                      c.quadraticCurveTo(hr * 0.95, -hr * 0.88, -hr * 0.72, -hr * 0.88);
-                      c.quadraticCurveTo(-hr * 1.08, 0, -hr * 0.72, hr * 0.88);
-                      c.quadraticCurveTo(hr * 0.95, hr * 0.88, hr * 1.5, 0);
+                      c.quadraticCurveTo(hr * 0.92, -hr * 0.86, -hr * 0.72, -hr * 0.82);
+                      c.quadraticCurveTo(-hr * 1.1, 0, -hr * 0.72, hr * 0.82);
+                      c.quadraticCurveTo(hr * 0.92, hr * 0.86, hr * 1.5, 0);
                     }
                     c.closePath();
                     c.fill();
-                    c.strokeStyle = 'rgba(0,0,0,0.52)'; c.lineWidth = 1.3; c.stroke();
+                    c.strokeStyle = 'rgba(0,0,0,0.48)'; c.lineWidth = 1.2; c.stroke();
 
-                    // UNIQUE HEAD MARKINGS & ANATOMY PER SPECIES
+                    // Head Shield Plates & Unique Species Markings
                     if (sid === 'cobra') {
-                      // Crown shield plates
-                      c.strokeStyle = 'rgba(235, 210, 110, 0.45)'; c.lineWidth = 1.1;
-                      c.beginPath(); c.moveTo(hr * 0.7, 0); c.lineTo(-hr * 0.2, -hr * 0.42); c.lineTo(-hr * 0.65, 0); c.lineTo(-hr * 0.2, hr * 0.42); c.closePath(); c.stroke();
+                      c.strokeStyle = 'rgba(225, 200, 110, 0.36)'; c.lineWidth = 1.0;
+                      c.beginPath(); c.moveTo(hr * 0.72, 0); c.lineTo(-hr * 0.15, -hr * 0.42); c.lineTo(-hr * 0.65, 0); c.lineTo(-hr * 0.15, hr * 0.42); c.closePath(); c.stroke();
                     } else if (sid === 'viper') {
-                      // Curved brow horns + dark V-mark on skull
                       c.fillStyle = '#f0d8a8';
                       for (const s of [-1, 1]) {
-                        c.beginPath(); c.moveTo(hr * 0.38, s * hr * 0.56); c.lineTo(hr * 0.02, s * hr * 1.25); c.lineTo(-hr * 0.14, s * hr * 0.56); c.closePath(); c.fill();
+                        c.beginPath(); c.moveTo(hr * 0.38, s * hr * 0.56); c.lineTo(hr * 0.02, s * hr * 1.24); c.lineTo(-hr * 0.14, s * hr * 0.56); c.closePath(); c.fill();
                       }
-                      c.strokeStyle = '#3d220a'; c.lineWidth = 2.2;
-                      c.beginPath(); c.moveTo(-hr * 0.55, -hr * 0.45); c.lineTo(hr * 0.2, 0); c.lineTo(-hr * 0.55, hr * 0.45); c.stroke();
+                      c.strokeStyle = '#3d220a'; c.lineWidth = 2.0;
+                      c.beginPath(); c.moveTo(-hr * 0.55, -hr * 0.42); c.lineTo(hr * 0.22, 0); c.lineTo(-hr * 0.55, hr * 0.42); c.stroke();
                     } else if (sid === 'boa') {
-                      // Labial heat-sensing pits along upper jaw
                       c.fillStyle = 'rgba(0,0,0,0.68)';
                       for (const s of [-1, 1]) for (let k = 0; k < 3; k++) {
-                        c.beginPath(); c.arc(hr * (0.75 + k * 0.18), s * hr * (0.48 - k * 0.11), 1.3, 0, Math.PI * 2); c.fill();
+                        c.beginPath(); c.arc(hr * (0.76 + k * 0.18), s * hr * (0.46 - k * 0.11), 1.25, 0, Math.PI * 2); c.fill();
                       }
                     } else if (sid === 'python') {
-                      // Reticulated Python signature central dark spear-stripe + glowing temple lines
-                      c.strokeStyle = '#68d4ff'; c.lineWidth = 1.6;
-                      c.beginPath(); c.moveTo(hr * 1.1, 0); c.lineTo(-hr * 0.75, 0); c.stroke();
+                      // Signature Reticulated Python central dark spear line
+                      c.strokeStyle = '#171008'; c.lineWidth = 2.0;
+                      c.beginPath(); c.moveTo(hr * 1.2, 0); c.lineTo(-hr * 0.8, 0); c.stroke();
+                      c.strokeStyle = 'rgba(225, 195, 140, 0.45)'; c.lineWidth = 1.0;
+                      c.beginPath(); c.moveTo(hr * 0.5, -hr * 0.2); c.lineTo(-hr * 0.6, -hr * 0.55); c.moveTo(hr * 0.5, hr * 0.2); c.lineTo(-hr * 0.6, hr * 0.55); c.stroke();
                     } else if (sid === 'anaconda') {
-                      // Signature dark post-ocular stripes behind eyes
                       c.strokeStyle = '#1c1606'; c.lineWidth = 2.6;
-                      for (const s of [-1, 1]) {
-                        c.beginPath(); c.moveTo(hr * 0.25, s * hr * 0.52); c.lineTo(-hr * 0.72, s * hr * 0.85); c.stroke();
-                      }
+                      for (const s of [-1, 1]) { c.beginPath(); c.moveTo(hr * 0.25, s * hr * 0.52); c.lineTo(-hr * 0.72, s * hr * 0.8); c.stroke(); }
                     } else if (sid === 'krait') {
-                      // Bright golden collar band behind skull
-                      c.strokeStyle = '#ffda47'; c.lineWidth = 3.2;
-                      c.beginPath(); c.moveTo(-hr * 0.62, -hr * 0.72); c.lineTo(-hr * 0.62, hr * 0.72); c.stroke();
+                      c.strokeStyle = '#f5d44c'; c.lineWidth = 3.0;
+                      c.beginPath(); c.moveTo(-hr * 0.6, -hr * 0.68); c.lineTo(-hr * 0.6, hr * 0.68); c.stroke();
                     }
 
-                    // Nostrils + Fierce Vertical-Slit Predator Eyes
+                    // Snout Sheen + Nostrils + Sculpted Predator Eyes
+                    c.fillStyle = 'rgba(255,255,240,0.14)';
+                    c.beginPath(); c.ellipse(hr * 0.35, -hr * 0.14, hr * 0.55, hr * 0.24, -0.1, 0, Math.PI * 2); c.fill();
+
                     c.fillStyle = 'rgba(0,0,0,0.72)';
                     c.beginPath(); c.arc(hr * 1.12, -hr * 0.22, 1.3, 0, Math.PI * 2); c.arc(hr * 1.12, hr * 0.22, 1.3, 0, Math.PI * 2); c.fill();
                     for (const s of [-1, 1]) {
-                      // Eye ridge shadow
-                      c.fillStyle = 'rgba(0,0,0,0.45)';
-                      c.beginPath(); c.ellipse(hr * 0.4, s * hr * 0.52, hr * 0.29, hr * 0.22, s * 0.2, 0, Math.PI * 2); c.fill();
-                      // Glowing Iris
+                      c.fillStyle = 'rgba(0,0,0,0.5)';
+                      c.beginPath(); c.ellipse(hr * 0.4, s * hr * 0.52, hr * 0.28, hr * 0.21, s * 0.2, 0, Math.PI * 2); c.fill();
                       c.fillStyle = this.species.eye;
-                      c.beginPath(); c.ellipse(hr * 0.42, s * hr * 0.5, hr * 0.24, hr * 0.18, s * 0.2, 0, Math.PI * 2); c.fill();
-                      // Razor Vertical Slit Pupil
+                      c.beginPath(); c.ellipse(hr * 0.42, s * hr * 0.5, hr * 0.23, hr * 0.17, s * 0.2, 0, Math.PI * 2); c.fill();
                       c.fillStyle = '#060606';
-                      c.beginPath(); c.ellipse(hr * 0.47, s * hr * 0.5, hr * 0.055, hr * 0.16, 0, 0, Math.PI * 2); c.fill();
-                      // Specular Eye Glint
+                      c.beginPath(); c.ellipse(hr * 0.47, s * hr * 0.5, hr * 0.055, hr * 0.15, 0, 0, Math.PI * 2); c.fill();
                       c.fillStyle = 'rgba(255,255,255,0.9)';
-                      c.beginPath(); c.arc(hr * 0.37, s * hr * 0.45, hr * 0.06, 0, Math.PI * 2); c.fill();
+                      c.beginPath(); c.arc(hr * 0.37, s * hr * 0.45, hr * 0.055, 0, Math.PI * 2); c.fill();
                     }
 
                     if (this.spawnShield > 0) {
@@ -1682,7 +1751,7 @@ jobs:
                   rebuildGrids();
                   for (const s of snakes) s.update(dt);
 
-                  // Bite Combat with Knockback
+                  // Bite Combat with Ambush Bonus & Knockback
                   for (const s of snakes) {
                     if (!s.alive || s.biteCd > 0 || s.spawnShield > 0) continue;
                     const r = s.getRadius();
@@ -1696,9 +1765,10 @@ jobs:
                       }
                       if (hit) {
                         s.biteCd = 0.65; s.biteLunge = 1.0;
-                        const isCrit = s.boosting && s.stamina > 8;
-                        const dmg = isCrit ? (s.species.id === 'viper' ? 36 : 30) : 18;
-                        o.takeDamage(dmg, s, isCrit ? 'CRIT Bite' : 'Bite', isCrit);
+                        const isCrit = (s.boosting && s.stamina > 8) || s.inBush;
+                        let dmg = isCrit ? (s.species.id === 'viper' ? 36 : 30) : 18;
+                        if (s.inBush) dmg = Math.round(dmg * 1.3);
+                        o.takeDamage(dmg, s, s.inBush ? 'Ambush Bite' : (isCrit ? 'CRIT Bite' : 'Bite'), isCrit);
                         const ka = Math.atan2(s.y - o.y, s.x - o.x);
                         s.vxKnock += Math.cos(ka) * 190; s.vyKnock += Math.sin(ka) * 190;
                         o.vxKnock -= Math.cos(ka) * 140; o.vyKnock -= Math.sin(ka) * 140;
@@ -1708,7 +1778,6 @@ jobs:
                     }
                   }
 
-                  // Golden Feast Supply Drops
                   for (let i = feastDrops.length - 1; i >= 0; i--) {
                     const f = feastDrops[i]; f.life -= dt;
                     if (f.life <= 0) { feastDrops.splice(i, 1); continue; }
@@ -1774,6 +1843,11 @@ jobs:
                     }
                   }
 
+                  for (let i = tracks.length - 1; i >= 0; i--) { tracks[i].life -= dt; if (tracks[i].life <= 0) tracks.splice(i, 1); }
+                  for (let i = ripples.length - 1; i >= 0; i--) {
+                    const rp = ripples[i]; rp.life -= dt; rp.r = lerp(rp.r, rp.maxR, dt * 3.5);
+                    if (rp.life <= 0) ripples.splice(i, 1);
+                  }
                   for (let i = particles.length - 1; i >= 0; i--) {
                     const pt = particles[i]; pt.x += pt.vx * dt; pt.y += pt.vy * dt; pt.life -= dt;
                     if (pt.life <= 0) particles.splice(i, 1);
@@ -1829,7 +1903,8 @@ jobs:
                     if (profile.settings.showFps) document.getElementById('fpsPill').textContent = `${fpsVal} FPS`;
 
                     const tTag = document.getElementById('terrainTag');
-                    if (player.terrain === 'water') { tTag.style.display = 'block'; tTag.style.background = 'rgba(26,136,148,0.85)'; tTag.textContent = '🌊 RIVER BOOST'; }
+                    if (player.inBush) { tTag.style.display = 'block'; tTag.style.background = 'rgba(34,115,44,0.88)'; tTag.textContent = '🌿 AMBUSH STEALTH'; }
+                    else if (player.terrain === 'water') { tTag.style.display = 'block'; tTag.style.background = 'rgba(26,136,148,0.85)'; tTag.textContent = '🌊 RIVER BOOST'; }
                     else if (player.terrain === 'mud') { tTag.style.display = 'block'; tTag.style.background = 'rgba(84,54,28,0.88)'; tTag.textContent = '🟤 MUD SLOW'; }
                     else tTag.style.display = 'none';
 
@@ -1861,7 +1936,6 @@ jobs:
                     rc.font = 'bold 10px sans-serif'; rc.textAlign = 'center'; rc.fillStyle = 'rgba(255,235,160,0.88)';
                     for (const r of REGIONS) rc.fillText(r.name.toUpperCase(), cx + (r.x - WORLD_CENTER) * sc, cy + (r.y - WORLD_CENTER) * sc);
                   }
-                  // Golden Drops on Radar
                   rc.fillStyle = '#ffe44d';
                   for (const f of feastDrops) {
                     rc.beginPath(); rc.arc(cx + (f.x - WORLD_CENTER) * sc, cy + (f.y - WORLD_CENTER) * sc, showLabels ? 5 : 3.5, 0, Math.PI * 2); rc.fill();
@@ -1869,7 +1943,8 @@ jobs:
                   rc.fillStyle = 'rgba(255,90,78,0.85)';
                   for (const s of snakes) {
                     if (!s.alive || s.isPlayer || s.isCamo()) continue;
-                    rc.beginPath(); rc.arc(cx + (s.x - WORLD_CENTER) * sc, cy + (s.y - WORLD_CENTER) * sc, showLabels ? 3 : 1.7, 0, Math.PI * 2); rc.fill();
+                    const sx = cx + (s.x - WORLD_CENTER) * sc, sy = cy + (s.y - WORLD_CENTER) * sc;
+                    rc.beginPath(); rc.arc(sx, sy, showLabels ? 3 : 1.7, 0, Math.PI * 2); rc.fill();
                   }
                   if (player && player.alive) {
                     const px = cx + (player.x - WORLD_CENTER) * sc, py = cy + (player.y - WORLD_CENTER) * sc;
@@ -1884,11 +1959,11 @@ jobs:
                   ctx.fillStyle = '#060b07'; ctx.fillRect(0, 0, appW, appH);
 
                   if (screenState !== 'playing') {
-                    // Smooth Graceful Wide-Orbit Lobby Showcase (Zero Kinks!)
-                    const biome = BIOMES.find(b => b.id === profile.selectedBiome) || BIOMES[0];
-                    ctx.fillStyle = biome.floor; ctx.fillRect(0, 0, appW, appH);
-                    const g = ctx.createRadialGradient(appW * 0.5, appH * 0.48, 20, appW * 0.5, appH * 0.48, Math.max(appW, appH) * 0.52);
-                    g.addColorStop(0, 'rgba(130, 220, 80, 0.14)'); g.addColorStop(1, 'rgba(0,0,0,0.48)');
+                    // Rich Textured Sunlit Jungle Lobby
+                    if (groundPattern) { ctx.fillStyle = groundPattern; ctx.fillRect(0, 0, appW, appH); }
+                    else { ctx.fillStyle = '#1b2b15'; ctx.fillRect(0, 0, appW, appH); }
+                    const g = ctx.createRadialGradient(appW * 0.5, appH * 0.48, 20, appW * 0.5, appH * 0.48, Math.max(appW, appH) * 0.56);
+                    g.addColorStop(0, 'rgba(180, 235, 110, 0.14)'); g.addColorStop(1, 'rgba(4,9,5,0.68)');
                     ctx.fillStyle = g; ctx.fillRect(0, 0, appW, appH);
 
                     if (lobbySnake) {
@@ -1900,12 +1975,19 @@ jobs:
                       lobbySnake.angle = Math.atan2(ny - lobbySnake.y, nx - lobbySnake.x);
                       lobbySnake.x = nx; lobbySnake.y = ny;
                       lobbySnake.segments[0].x = nx; lobbySnake.segments[0].y = ny;
-                      const spc = lobbySnake.getRadius() * 0.56;
+                      const spc = lobbySnake.getRadius() * 0.54;
                       for (let i = 1; i < lobbySnake.segments.length; i++) {
                         const p = lobbySnake.segments[i - 1], c = lobbySnake.segments[i], dx = c.x - p.x, dy = c.y - p.y, d = Math.hypot(dx, dy) || 1;
                         if (d > spc) { c.x = p.x + (dx / d) * spc; c.y = p.y + (dy / d) * spc; }
                       }
                       lobbySnake.draw(ctx, false);
+                    }
+                    // Ambient Fireflies in Lobby
+                    for (const ff of fireflies) {
+                      ff.x = (ff.x + ff.vx * dt + appW) % appW; ff.y = (ff.y + ff.vy * dt + appH) % appH;
+                      const al = 0.2 + 0.5 * (0.5 + 0.5 * Math.sin(globalTime * 3.5 + ff.ph));
+                      ctx.fillStyle = `rgba(190, 255, 120, ${al})`;
+                      ctx.beginPath(); ctx.arc(ff.x, ff.y, 2, 0, Math.PI * 2); ctx.fill();
                     }
                     return;
                   }
@@ -1925,25 +2007,95 @@ jobs:
                     if (!isNearCam(r.x, r.y, r.r)) continue;
                     ctx.fillStyle = r.col; ctx.beginPath(); ctx.arc(r.x, r.y, r.r, 0, Math.PI * 2); ctx.fill();
                   }
+
+                  // Glossy Mud Swamps
                   for (const m of mudZones) {
                     if (!isNearCam(m.x, m.y, m.r + 80)) continue;
-                    ctx.fillStyle = biome.mud; ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2); ctx.fill();
+                    const mg = ctx.createRadialGradient(m.x, m.y, m.r * 0.2, m.x, m.y, m.r);
+                    mg.addColorStop(0, biome.mud); mg.addColorStop(0.8, biome.mud); mg.addColorStop(1, 'rgba(0,0,0,0)');
+                    ctx.fillStyle = mg; ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2); ctx.fill();
+                  }
+
+                  // Layered Crystal Rivers (Shoreline -> Shallow -> Deep + Shimmer)
+                  for (const w of waterZones) {
+                    if (!isNearCam(w.x, w.y, w.r + 100)) continue;
+                    ctx.fillStyle = biome.shore; ctx.beginPath(); ctx.arc(w.x, w.y, w.r + 16, 0, Math.PI * 2); ctx.fill();
                   }
                   for (const w of waterZones) {
-                    if (!isNearCam(w.x, w.y, w.r + 80)) continue;
-                    ctx.fillStyle = biome.water; ctx.beginPath(); ctx.arc(w.x, w.y, w.r, 0, Math.PI * 2); ctx.fill();
+                    if (!isNearCam(w.x, w.y, w.r + 100)) continue;
+                    const wg = ctx.createRadialGradient(w.x, w.y, 10, w.x, w.y, w.r);
+                    wg.addColorStop(0, biome.waterDeep); wg.addColorStop(0.75, biome.water); wg.addColorStop(1, 'rgba(38,175,185,0.22)');
+                    ctx.fillStyle = wg; ctx.beginPath(); ctx.arc(w.x, w.y, w.r, 0, Math.PI * 2); ctx.fill();
                   }
+                  // Floating Lily Pads & Pink Lotus Flowers
+                  for (const lp of lilyPads) {
+                    if (!isNearCam(lp.x, lp.y, 50)) continue;
+                    ctx.save(); ctx.translate(lp.x, lp.y); ctx.rotate(lp.rot + Math.sin(globalTime + lp.x) * 0.06);
+                    ctx.fillStyle = '#2d7a2d';
+                    ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, lp.r, 0.25, Math.PI * 2 - 0.25); ctx.closePath(); ctx.fill();
+                    ctx.strokeStyle = 'rgba(140,210,110,0.4)'; ctx.lineWidth = 1; ctx.stroke();
+                    if (lp.lotus) {
+                      ctx.fillStyle = '#ff85b3';
+                      for (let p = 0; p < 6; p++) { ctx.rotate(Math.PI / 3); ctx.beginPath(); ctx.ellipse(4, 0, 5, 2.6, 0, 0, Math.PI * 2); ctx.fill(); }
+                      ctx.fillStyle = '#ffe552'; ctx.beginPath(); ctx.arc(0, 0, 2.5, 0, Math.PI * 2); ctx.fill();
+                    }
+                    ctx.restore();
+                  }
+
+                  // Dynamic Slither Tracks & Water Ripples
+                  for (const tr of tracks) {
+                    if (!isNearCam(tr.x, tr.y, 40)) continue;
+                    ctx.save(); ctx.translate(tr.x, tr.y); ctx.rotate(tr.ang);
+                    ctx.globalAlpha = clamp(tr.life / tr.maxLife, 0, 1) * 0.45;
+                    ctx.fillStyle = tr.mud ? '#170d05' : 'rgba(16,24,12,0.5)';
+                    ctx.beginPath(); ctx.ellipse(0, 0, tr.r * 0.5, tr.r * 0.9, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.restore();
+                  }
+                  for (const rp of ripples) {
+                    if (!isNearCam(rp.x, rp.y, rp.maxR)) continue;
+                    ctx.strokeStyle = `rgba(195, 245, 255, ${(rp.life / rp.maxLife) * 0.45})`; ctx.lineWidth = 1.8;
+                    ctx.beginPath(); ctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2); ctx.stroke();
+                  }
+
+                  // Detailed Ground Props (Cracked Mossy Boulders, Bark Logs, Ancient Ruins, Lush Ferns)
                   for (const pr of worldProps) {
-                    if (!isNearCam(pr.x, pr.y, pr.sz + 40)) continue;
+                    if (!isNearCam(pr.x, pr.y, pr.sz + 50)) continue;
                     ctx.save(); ctx.translate(pr.x, pr.y); ctx.rotate(pr.rot);
                     if (pr.kind === 'log') {
-                      ctx.fillStyle = '#4a311c'; ctx.fillRect(-pr.sz, -pr.sz * 0.25, pr.sz * 2, pr.sz * 0.5);
-                      ctx.fillStyle = 'rgba(72,132,42,0.7)'; ctx.beginPath(); ctx.ellipse(-pr.sz * 0.2, 0, pr.sz * 0.4, pr.sz * 0.22, 0, 0, Math.PI * 2); ctx.fill();
+                      ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(-pr.sz + 4, -pr.sz * 0.24 + 5, pr.sz * 2, pr.sz * 0.48);
+                      const lg = ctx.createLinearGradient(0, -pr.sz * 0.24, 0, pr.sz * 0.24);
+                      lg.addColorStop(0, '#664528'); lg.addColorStop(0.55, '#422a16'); lg.addColorStop(1, '#24160a');
+                      ctx.fillStyle = lg; ctx.fillRect(-pr.sz, -pr.sz * 0.24, pr.sz * 2, pr.sz * 0.48);
+                      ctx.strokeStyle = 'rgba(20,10,4,0.45)'; ctx.lineWidth = 1.2;
+                      ctx.beginPath(); ctx.moveTo(-pr.sz * 0.8, -3); ctx.lineTo(pr.sz * 0.7, -2); ctx.moveTo(-pr.sz * 0.6, 4); ctx.lineTo(pr.sz * 0.85, 5); ctx.stroke();
+                      ctx.fillStyle = 'rgba(76,138,44,0.75)'; ctx.beginPath(); ctx.ellipse(-pr.sz * 0.2, -3, pr.sz * 0.36, pr.sz * 0.19, 0.2, 0, Math.PI * 2); ctx.fill();
                     } else if (pr.kind === 'rock') {
-                      ctx.fillStyle = '#5a6055'; ctx.beginPath(); ctx.ellipse(0, 0, pr.sz * 0.75, pr.sz * 0.58, 0, 0, Math.PI * 2); ctx.fill();
+                      ctx.fillStyle = 'rgba(0,0,0,0.42)';
+                      ctx.beginPath(); ctx.ellipse(4, 6, pr.sz * 0.78, pr.sz * 0.62, 0, 0, Math.PI * 2); ctx.fill();
+                      const rg = ctx.createRadialGradient(-pr.sz * 0.22, -pr.sz * 0.22, 3, 0, 0, pr.sz * 0.8);
+                      rg.addColorStop(0, '#8d9484'); rg.addColorStop(0.6, '#585f54'); rg.addColorStop(1, '#2c3029');
+                      ctx.fillStyle = rg;
+                      ctx.beginPath();
+                      ctx.moveTo(pr.sz * 0.75, 0); ctx.lineTo(pr.sz * 0.42, -pr.sz * 0.56); ctx.lineTo(-pr.sz * 0.38, -pr.sz * 0.52);
+                      ctx.lineTo(-pr.sz * 0.76, -pr.sz * 0.08); ctx.lineTo(-pr.sz * 0.46, pr.sz * 0.54); ctx.lineTo(pr.sz * 0.36, pr.sz * 0.5);
+                      ctx.closePath(); ctx.fill();
+                      ctx.strokeStyle = 'rgba(22,26,20,0.6)'; ctx.lineWidth = 1.2;
+                      ctx.beginPath(); ctx.moveTo(-pr.sz * 0.3, -pr.sz * 0.15); ctx.lineTo(pr.sz * 0.1, pr.sz * 0.05); ctx.lineTo(pr.sz * 0.35, -pr.sz * 0.2); ctx.stroke();
+                      ctx.fillStyle = 'rgba(68,122,42,0.62)'; ctx.beginPath(); ctx.arc(-pr.sz * 0.24, -pr.sz * 0.2, pr.sz * 0.28, 0, Math.PI * 2); ctx.fill();
+                    } else if (pr.kind === 'ruin') {
+                      ctx.fillStyle = 'rgba(0,0,0,0.42)'; ctx.fillRect(-pr.sz * 0.8 + 5, -pr.sz * 0.55 + 6, pr.sz * 1.6, pr.sz * 1.1);
+                      ctx.fillStyle = '#6c7065'; ctx.fillRect(-pr.sz * 0.8, -pr.sz * 0.55, pr.sz * 1.6, pr.sz * 1.1);
+                      ctx.strokeStyle = 'rgba(28,32,26,0.72)'; ctx.lineWidth = 2; ctx.strokeRect(-pr.sz * 0.68, -pr.sz * 0.44, pr.sz * 1.36, pr.sz * 0.88);
+                      ctx.strokeStyle = 'rgba(188,215,152,0.28)'; ctx.lineWidth = 1.2;
+                      ctx.beginPath(); ctx.moveTo(-pr.sz * 0.35, 0); ctx.lineTo(pr.sz * 0.35, 0); ctx.moveTo(0, -pr.sz * 0.25); ctx.lineTo(0, pr.sz * 0.25); ctx.stroke();
+                      ctx.fillStyle = 'rgba(64,116,40,0.68)'; ctx.beginPath(); ctx.arc(-pr.sz * 0.45, -pr.sz * 0.3, pr.sz * 0.28, 0, Math.PI * 2); ctx.fill();
                     } else {
-                      ctx.fillStyle = 'rgba(46,112,38,0.65)';
-                      for (let f = 0; f < 6; f++) { ctx.rotate(Math.PI / 3); ctx.beginPath(); ctx.ellipse(pr.sz * 0.45, 0, pr.sz * 0.45, pr.sz * 0.16, 0, 0, Math.PI * 2); ctx.fill(); }
+                      ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.arc(3, 4, pr.sz * 0.65, 0, Math.PI * 2); ctx.fill();
+                      for (let f = 0; f < 7; f++) {
+                        ctx.rotate((Math.PI * 2) / 7);
+                        ctx.fillStyle = f % 2 === 0 ? '#2b6e24' : '#3d8c30';
+                        ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(pr.sz * 0.45, -pr.sz * 0.22, pr.sz * 0.88, 0); ctx.quadraticCurveTo(pr.sz * 0.45, pr.sz * 0.22, 0, 0); ctx.fill();
+                      }
                     }
                     ctx.restore();
                   }
@@ -1955,13 +2107,12 @@ jobs:
                     ctx.beginPath(); ctx.arc(safeZone.cx, safeZone.cy, safeZone.r, 0, Math.PI * 2); ctx.stroke();
                   }
 
-                  // Golden Feast Supply Drops
                   for (const f of feastDrops) {
                     if (!isNearCam(f.x, f.y, 120)) continue;
                     const pulse = 1 + Math.sin(globalTime * 6) * 0.18;
-                    const gr = ctx.createRadialGradient(f.x, f.y, 4, f.x, f.y, 46 * pulse);
-                    gr.addColorStop(0, 'rgba(255,235,90,0.9)'); gr.addColorStop(1, 'rgba(255,190,20,0)');
-                    ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(f.x, f.y, 46 * pulse, 0, Math.PI * 2); ctx.fill();
+                    const gr = ctx.createRadialGradient(f.x, f.y, 4, f.x, f.y, 48 * pulse);
+                    gr.addColorStop(0, 'rgba(255,235,90,0.92)'); gr.addColorStop(1, 'rgba(255,190,20,0)');
+                    ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(f.x, f.y, 48 * pulse, 0, Math.PI * 2); ctx.fill();
                     ctx.fillStyle = '#ffe052'; ctx.beginPath(); ctx.arc(f.x, f.y, 14, 0, Math.PI * 2); ctx.fill();
                   }
 
@@ -1976,9 +2127,39 @@ jobs:
                     s.draw(ctx, true);
                   }
 
+                  // Safe Zone Directional Guide Arrow around player when outside safe zone
+                  if (player && player.alive && safeZone.active && dist(player.x, player.y, safeZone.cx, safeZone.cy) > safeZone.r - 120) {
+                    const za = Math.atan2(safeZone.cy - player.y, safeZone.cx - player.x);
+                    ctx.save(); ctx.translate(player.x + Math.cos(za) * 58, player.y + Math.sin(za) * 58); ctx.rotate(za);
+                    ctx.fillStyle = '#4de2f0'; ctx.beginPath(); ctx.moveTo(12, 0); ctx.lineTo(-6, -8); ctx.lineTo(-3, 0); ctx.lineTo(-6, 8); ctx.closePath(); ctx.fill();
+                    ctx.restore();
+                  }
+
                   for (const pr of projectiles) {
                     ctx.fillStyle = '#84ff3b'; ctx.beginPath(); ctx.arc(pr.x, pr.y, pr.r, 0, Math.PI * 2); ctx.fill();
                   }
+
+                  // OVERHEAD SWAYING JUNGLE TREE CANOPIES (Semi-transparent when player hides underneath!)
+                  for (const tr of trees) {
+                    if (!isNearCam(tr.x, tr.y, tr.r + 40)) continue;
+                    const pUnder = player && player.alive && distSq(player.x, player.y, tr.x, tr.y) < (tr.r * 0.95) ** 2;
+                    const swayX = Math.sin(globalTime * 1.4 + tr.ph) * 4;
+                    const swayY = Math.cos(globalTime * 1.1 + tr.ph) * 3;
+                    ctx.save();
+                    ctx.translate(tr.x + swayX, tr.y + swayY);
+                    ctx.globalAlpha = pUnder ? 0.34 : 0.78;
+                    ctx.fillStyle = 'rgba(0,0,0,0.34)';
+                    ctx.beginPath(); ctx.arc(14, 18, tr.r * 0.92, 0, Math.PI * 2); ctx.fill();
+                    for (let l = 0; l < 6; l++) {
+                      const a = (l / 6) * Math.PI * 2 + tr.ph;
+                      ctx.fillStyle = l % 2 === 0 ? '#1b521a' : '#266b22';
+                      ctx.beginPath(); ctx.arc(Math.cos(a) * tr.r * 0.38, Math.sin(a) * tr.r * 0.38, tr.r * 0.56, 0, Math.PI * 2); ctx.fill();
+                    }
+                    ctx.fillStyle = '#36852c';
+                    ctx.beginPath(); ctx.arc(-tr.r * 0.1, -tr.r * 0.1, tr.r * 0.44, 0, Math.PI * 2); ctx.fill();
+                    ctx.restore();
+                  }
+
                   for (const pt of particles) {
                     ctx.globalAlpha = clamp(pt.life / pt.maxLife, 0, 1);
                     ctx.fillStyle = pt.color; ctx.beginPath(); ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2); ctx.fill();
@@ -1991,7 +2172,6 @@ jobs:
                   }
                   ctx.restore();
 
-                  // Atmospheric Day/Night Tint + Ultra Weather FX
                   if (dayCycle >= 48) {
                     const dusk = dayCycle < 78 ? Math.sin(((dayCycle - 48) / 30) * Math.PI) : 0;
                     const night = dayCycle >= 78 ? Math.sin(((dayCycle - 78) / 42) * Math.PI) : 0;
@@ -2209,7 +2389,6 @@ jobs:
                 document.getElementById('btnResLobby').addEventListener('click', () => { Sound.click(); enterLobby(); });
                 document.getElementById('btnResAgain').addEventListener('click', () => { Sound.click(); startMatch(); });
 
-                // -------------------- CONTROLS --------------------
                 const joyEl = document.getElementById('floatingJoy'), joyKnob = document.getElementById('floatingJoyKnob');
                 function updateJoyVisual(x, y) {
                   const dx = x - ctrl.joyOx, dy = y - ctrl.joyOy, d = Math.hypot(dx, dy);
