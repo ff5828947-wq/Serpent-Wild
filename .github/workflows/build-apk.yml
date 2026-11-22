@@ -1,4 +1,4 @@
-name: Build Serpent-Wild Upgraded APK
+name: Build Serpent-Wild Pro Landscape APK
 
 on:
   push:
@@ -29,7 +29,7 @@ jobs:
             yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null 2>&1 || true
           fi
 
-      - name: Generate Serpent-Wild Upgraded Android Project
+      - name: Generate Serpent-Wild Pro Landscape Android Project
         run: |
           mkdir -p app/src/main/java/com/apexwild/serpent app/src/main/assets app/src/main/res/values
 
@@ -76,8 +76,8 @@ jobs:
                   applicationId = "com.apexwild.serpent.royale"
                   minSdk = 26
                   targetSdk = 35
-                  versionCode = 2
-                  versionName = "2.0.0"
+                  versionCode = 3
+                  versionName = "3.0.0"
               }
               signingConfigs {
                   create("release") {
@@ -143,7 +143,7 @@ jobs:
                       android:name=".MainActivity"
                       android:exported="true"
                       android:hardwareAccelerated="true"
-                      android:screenOrientation="sensor"
+                      android:screenOrientation="sensorLandscape"
                       android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize">
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN" />
@@ -154,7 +154,7 @@ jobs:
           </manifest>
           EOF
 
-          LOGO_FILE=$(find . -maxdepth 1 \( -iname "logo.png" -o -iname "logo.jpg" -o -iname "logo.jpeg" -o -iname "logo.webp" \) | head -n 1)
+          LOGO_FILE=$(find . -maxdepth 1 \( -iname "wild.png" -o -iname "logo.png" -o -iname "*.png" -o -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.webp" \) | head -n 1)
           if [ -n "$LOGO_FILE" ]; then
             mkdir -p app/src/main/res/mipmap-xxxhdpi
             if command -v convert >/dev/null 2>&1; then
@@ -169,6 +169,7 @@ jobs:
           package com.apexwild.serpent
 
           import android.annotation.SuppressLint
+          import android.content.pm.ActivityInfo
           import android.graphics.Color
           import android.os.Bundle
           import android.view.View
@@ -190,6 +191,7 @@ jobs:
               @SuppressLint("SetJavaScriptEnabled")
               override fun onCreate(savedInstanceState: Bundle?) {
                   super.onCreate(savedInstanceState)
+                  requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
                   window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                   hideSystemBars()
 
@@ -268,11 +270,11 @@ jobs:
           <head>
             <meta charset="UTF-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-            <title>SERPENT WILD: APEX — 50-Snake Ultra Royale</title>
+            <title>SERPENT WILD: APEX — Pro Landscape Royale</title>
             <style>
               :root {
                 --bg-dark: #060b07;
-                --panel-bg: rgba(10, 18, 12, 0.88);
+                --panel-bg: rgba(10, 18, 12, 0.86);
                 --panel-border: rgba(164, 224, 124, 0.3);
                 --gold: #f6c445;
                 --green: #7ce846;
@@ -285,154 +287,161 @@ jobs:
               html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg-dark); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
               #gameCanvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 1; touch-action: none; }
               button, input { touch-action: manipulation; font-family: inherit; }
-              .glass { background: var(--panel-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--panel-border); box-shadow: 0 8px 24px rgba(0,0,0,0.55); }
+              .glass { background: var(--panel-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--panel-border); box-shadow: 0 6px 20px rgba(0,0,0,0.55); }
               .btn-gold {
-                border: none; border-radius: 15px; padding: 14px 26px;
+                border: none; border-radius: 14px; padding: 12px 24px;
                 background: linear-gradient(135deg, #ffe370 0%, #f5b324 52%, #c9770c 100%);
-                color: #1c1202; font-size: 15px; font-weight: 900; letter-spacing: 1.4px; text-transform: uppercase;
-                cursor: pointer; box-shadow: 0 8px 24px rgba(245,179,36,0.48), inset 0 2px 3px rgba(255,255,255,0.6);
+                color: #1c1202; font-size: 14px; font-weight: 900; letter-spacing: 1.4px; text-transform: uppercase;
+                cursor: pointer; box-shadow: 0 6px 22px rgba(245,179,36,0.45), inset 0 2px 3px rgba(255,255,255,0.6);
               }
               .btn-gold:active { transform: scale(0.95); }
               .btn-ghost {
-                border: 1px solid rgba(255,255,255,0.22); border-radius: 14px; padding: 12px 18px;
-                background: rgba(255,255,255,0.08); color: #dcead7; font-size: 13px; font-weight: 800; text-transform: uppercase; cursor: pointer;
+                border: 1px solid rgba(255,255,255,0.22); border-radius: 13px; padding: 10px 16px;
+                background: rgba(255,255,255,0.08); color: #dcead7; font-size: 12.5px; font-weight: 800; text-transform: uppercase; cursor: pointer;
               }
+
+              /* 1. SPLASH SCREEN (LANDSCAPE OPTIMIZED) */
               #splashScreen {
                 position: fixed; inset: 0; z-index: 120; display: flex; flex-direction: column;
                 align-items: center; justify-content: space-between;
-                padding: max(22px, env(safe-area-inset-top)) 20px max(105px, calc(env(safe-area-inset-bottom) + 90px));
-                background: radial-gradient(circle at 50% 38%, rgba(28, 60, 26, 0.9), rgba(6, 11, 7, 0.99) 78%);
+                padding: 18px 24px 26px;
+                background: radial-gradient(circle at 50% 40%, rgba(28, 62, 26, 0.9), rgba(5, 10, 6, 0.99) 76%);
                 cursor: pointer; transition: opacity 0.4s ease;
               }
               #splashScreen.fade-out { opacity: 0; pointer-events: none; }
-              .studio-brand { font-size: 11.5px; font-weight: 900; letter-spacing: 5px; color: #b7d9a7; text-transform: uppercase; }
-              .splash-hero { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; margin: auto 0; }
+              .studio-brand { font-size: 11px; font-weight: 900; letter-spacing: 5px; color: #b7d9a7; text-transform: uppercase; }
+              .splash-hero { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; margin: auto 0; }
               .splash-crest {
-                width: 82px; height: 82px; border-radius: 22px;
+                width: 68px; height: 68px; border-radius: 20px;
                 background: linear-gradient(145deg, rgba(124,232,70,0.22), rgba(246,196,69,0.14));
                 border: 2px solid rgba(246,196,69,0.62); display: flex; align-items: center; justify-content: center;
-                box-shadow: 0 0 42px rgba(124,232,70,0.3); animation: pulse 2.2s ease-in-out infinite;
+                box-shadow: 0 0 36px rgba(124,232,70,0.32); animation: pulse 2.2s ease-in-out infinite;
               }
               @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
               .splash-title {
-                font-size: clamp(28px, 6.5vw, 50px); font-weight: 900; letter-spacing: 3px; line-height: 1.08;
+                font-size: clamp(26px, 5vw, 48px); font-weight: 900; letter-spacing: 3px; line-height: 1.05;
                 background: linear-gradient(180deg, #fffbe0 0%, #f6c445 52%, #a66912 100%);
                 -webkit-background-clip: text; -webkit-text-fill-color: transparent;
               }
-              .splash-subtitle { font-size: 11.5px; font-weight: 900; letter-spacing: 3.5px; color: var(--green); text-transform: uppercase; }
-              #tapEnterWrap { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 340px; }
-              #btnTapEnter { width: 100%; padding: 16px 24px; font-size: 15.5px; letter-spacing: 1.8px; animation: pulse 1.9s ease-in-out infinite; }
-              #loaderWrap { display: none; width: 100%; max-width: 420px; flex-direction: column; gap: 8px; }
-              .loader-row { display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; color: #d6ead0; }
-              .loader-bar { width: 100%; height: 10px; border-radius: 999px; background: rgba(255,255,255,0.1); border: 1px solid rgba(246,196,69,0.45); overflow: hidden; padding: 1px; }
+              .splash-subtitle { font-size: 11px; font-weight: 900; letter-spacing: 3.5px; color: var(--green); text-transform: uppercase; }
+              #tapEnterWrap { display: flex; flex-direction: column; align-items: center; gap: 7px; width: 100%; max-width: 320px; }
+              #btnTapEnter { width: 100%; padding: 13px 22px; font-size: 14.5px; letter-spacing: 1.8px; animation: pulse 1.9s ease-in-out infinite; }
+              #loaderWrap { display: none; width: 100%; max-width: 440px; flex-direction: column; gap: 6px; }
+              .loader-row { display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 800; color: #d6ead0; }
+              .loader-bar { width: 100%; height: 9px; border-radius: 999px; background: rgba(255,255,255,0.1); border: 1px solid rgba(246,196,69,0.45); overflow: hidden; padding: 1px; }
               #loaderFill { width: 0%; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #5ed128, #a7f554, #f6c445); transition: width 0.12s linear; }
-              #loaderTip { font-size: 11px; color: var(--text-muted); text-align: center; }
+              #loaderTip { font-size: 10.5px; color: var(--text-muted); text-align: center; }
 
+              /* 2. LOBBY (LANDSCAPE BATTLE ROYALE LAYOUT) */
               #lobbyScreen { position: fixed; inset: 0; z-index: 30; display: none; pointer-events: none; }
-              #lobbyTopBar { position: absolute; top: max(10px, env(safe-area-inset-top)); left: 12px; right: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-              #profileBadge { pointer-events: auto; display: flex; align-items: center; gap: 9px; padding: 6px 12px 6px 6px; border-radius: 14px; cursor: pointer; }
-              .avatar-box { width: 38px; height: 38px; border-radius: 11px; background: linear-gradient(145deg,#2d4f27,#132211); border: 2px solid var(--gold); display: flex; align-items: center; justify-content: center; font-size: 20px; position: relative; }
-              .lvl-tag { position: absolute; bottom: -5px; right: -5px; background: linear-gradient(135deg,#ffe26e,#c98314); color: #171002; font-size: 8.5px; font-weight: 900; padding: 1px 4px; border-radius: 5px; }
+              #lobbyTopBar { position: absolute; top: 10px; left: max(12px, env(safe-area-inset-left)); right: max(12px, env(safe-area-inset-right)); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+              #profileBadge { pointer-events: auto; display: flex; align-items: center; gap: 8px; padding: 5px 12px 5px 5px; border-radius: 13px; cursor: pointer; }
+              .avatar-box { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(145deg,#2d4f27,#132211); border: 2px solid var(--gold); display: flex; align-items: center; justify-content: center; font-size: 18px; position: relative; }
+              .lvl-tag { position: absolute; bottom: -4px; right: -4px; background: linear-gradient(135deg,#ffe26e,#c98314); color: #171002; font-size: 8px; font-weight: 900; padding: 1px 4px; border-radius: 4px; }
               .top-right-tools { pointer-events: auto; display: flex; align-items: center; gap: 6px; }
-              .curr-pill { display: flex; align-items: center; gap: 4px; padding: 6px 9px; border-radius: 11px; font-size: 11.5px; font-weight: 900; }
-              .tool-btn { pointer-events: auto; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #edf7e8; font-size: 15px; cursor: pointer; }
-              #lobbyRail { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 7px; pointer-events: auto; }
-              .rail-item { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 12px; color: #ebf5e7; font-size: 11px; font-weight: 800; text-transform: uppercase; cursor: pointer; }
-              #showcasePill { position: absolute; bottom: max(18px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); padding: 7px 14px; border-radius: 999px; display: flex; align-items: center; gap: 8px; pointer-events: auto; cursor: pointer; white-space: nowrap; max-width: 92vw; overflow: hidden; }
-              #startCluster { position: absolute; bottom: max(16px, env(safe-area-inset-bottom)); right: 14px; display: flex; flex-direction: column; align-items: flex-end; gap: 7px; pointer-events: auto; }
-              .mode-pill { display: flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 11px; font-size: 11px; font-weight: 800; cursor: pointer; }
+              .curr-pill { display: flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 10px; font-size: 11.5px; font-weight: 900; }
+              .tool-btn { pointer-events: auto; width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #edf7e8; font-size: 14px; cursor: pointer; }
+              #lobbyRail { position: absolute; left: max(12px, env(safe-area-inset-left)); top: 52%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 7px; pointer-events: auto; }
+              .rail-item { display: flex; align-items: center; gap: 8px; padding: 8px 13px; border-radius: 11px; color: #ebf5e7; font-size: 11px; font-weight: 800; text-transform: uppercase; cursor: pointer; }
+              .rail-item:active { transform: scale(0.95); }
+              #showcasePill { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); padding: 7px 16px; border-radius: 999px; display: flex; align-items: center; gap: 10px; pointer-events: auto; cursor: pointer; white-space: nowrap; }
+              #startCluster { position: absolute; bottom: 14px; right: max(14px, env(safe-area-inset-right)); display: flex; flex-direction: column; align-items: flex-end; gap: 6px; pointer-events: auto; }
+              .mode-pill { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 10px; font-size: 10.5px; font-weight: 800; cursor: pointer; }
               .mode-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
-              #btnStartMatch { width: 186px; height: 52px; }
-              @media (max-width: 680px) {
-                #showcasePill { bottom: 132px; font-size: 10.5px; }
-                #startCluster { left: 14px; right: 14px; align-items: center; bottom: 22px; }
-                #btnStartMatch { width: 100%; max-width: 300px; }
-                #lobbyRail { top: 44%; }
-                .rail-item span:last-child { display: none; }
-                .rail-item { padding: 10px 11px; font-size: 16px; }
-              }
+              #btnStartMatch { width: 178px; height: 46px; padding: 0; font-size: 15px; }
 
-              #matchmakingOverlay, .modal-backdrop, #tacMapOverlay { position: fixed; inset: 0; z-index: 80; display: none; align-items: center; justify-content: center; padding: 12px; background: rgba(5,10,6,0.84); backdrop-filter: blur(8px); }
+              /* MODALS */
+              #matchmakingOverlay, .modal-backdrop, #tacMapOverlay { position: fixed; inset: 0; z-index: 80; display: none; align-items: center; justify-content: center; padding: 10px; background: rgba(5,10,6,0.84); backdrop-filter: blur(8px); }
               #matchmakingOverlay.open, .modal-backdrop.open, #tacMapOverlay.open { display: flex; }
-              .mm-card { padding: 24px 28px; border-radius: 20px; text-align: center; max-width: 340px; width: 90%; }
-              .mm-spin { width: 46px; height: 46px; margin: 0 auto 12px; border-radius: 50%; border: 4px solid rgba(246,196,69,0.22); border-top-color: var(--gold); animation: spin 0.72s linear infinite; }
+              .mm-card { padding: 20px 26px; border-radius: 18px; text-align: center; max-width: 340px; width: 88%; }
+              .mm-spin { width: 42px; height: 42px; margin: 0 auto 10px; border-radius: 50%; border: 4px solid rgba(246,196,69,0.22); border-top-color: var(--gold); animation: spin 0.72s linear infinite; }
               @keyframes spin { to { transform: rotate(360deg); } }
-              .modal-box { width: 100%; max-width: 780px; max-height: 88vh; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; background: linear-gradient(165deg, rgba(16,27,17,0.98), rgba(9,15,10,0.99)); border: 1px solid rgba(168,222,128,0.34); }
-              .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.08); }
-              .modal-title { font-size: 14.5px; font-weight: 900; letter-spacing: 1.3px; text-transform: uppercase; color: var(--gold); }
-              .close-btn { width: 34px; height: 34px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; font-size: 16px; cursor: pointer; }
-              .modal-tabs { display: flex; gap: 6px; padding: 8px 14px; background: rgba(0,0,0,0.22); overflow-x: auto; }
-              .tab-btn { padding: 7px 12px; border-radius: 10px; border: 1px solid transparent; background: rgba(255,255,255,0.06); color: var(--text-muted); font-size: 11px; font-weight: 800; text-transform: uppercase; white-space: nowrap; cursor: pointer; }
+              .modal-box { width: 100%; max-width: 740px; max-height: 90vh; border-radius: 18px; display: flex; flex-direction: column; overflow: hidden; background: linear-gradient(165deg, rgba(16,27,17,0.98), rgba(9,15,10,0.99)); border: 1px solid rgba(168,222,128,0.34); }
+              .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.08); }
+              .modal-title { font-size: 13.5px; font-weight: 900; letter-spacing: 1.3px; text-transform: uppercase; color: var(--gold); }
+              .close-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; font-size: 15px; cursor: pointer; }
+              .modal-tabs { display: flex; gap: 6px; padding: 7px 12px; background: rgba(0,0,0,0.22); overflow-x: auto; }
+              .tab-btn { padding: 6px 12px; border-radius: 9px; border: 1px solid transparent; background: rgba(255,255,255,0.06); color: var(--text-muted); font-size: 10.5px; font-weight: 800; text-transform: uppercase; white-space: nowrap; cursor: pointer; }
               .tab-btn.active { background: rgba(246,196,69,0.22); border-color: var(--gold); color: #fff; }
-              .modal-body { padding: 14px 16px; overflow-y: auto; flex: 1; }
+              .modal-body { padding: 12px 14px; overflow-y: auto; flex: 1; }
               .tab-pane { display: none; }
               .tab-pane.active { display: block; }
-              .section-lbl { font-size: 10.5px; font-weight: 800; letter-spacing: 1.1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 7px; }
-              .text-input { width: 100%; padding: 8px 11px; border-radius: 10px; border: 1px solid rgba(168,222,128,0.36); background: rgba(6,12,7,0.85); color: #fff; font-size: 14px; font-weight: 800; outline: none; }
-              .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
-              .chip { padding: 6px 11px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.06); color: #dcead7; font-size: 12px; font-weight: 700; cursor: pointer; }
+              .section-lbl { font-size: 10px; font-weight: 800; letter-spacing: 1.1px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+              .text-input { width: 100%; padding: 7px 10px; border-radius: 9px; border: 1px solid rgba(168,222,128,0.36); background: rgba(6,12,7,0.85); color: #fff; font-size: 13px; font-weight: 800; outline: none; }
+              .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+              .chip { padding: 5px 10px; border-radius: 9px; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.06); color: #dcead7; font-size: 11px; font-weight: 700; cursor: pointer; }
               .chip.selected { border-color: var(--gold); background: rgba(246,196,69,0.24); color: #fff; }
-              .armory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
-              .card-item { padding: 11px; border-radius: 14px; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.12); display: flex; flex-direction: column; gap: 6px; cursor: pointer; }
+              .armory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 9px; }
+              .card-item { padding: 10px; border-radius: 13px; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.12); display: flex; flex-direction: column; gap: 6px; cursor: pointer; }
               .card-item.selected { border-color: var(--gold); background: rgba(246,196,69,0.12); }
-              .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(95px, 1fr)); gap: 8px; margin-bottom: 12px; }
-              .stat-box { padding: 9px; border-radius: 12px; background: rgba(0,0,0,0.34); border: 1px solid rgba(255,255,255,0.08); text-align: center; }
-              .stat-val { font-size: 17px; font-weight: 900; color: var(--green); }
-              .stat-lbl { font-size: 9px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-top: 2px; }
-              .setting-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); margin-bottom: 8px; gap: 10px; }
-              .xp-track { width: 100%; height: 8px; border-radius: 999px; background: rgba(255,255,255,0.1); overflow: hidden; margin-top: 4px; }
+              .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; margin-bottom: 10px; }
+              .stat-box { padding: 8px; border-radius: 11px; background: rgba(0,0,0,0.34); border: 1px solid rgba(255,255,255,0.08); text-align: center; }
+              .stat-val { font-size: 16px; font-weight: 900; color: var(--green); }
+              .stat-lbl { font-size: 8.5px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-top: 2px; }
+              .setting-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border-radius: 11px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); margin-bottom: 7px; gap: 10px; }
+              .xp-track { width: 100%; height: 7px; border-radius: 999px; background: rgba(255,255,255,0.1); overflow: hidden; margin-top: 4px; }
               .xp-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #62de3a, #f6c445); }
 
+              /* 3. IN-GAME HUD (PUBG/FREE FIRE LANDSCAPE PRO LAYOUT) */
               #hud { position: fixed; inset: 0; z-index: 20; display: none; pointer-events: none; }
               #stormVignette { position: absolute; inset: 0; box-shadow: inset 0 0 90px rgba(255,48,36,0.72); opacity: 0; transition: opacity 0.25s; }
-              #hudTopLeft { position: absolute; top: max(8px, env(safe-area-inset-top)); left: 8px; display: flex; flex-direction: column; align-items: flex-start; gap: 5px; }
+
+              /* TOP-LEFT: COMPACT TACTICAL MINI MAP */
+              #hudTopLeft { position: absolute; top: 8px; left: max(10px, env(safe-area-inset-left)); display: flex; align-items: flex-start; gap: 8px; }
               #minimapBox {
                 pointer-events: auto; cursor: pointer; position: relative;
-                width: 92px; height: 92px; border-radius: 14px; padding: 3px;
+                width: 96px; height: 96px; border-radius: 14px; padding: 3px;
                 background: rgba(8, 15, 10, 0.88); border: 2px solid rgba(164, 224, 124, 0.55);
-                box-shadow: 0 6px 20px rgba(0,0,0,0.65);
+                box-shadow: 0 6px 20px rgba(0,0,0,0.65); flex-shrink: 0;
               }
               #minimapCanvas { width: 100%; height: 100%; border-radius: 10px; display: block; }
               .map-scale-tag {
                 position: absolute; bottom: -7px; left: 50%; transform: translateX(-50%);
                 background: #102414; border: 1px solid var(--gold); color: var(--gold);
-                font-size: 8px; font-weight: 900; padding: 1px 6px; border-radius: 6px; white-space: nowrap;
+                font-size: 7.5px; font-weight: 900; padding: 1px 6px; border-radius: 6px; white-space: nowrap;
               }
-              #regionPill { margin-top: 4px; padding: 3px 8px; border-radius: 8px; font-size: 9px; font-weight: 900; letter-spacing: 0.6px; text-transform: uppercase; color: #ffe382; }
-              #terrainTag { display: none; padding: 3px 8px; border-radius: 8px; font-size: 9px; font-weight: 900; text-transform: uppercase; }
+              .tl-tags { display: flex; flex-direction: column; gap: 4px; }
+              #regionPill { padding: 3px 8px; border-radius: 8px; font-size: 9px; font-weight: 900; letter-spacing: 0.6px; text-transform: uppercase; color: #ffe382; width: fit-content; }
+              #envPill { padding: 3px 8px; border-radius: 8px; font-size: 8.5px; font-weight: 800; color: #b8e8ff; width: fit-content; }
+              #terrainTag { display: none; padding: 3px 8px; border-radius: 8px; font-size: 8.5px; font-weight: 900; text-transform: uppercase; width: fit-content; }
+              #fpsPill { display: none; padding: 2px 7px; border-radius: 7px; font-size: 8.5px; font-weight: 900; color: #84ff54; width: fit-content; }
 
+              /* TOP-CENTER: STATS + HP BAR + ZONE (ZERO OVERLAP) */
               #hudTopCenter {
-                position: absolute; top: max(8px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
-                display: flex; flex-direction: column; align-items: center; gap: 5px; width: min(215px, 48vw);
+                position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+                display: flex; flex-direction: column; align-items: center; gap: 4px; width: 250px;
               }
-              .br-stats-bar { display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; padding: 5px 9px; border-radius: 11px; }
-              .br-stat { display: flex; flex-direction: column; align-items: center; font-size: 8px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; line-height: 1.1; }
+              .br-stats-bar { display: flex; align-items: center; justify-content: space-around; gap: 8px; width: 100%; padding: 4px 10px; border-radius: 10px; }
+              .br-stat { display: flex; align-items: baseline; gap: 4px; font-size: 8.5px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
               .br-stat strong { font-size: 12.5px; font-weight: 900; color: #fff; font-variant-numeric: tabular-nums; }
-              #playerHpWrap { width: 100%; padding: 5px 8px; border-radius: 10px; display: flex; flex-direction: column; gap: 3px; }
-              .hp-top-row { display: flex; justify-content: space-between; font-size: 9.5px; font-weight: 900; }
-              .hp-bar-track { width: 100%; height: 8px; border-radius: 999px; background: rgba(0,0,0,0.6); overflow: hidden; }
+              #playerHpWrap { width: 100%; padding: 4px 9px; border-radius: 10px; display: flex; flex-direction: column; gap: 2px; }
+              .hp-top-row { display: flex; justify-content: space-between; font-size: 9px; font-weight: 900; }
+              .hp-bar-track { width: 100%; height: 7px; border-radius: 999px; background: rgba(0,0,0,0.6); overflow: hidden; }
               #hpMainFill { width: 100%; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #3bd646, #95f54c); transition: width 0.12s linear; }
-              .zone-pill { display: flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 999px; font-size: 9.5px; font-weight: 800; color: #b8f2ff; }
+              .zone-pill { display: flex; align-items: center; gap: 6px; padding: 2px 9px; border-radius: 999px; font-size: 9px; font-weight: 800; color: #b8f2ff; }
+              #dropAlert { display: none; padding: 3px 10px; border-radius: 999px; background: rgba(246,196,69,0.22); border: 1px solid var(--gold); color: #ffe98a; font-size: 9px; font-weight: 900; }
 
-              #hudTopRight { position: absolute; top: max(8px, env(safe-area-inset-top)); right: 8px; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+              /* TOP-RIGHT: TOOLS + KILL FEED */
+              #hudTopRight { position: absolute; top: 8px; right: max(10px, env(safe-area-inset-right)); display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
               .tr-tools { display: flex; gap: 5px; pointer-events: auto; }
-              #killFeed { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; max-width: 155px; }
-              .kf-entry { padding: 3px 7px; border-radius: 7px; background: rgba(10,17,11,0.84); border-right: 3px solid var(--gold); font-size: 9px; font-weight: 700; text-align: right; }
+              #killFeed { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; max-width: 195px; }
+              .kf-entry { padding: 3px 7px; border-radius: 7px; background: rgba(10,17,11,0.84); border-right: 3px solid var(--gold); font-size: 9px; font-weight: 700; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 195px; }
 
-              .tac-card { padding: 12px; border-radius: 18px; display: flex; flex-direction: column; align-items: center; gap: 8px; max-width: 92vw; }
-              #tacMapCanvas { width: min(76vmin, 420px); height: min(76vmin, 420px); border-radius: 12px; border: 2px solid rgba(164,224,124,0.5); background: #0c180d; display: block; }
+              .tac-card { padding: 12px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; gap: 7px; }
+              #tacMapCanvas { width: min(74vh, 360px); height: min(74vh, 360px); border-radius: 12px; border: 2px solid rgba(164,224,124,0.5); background: #0c180d; display: block; }
 
               #controlsHint {
-                position: absolute; bottom: max(14px, env(safe-area-inset-bottom)); left: 12px;
-                padding: 5px 10px; border-radius: 10px; background: rgba(8,14,9,0.84); border: 1px solid rgba(246,196,69,0.4);
-                color: #ffe8a3; font-size: 9.5px; font-weight: 800; max-width: 48vw; transition: opacity 0.8s;
+                position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+                padding: 4px 12px; border-radius: 999px; background: rgba(8,14,9,0.84); border: 1px solid rgba(246,196,69,0.4);
+                color: #ffe8a3; font-size: 9.5px; font-weight: 800; white-space: nowrap; transition: opacity 0.8s;
               }
-              #floatingJoy { position: absolute; width: 108px; height: 108px; margin-left: -54px; margin-top: -54px; border-radius: 50%; background: rgba(12,24,14,0.48); border: 2px solid rgba(176,232,148,0.5); opacity: 0; pointer-events: none; transition: opacity 0.14s; }
+              #floatingJoy { position: absolute; width: 108px; height: 108px; margin-left: -54px; margin-top: -54px; border-radius: 50%; background: rgba(12,24,14,0.44); border: 2px solid rgba(176,232,148,0.48); opacity: 0; pointer-events: none; transition: opacity 0.14s; }
               #floatingJoy.visible { opacity: 1; }
+              #floatingJoy.fixed-mode { left: 82px !important; top: calc(100% - 82px) !important; opacity: 0.88 !important; }
               #floatingJoyKnob { position: absolute; top: 50%; left: 50%; width: 42px; height: 42px; border-radius: 50%; transform: translate(-50%,-50%); background: radial-gradient(circle at 35% 30%, #d4ffaa, #589c34 72%, #295218); border: 2px solid rgba(245,255,238,0.85); }
-              #btnRecenter { pointer-events: auto; position: absolute; right: 162px; bottom: 20px; width: 40px; height: 40px; border-radius: 50%; border: 2px solid rgba(77,226,240,0.82); background: rgba(14,34,40,0.88); color: #b8f7ff; font-size: 16px; display: none; align-items: center; justify-content: center; cursor: pointer; }
+              #btnRecenter { pointer-events: auto; position: absolute; right: 175px; bottom: 18px; width: 40px; height: 40px; border-radius: 50%; border: 2px solid rgba(77,226,240,0.82); background: rgba(14,34,40,0.88); color: #b8f7ff; font-size: 16px; display: none; align-items: center; justify-content: center; cursor: pointer; }
 
-              #abilityCluster { position: absolute; bottom: max(14px, env(safe-area-inset-bottom)); right: 12px; width: 150px; height: 146px; pointer-events: none; }
+              #abilityCluster { position: absolute; bottom: 12px; right: max(14px, env(safe-area-inset-right)); width: 152px; height: 146px; pointer-events: none; }
               .ab-btn { pointer-events: auto; position: absolute; border-radius: 50%; border: 2px solid rgba(232,255,214,0.58); display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; font-weight: 900; cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,0.55); overflow: hidden; }
               .ab-btn:active, .ab-btn.active { transform: scale(0.91); }
               .ab-btn.on-cd { filter: saturate(0.35) brightness(0.72); }
@@ -446,12 +455,12 @@ jobs:
 
               #resultsScreen { position: fixed; inset: 0; z-index: 90; display: none; align-items: center; justify-content: center; padding: 14px; background: rgba(5,9,6,0.92); backdrop-filter: blur(8px); }
               #resultsScreen.open { display: flex; }
-              .results-box { width: 100%; max-width: 470px; padding: 20px 22px; border-radius: 22px; text-align: center; }
-              .res-title { font-size: clamp(22px, 5vw, 30px); font-weight: 900; letter-spacing: 2px; background: linear-gradient(180deg,#fff9d2,#f6c445 55%,#b57210); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-              .res-sub { font-size: 12px; color: #ff9c8a; font-weight: 700; margin: 4px 0 12px; }
-              .reward-row { display: flex; justify-content: center; gap: 10px; margin: 10px 0 12px; }
-              .reward-tag { padding: 7px 13px; border-radius: 11px; font-size: 12.5px; font-weight: 900; background: rgba(246,196,69,0.14); border: 1px solid rgba(246,196,69,0.45); color: #ffe382; }
-              .res-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+              .results-box { width: 100%; max-width: 470px; padding: 18px 22px; border-radius: 20px; text-align: center; }
+              .res-title { font-size: clamp(20px, 4vw, 28px); font-weight: 900; letter-spacing: 2px; background: linear-gradient(180deg,#fff9d2,#f6c445 55%,#b57210); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+              .res-sub { font-size: 11.5px; color: #ff9c8a; font-weight: 700; margin: 4px 0 10px; }
+              .reward-row { display: flex; justify-content: center; gap: 10px; margin: 8px 0 10px; }
+              .reward-tag { padding: 6px 12px; border-radius: 10px; font-size: 12px; font-weight: 900; background: rgba(246,196,69,0.14); border: 1px solid rgba(246,196,69,0.45); color: #ffe382; }
+              .res-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
             </style>
           </head>
           <body>
@@ -461,7 +470,7 @@ jobs:
               <div class="studio-brand">APEX WILD STUDIOS</div>
               <div class="splash-hero">
                 <div class="splash-crest">
-                  <svg width="52" height="52" viewBox="0 0 64 64" fill="none">
+                  <svg width="44" height="44" viewBox="0 0 64 64" fill="none">
                     <path d="M10 48C12 35 25 35 34 32C44 29 53 25 50 15C48 8 37 8 30 14C23 20 18 26 14 21" stroke="#8cf04e" stroke-width="7" stroke-linecap="round"/>
                     <path d="M10 48C12 35 25 35 34 32C44 29 53 25 50 15" stroke="#f6c445" stroke-width="2.2" stroke-dasharray="4 5" stroke-linecap="round"/>
                     <ellipse cx="49" cy="14.5" rx="7.5" ry="5.5" transform="rotate(-14 49 14.5)" fill="#2f6e18"/>
@@ -470,16 +479,16 @@ jobs:
                   </svg>
                 </div>
                 <div class="splash-title">SERPENT WILD: APEX</div>
-                <div class="splash-subtitle">50-SNAKE • 12KM MEGA MAP</div>
+                <div class="splash-subtitle">PRO LANDSCAPE • 50-SNAKE • 12KM MAP</div>
               </div>
               <div id="tapEnterWrap">
                 <button class="btn-gold" id="btnTapEnter" type="button">TAP TO ENTER JUNGLE</button>
-                <div style="font-size:11px;color:var(--text-muted);text-align:center;">Realistic 3D-Scale Snakes • Top-Left Tactical Map</div>
+                <div style="font-size:10.5px;color:var(--text-muted);text-align:center;">6 Unique Realistic Species • Day/Night Cycle • Supply Drops</div>
               </div>
               <div id="loaderWrap">
-                <div class="loader-row"><span id="loaderStatus">Generating 12,000m 6-Region Jungle...</span><span id="loaderPct">0%</span></div>
+                <div class="loader-row"><span id="loaderStatus">Loading 6 Realistic Reptile Models...</span><span id="loaderPct">0%</span></div>
                 <div class="loader-bar"><div id="loaderFill"></div></div>
-                <div id="loaderTip">Tip: Tap the Top-Left Mini Map anytime to inspect the full 12KM Arena!</div>
+                <div id="loaderTip">Tip: Watch for Golden Feast Drops on the Top-Left Mini Map for massive HP &amp; Growth!</div>
               </div>
             </div>
 
@@ -488,8 +497,8 @@ jobs:
                 <div id="profileBadge" class="glass">
                   <div class="avatar-box"><span id="lbAvatar">🐍</span><span class="lvl-tag" id="lbLvl">LV.1</span></div>
                   <div>
-                    <div style="font-size:13px;font-weight:900;color:#fff;" id="lbName">ApexHunter</div>
-                    <div style="font-size:10px;font-weight:800;color:var(--gold);"><span id="lbRank">Bronze Viper</span> • <span id="lbTitle" style="color:#bdd9b4;">Apex Predator</span></div>
+                    <div style="font-size:12.5px;font-weight:900;color:#fff;" id="lbName">ApexHunter</div>
+                    <div style="font-size:9.5px;font-weight:800;color:var(--gold);"><span id="lbRank">Bronze Viper</span> • <span id="lbTitle" style="color:#bdd9b4;">Apex Predator</span></div>
                   </div>
                 </div>
                 <div class="top-right-tools">
@@ -520,8 +529,8 @@ jobs:
             <div id="matchmakingOverlay">
               <div class="mm-card glass">
                 <div class="mm-spin"></div>
-                <div style="font-size:16px;font-weight:900;letter-spacing:1.4px;color:var(--gold);margin-bottom:6px;">MATCHMAKING...</div>
-                <div style="font-size:12.5px;font-weight:800;color:#d6ead0;" id="mmText">12 / 50 SNAKES READY</div>
+                <div style="font-size:15px;font-weight:900;letter-spacing:1.4px;color:var(--gold);margin-bottom:5px;">MATCHMAKING...</div>
+                <div style="font-size:12px;font-weight:800;color:#d6ead0;" id="mmText">12 / 50 SNAKES READY</div>
               </div>
             </div>
 
@@ -538,12 +547,12 @@ jobs:
                 </div>
                 <div class="modal-body">
                   <div class="tab-pane active" id="tabProfile">
-                    <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:12px;border-radius:14px;background:rgba(255,255,255,0.04);margin-bottom:12px;">
-                      <div class="avatar-box" style="width:52px;height:52px;font-size:26px;"><span id="prAv">🐍</span><span class="lvl-tag" id="prLv">LV.1</span></div>
+                    <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:10px;border-radius:12px;background:rgba(255,255,255,0.04);margin-bottom:10px;">
+                      <div class="avatar-box" style="width:48px;height:48px;font-size:24px;"><span id="prAv">🐍</span><span class="lvl-tag" id="prLv">LV.1</span></div>
                       <div style="flex:1;min-width:170px;">
                         <div class="section-lbl">Callsign</div>
                         <input type="text" id="prNameIn" class="text-input" maxlength="15" />
-                        <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:800;color:#c2dbb8;margin-top:6px;"><span id="prRankTxt">Bronze Viper</span><span id="prXpTxt">0 / 180 XP</span></div>
+                        <div style="display:flex;justify-content:space-between;font-size:10.5px;font-weight:800;color:#c2dbb8;margin-top:5px;"><span id="prRankTxt">Bronze Viper</span><span id="prXpTxt">0 / 180 XP</span></div>
                         <div class="xp-track"><div class="xp-fill" id="prXpBar" style="width:0%;"></div></div>
                       </div>
                     </div>
@@ -558,20 +567,45 @@ jobs:
               </div>
             </div>
 
+            <!-- IMPROVED PRO SETTINGS MODAL -->
             <div class="modal-backdrop" id="settingsModal">
-              <div class="modal-box" style="max-width:440px;">
+              <div class="modal-box" style="max-width:520px;">
                 <div class="modal-head">
-                  <div class="modal-title">Tactical Settings</div>
+                  <div class="modal-title">Pro Tactical Settings</div>
                   <button class="close-btn" type="button" data-close="settingsModal">✕</button>
                 </div>
                 <div class="modal-body">
                   <div class="setting-row">
-                    <div><div style="font-size:13px;font-weight:800;">Sound FX Volume</div><div style="font-size:10px;color:var(--text-muted);">Bite, venom &amp; victory audio</div></div>
-                    <input type="range" id="setSfxVol" min="0" max="100" value="80" style="width:115px;accent-color:#f6c445;" />
+                    <div><div style="font-size:12.5px;font-weight:800;">Graphics Quality</div><div style="font-size:9.5px;color:var(--text-muted);">Ultra adds rain, fireflies &amp; full scale details</div></div>
+                    <div class="chip-row" id="setGfxRow" style="margin:0;"></div>
                   </div>
                   <div class="setting-row">
-                    <div><div style="font-size:13px;font-weight:800;">Auto-Center Free-Look</div><div style="font-size:10px;color:var(--text-muted);">Snap camera back on release</div></div>
+                    <div><div style="font-size:12.5px;font-weight:800;">Camera Zoom (FOV)</div><div style="font-size:9.5px;color:var(--text-muted);">Zoom out to see wider battlefield</div></div>
+                    <input type="range" id="setZoom" min="65" max="115" value="88" style="width:120px;accent-color:#f6c445;" />
+                  </div>
+                  <div class="setting-row">
+                    <div><div style="font-size:12.5px;font-weight:800;">Joystick Mode</div><div style="font-size:9.5px;color:var(--text-muted);">Floating follows thumb; Fixed stays bottom-left</div></div>
+                    <div class="chip-row" id="setJoyRow" style="margin:0;"></div>
+                  </div>
+                  <div class="setting-row">
+                    <div><div style="font-size:12.5px;font-weight:800;">Free-Look Sensitivity</div><div style="font-size:9.5px;color:var(--text-muted);">Right-half scouting camera speed</div></div>
+                    <input type="range" id="setSens" min="70" max="200" value="130" style="width:120px;accent-color:#4de2f0;" />
+                  </div>
+                  <div class="setting-row">
+                    <div><div style="font-size:12.5px;font-weight:800;">Auto-Center Free-Look</div><div style="font-size:9.5px;color:var(--text-muted);">Snap camera back on release</div></div>
                     <button class="chip selected" id="btnAutoCenter" type="button">ON</button>
+                  </div>
+                  <div class="setting-row">
+                    <div><div style="font-size:12.5px;font-weight:800;">Vibration (Haptics)</div><div style="font-size:9.5px;color:var(--text-muted);">Vibrate on bites &amp; eliminations</div></div>
+                    <button class="chip selected" id="btnVib" type="button">ON</button>
+                  </div>
+                  <div class="setting-row">
+                    <div><div style="font-size:12.5px;font-weight:800;">Show FPS Counter</div><div style="font-size:9.5px;color:var(--text-muted);">Display live frame rate on HUD</div></div>
+                    <button class="chip" id="btnFps" type="button">OFF</button>
+                  </div>
+                  <div class="setting-row">
+                    <div><div style="font-size:12.5px;font-weight:800;">Sound FX Volume</div><div style="font-size:9.5px;color:var(--text-muted);">Bite, venom, hiss &amp; victory audio</div></div>
+                    <input type="range" id="setSfxVol" min="0" max="100" value="80" style="width:120px;accent-color:#f6c445;" />
                   </div>
                 </div>
               </div>
@@ -584,28 +618,34 @@ jobs:
                   <canvas id="minimapCanvas" width="160" height="160"></canvas>
                   <span class="map-scale-tag">12KM MAP</span>
                 </div>
-                <div id="regionPill" class="glass">EMERALD BASIN</div>
-                <div id="terrainTag"></div>
+                <div class="tl-tags">
+                  <div id="regionPill" class="glass">EMERALD BASIN</div>
+                  <div id="envPill" class="glass">☀️ Sunlit • Clear</div>
+                  <div id="terrainTag"></div>
+                  <div id="fpsPill" class="glass">60 FPS</div>
+                </div>
               </div>
 
               <div id="hudTopCenter">
                 <div class="br-stats-bar glass">
                   <div class="br-stat"><span style="color:var(--green);">ALIVE</span><strong id="hudAlive">50/50</strong></div>
                   <div class="br-stat"><span>KILLS</span><strong id="hudKills" style="color:var(--gold);">0</strong></div>
-                  <div class="br-stat"><span>LEN</span><strong id="hudLen">115</strong></div>
+                  <div class="br-stat"><span>LEN</span><strong id="hudLen">126</strong></div>
                 </div>
                 <div id="playerHpWrap" class="glass">
-                  <div class="hp-top-row"><span id="hpStatusTxt" style="color:#95f54c;">♥ HEALTH</span><span id="hpNumTxt">120 / 120</span></div>
+                  <div class="hp-top-row"><span id="hpStatusTxt" style="color:#95f54c;">♥ HEALTH</span><span id="hpNumTxt">130 / 130</span></div>
                   <div class="hp-bar-track"><div id="hpMainFill"></div></div>
                 </div>
                 <div class="zone-pill glass">
                   <span style="color:#52e5ff;">◎ ZONE <span id="hudZoneStage">1</span></span>
                   <span id="hudZoneTimer">0:40</span>
                 </div>
+                <div id="dropAlert">⭐ GOLDEN FEAST DROP!</div>
               </div>
 
               <div id="hudTopRight">
                 <div class="tr-tools">
+                  <button class="tool-btn glass" id="hudSetBtn" type="button" style="width:32px;height:32px;font-size:13px;" title="Settings">⚙️</button>
                   <button class="tool-btn glass" id="hudAudioBtn" type="button" style="width:32px;height:32px;font-size:13px;">🔊</button>
                   <button class="tool-btn glass" id="hudLobbyBtn" type="button" style="width:32px;height:32px;font-size:12px;" title="Exit">✕</button>
                 </div>
@@ -629,11 +669,11 @@ jobs:
             <div id="tacMapOverlay">
               <div class="tac-card glass">
                 <div style="width:100%;display:flex;justify-content:space-between;align-items:center;">
-                  <span style="font-size:12.5px;font-weight:900;color:var(--gold);letter-spacing:1px;">12,000m TACTICAL MAP (6 REGIONS)</span>
-                  <button class="close-btn" id="btnCloseTacMap" type="button" style="width:30px;height:30px;font-size:14px;">✕</button>
+                  <span style="font-size:12px;font-weight:900;color:var(--gold);letter-spacing:1px;">12,000m TACTICAL MAP (6 REGIONS)</span>
+                  <button class="close-btn" id="btnCloseTacMap" type="button" style="width:28px;height:28px;font-size:13px;">✕</button>
                 </div>
-                <canvas id="tacMapCanvas" width="420" height="420"></canvas>
-                <div style="font-size:10px;color:var(--text-muted);">🟢 You • 🔴 Rivals • 🔵 Rivers • ◎ Safe Zone</div>
+                <canvas id="tacMapCanvas" width="380" height="380"></canvas>
+                <div style="font-size:9.5px;color:var(--text-muted);">🟢 You • 🔴 Rivals • ⭐ Golden Drop • 🔵 Rivers • ◎ Safe Zone</div>
               </div>
             </div>
 
@@ -667,7 +707,7 @@ jobs:
                 const WORLD_CENTER = WORLD_SIZE / 2;
                 const ARENA_RADIUS = 5600;
                 const CELL_SIZE = 400;
-                const FREE_LOOK_MAX = 540;
+                const FREE_LOOK_MAX = 560;
 
                 const REGIONS = [
                   { id: 'basin',  name: 'Emerald Basin',  x: 6000, y: 6000, r: 1900, col: 'rgba(56,120,38,0.22)' },
@@ -684,19 +724,20 @@ jobs:
                   { lv: 6, name: 'Gold Python' }, { lv: 10, name: 'Platinum Mamba' }, { lv: 15, name: 'Apex Predator' }
                 ];
 
+                // 6 COMPLETELY DISTINCT REALISTIC SPECIES (UNIQUE HEADS, PATTERNS & ANATOMY)
                 const SPECIES = [
-                  { id: 'cobra',    name: 'King Cobra',          head: 'cobra',    hood: true,  rattle: false, horns: false, base: '#4a5e26', dark: '#1a260b', stripe: '#ebd068', belly: '#c4ba78', eye: '#f5be2c', speed: 84, turn: 85, bonusHp: 0,  girth: 1.0,  trait: 'Flare Hood • +25% Venom Poison DoT', price: 0 },
-                  { id: 'boa',      name: 'Emerald Tree Boa',    head: 'boa',      hood: false, rattle: false, horns: false, base: '#198742', dark: '#07381a', stripe: '#ebffea', belly: '#b9e05a', eye: '#ffd83d', speed: 79, turn: 90, bonusHp: 20, girth: 1.12, trait: 'White Saddles • +20 Max HP & Longer Camo', price: 0 },
-                  { id: 'viper',    name: 'Desert Horned Viper', head: 'viper',    hood: false, rattle: true,  horns: true,  base: '#bd8f56', dark: '#4d3012', stripe: '#704218', belly: '#e3cfa8', eye: '#ff7b24', speed: 94, turn: 92, bonusHp: 0,  girth: 1.06, trait: 'Horns & Rattle • +20% Boost CRIT Bite', price: 0 },
-                  { id: 'python',   name: 'Shadow Python',       head: 'python',   hood: false, rattle: false, horns: false, base: '#2c253d', dark: '#0d0b14', stripe: '#9970d6', belly: '#524966', eye: '#d68cff', speed: 82, turn: 80, bonusHp: 15, girth: 1.12, trait: 'Oil-Slick Scales • +20% Prey Heal & Mass', price: 450 },
-                  { id: 'anaconda', name: 'Golden Anaconda',     head: 'anaconda', hood: false, rattle: false, horns: false, base: '#99892c', dark: '#36300c', stripe: '#1c1908', belly: '#d6c86b', eye: '#ffb829', speed: 77, turn: 76, bonusHp: 40, girth: 1.24, trait: 'Titan Girth • +40 Max HP & Fast Swimmer', price: 700 },
-                  { id: 'krait',    name: 'Crimson Krait',       head: 'krait',    hood: false, rattle: false, horns: false, base: '#c41d1d', dark: '#141014', stripe: '#ffdb57', belly: '#e8d8b5', eye: '#ffe954', speed: 90, turn: 88, bonusHp: 10, girth: 0.96, trait: 'Glossy Bands • Fastest Venom Cooldown', price: 900 }
+                  { id: 'cobra',    name: 'King Cobra',          hood: true,  rattle: false, horns: false, base: '#5a632b', dark: '#1e240c', accent: '#d9c26c', belly: '#c4ba78', eye: '#ffba26', speed: 84, turn: 85, bonusHp: 0,  girth: 1.0,  trait: 'Spectacle Flare Hood • +25% Venom DoT', price: 0 },
+                  { id: 'boa',      name: 'Emerald Tree Boa',    hood: false, rattle: false, horns: false, base: '#148f44', dark: '#053b1a', accent: '#f2fff0', belly: '#c4eb52', eye: '#ffe03b', speed: 79, turn: 90, bonusHp: 20, girth: 1.12, trait: 'Heart Head & White Saddles • +20 HP', price: 0 },
+                  { id: 'viper',    name: 'Desert Horned Viper', hood: false, rattle: true,  horns: true,  base: '#c4965c', dark: '#4f3214', accent: '#693c14', belly: '#e8d4ad', eye: '#ff731c', speed: 94, turn: 92, bonusHp: 0,  girth: 1.08, trait: 'Brow Horns & Rattle Tail • +20% CRIT', price: 0 },
+                  { id: 'python',   name: 'Shadow Python',       hood: false, rattle: false, horns: false, base: '#242038', dark: '#0a0812', accent: '#68d4ff', belly: '#4d4663', eye: '#d278ff', speed: 82, turn: 80, bonusHp: 15, girth: 1.14, trait: 'Iridescent Hex Net • +20% Prey Heal', price: 450 },
+                  { id: 'anaconda', name: 'Golden Anaconda',     hood: false, rattle: false, horns: false, base: '#9e8c28', dark: '#38300a', accent: '#1c1806', belly: '#dfd070', eye: '#ffb324', speed: 77, turn: 76, bonusHp: 40, girth: 1.26, trait: 'Massive Aquatic Titan • +40 Max HP', price: 700 },
+                  { id: 'krait',    name: 'Crimson Krait',       hood: false, rattle: false, horns: false, base: '#c71818', dark: '#120f14', accent: '#ffda47', belly: '#f0dfbc', eye: '#ffeb47', speed: 90, turn: 88, bonusHp: 10, girth: 0.94, trait: 'Glossy Tri-Bands • Fastest Venom CD', price: 900 }
                 ];
 
                 const BIOMES = [
-                  { id: 'amazon', name: 'Amazon Rainforest', floor: '#1c2b16', moss: 'rgba(54,96,34,0.42)', soil: 'rgba(66,48,29,0.34)', water: 'rgba(26,136,148,0.82)', mud: '#362415' },
-                  { id: 'bayou',  name: 'Misty Bayou Swamp', floor: '#15231f', moss: 'rgba(34,84,66,0.42)', soil: 'rgba(42,40,30,0.38)', water: 'rgba(32,118,112,0.82)', mud: '#292117' },
-                  { id: 'canyon', name: 'Canyon Oasis',      floor: '#322417', moss: 'rgba(88,82,34,0.28)', soil: 'rgba(116,66,34,0.4)', water: 'rgba(44,142,152,0.82)', mud: '#4a331d' }
+                  { id: 'amazon', name: 'Amazon Rainforest', floor: '#1b2b15', moss: 'rgba(54,96,34,0.42)', soil: 'rgba(66,48,29,0.34)', water: 'rgba(26,136,148,0.82)', mud: '#362415' },
+                  { id: 'bayou',  name: 'Misty Bayou Swamp', floor: '#14221e', moss: 'rgba(34,84,66,0.42)', soil: 'rgba(42,40,30,0.38)', water: 'rgba(32,118,112,0.82)', mud: '#292117' },
+                  { id: 'canyon', name: 'Canyon Oasis',      floor: '#322316', moss: 'rgba(88,82,34,0.28)', soil: 'rgba(116,66,34,0.4)', water: 'rgba(44,142,152,0.82)', mud: '#4a331d' }
                 ];
 
                 const PREY_TYPES = [
@@ -716,20 +757,20 @@ jobs:
                   level: 1, xp: 0, coins: 1500,
                   ownedSnakes: ['cobra', 'boa', 'viper'],
                   selectedSnake: 'cobra', selectedBiome: 'amazon', selectedMode: 'br',
-                  settings: { sfxVol: 0.8, muted: false, autoCenter: true },
+                  settings: { gfx: 'ultra', zoom: 0.88, joyMode: 'floating', lookSens: 1.3, autoCenter: true, vib: true, showFps: false, sfxVol: 0.8, muted: false },
                   stats: { matches: 0, wins: 0, bestLength: 0, kills: 0, prey: 0 }
                 };
 
                 let profile = (() => {
                   try {
-                    const raw = localStorage.getItem('serpent_wild_50_v2');
+                    const raw = localStorage.getItem('serpent_wild_pro_v3');
                     if (!raw) return JSON.parse(JSON.stringify(DEFAULT_PROFILE));
                     const d = JSON.parse(raw);
                     return { ...JSON.parse(JSON.stringify(DEFAULT_PROFILE)), ...d, settings: { ...DEFAULT_PROFILE.settings, ...(d.settings || {}) }, stats: { ...DEFAULT_PROFILE.stats, ...(d.stats || {}) } };
                   } catch (e) { return JSON.parse(JSON.stringify(DEFAULT_PROFILE)); }
                 })();
 
-                const saveProfile = () => { try { localStorage.setItem('serpent_wild_50_v2', JSON.stringify(profile)); } catch (e) {} };
+                const saveProfile = () => { try { localStorage.setItem('serpent_wild_pro_v3', JSON.stringify(profile)); } catch (e) {} };
                 const getRank = lv => { let n = RANK_TIERS[0].name; for (const r of RANK_TIERS) if (lv >= r.lv) n = r.name; return n; };
                 const getXpNeed = lv => 180 + (lv - 1) * 90;
 
@@ -739,7 +780,8 @@ jobs:
                 const distSq = (x1, y1, x2, y2) => (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
                 const dist = (x1, y1, x2, y2) => Math.hypot(x2 - x1, y2 - y1);
                 const angleDiff = (a, b) => Math.atan2(Math.sin(a - b), Math.cos(a - b));
-                const randInCircle = (cx, cy, r, m = 160) => { const a = rand(0, Math.PI * 2), d = Math.sqrt(Math.random()) * Math.max(40, r - m); return { x: cx + Math.cos(a) * d, y: cy + Math.sin(a) * d }; };
+                const randInCircle = (cx, cy, r, m = 180) => { const a = rand(0, Math.PI * 2), d = Math.sqrt(Math.random()) * Math.max(40, r - m); return { x: cx + Math.cos(a) * d, y: cy + Math.sin(a) * d }; };
+                const vibrate = ms => { try { if (profile.settings.vib && navigator.vibrate) navigator.vibrate(ms); } catch (e) {} };
 
                 const Sound = {
                   ctx: null,
@@ -765,6 +807,7 @@ jobs:
                   venom()  { this.tone(620, 210, 0.14, 'sawtooth', 0.09); },
                   camo()   { this.tone(380, 760, 0.18, 'sine', 0.09); },
                   kill()   { this.tone(440, 880, 0.16, 'triangle', 0.14); },
+                  drop()   { this.tone(520, 780, 0.25, 'sine', 0.12); },
                   win()    { [523,659,784,1046].forEach((f,i) => setTimeout(() => this.tone(f, f * 1.03, 0.22, 'triangle', 0.14), i * 110)); },
                   over()   { this.tone(260, 85, 0.42, 'sawtooth', 0.13); }
                 };
@@ -781,12 +824,13 @@ jobs:
                 let splashEntered = false, tacMapOpen = false;
                 let groundPattern = null;
 
-                let waterZones = [], mudZones = [], worldProps = [], snakes = [], preyList = [], meatList = [], projectiles = [], particles = [], floatTexts = [];
+                let waterZones = [], mudZones = [], worldProps = [], snakes = [], preyList = [], meatList = [], feastDrops = [], projectiles = [], particles = [], floatTexts = [], rainDrops = [], fireflies = [];
                 let player = null, lobbySnake = null;
-                const camera = { x: WORLD_CENTER, y: WORLD_CENTER, zoom: 0.88, lookX: 0, lookY: 0, shake: 0 };
+                const camera = { x: WORLD_CENTER, y: WORLD_CENTER, zoom: profile.settings.zoom, lookX: 0, lookY: 0, shake: 0 };
                 const safeZone = { active: true, cx: WORLD_CENTER, cy: WORLD_CENTER, r: ARENA_RADIUS, targetR: ARENA_RADIUS, stage: 1, timer: 40, shrinking: false };
                 const matchStats = { kills: 0, prey: 0, maxLen: 0, rank: 1, reason: '' };
-                let globalTime = 0, lastFrame = 0, hudTick = 0;
+                let globalTime = 0, dayCycle = 0, weatherRain = false, weatherTimer = 35, dropTimer = 24;
+                let lastFrame = 0, hudTick = 0, fpsCount = 0, fpsVal = 60, fpsTimer = 0;
 
                 const ctrl = {
                   joyActive: false, joyTouchId: null, joyMouse: false, joyOx: 0, joyOy: 0, joyAngle: 0, joyMag: 0,
@@ -796,9 +840,11 @@ jobs:
 
                 function resizeCanvas() {
                   appW = window.innerWidth; appH = window.innerHeight;
-                  dpr = Math.min(window.devicePixelRatio || 1, 2);
+                  dpr = Math.min(window.devicePixelRatio || 1, profile.settings.gfx === 'low' ? 1 : 2);
                   canvas.width = Math.max(1, Math.floor(appW * dpr));
                   canvas.height = Math.max(1, Math.floor(appH * dpr));
+                  rainDrops = Array.from({ length: 48 }, () => ({ x: rand(0, appW), y: rand(0, appH), l: rand(12, 24), v: rand(420, 620) }));
+                  fireflies = Array.from({ length: 24 }, () => ({ x: rand(0, appW), y: rand(0, appH), ph: rand(0, 6.28), vx: rand(-14, 14), vy: rand(-14, 14) }));
                 }
 
                 const snakeGrid = new Map(), preyGrid = new Map();
@@ -858,7 +904,7 @@ jobs:
                   }
                   t.fillStyle = 'rgba(0,0,0,0.14)';
                   for (let i = 0; i < 360; i++) t.fillRect(rand(0, 512), rand(0, 512), 2, 2);
-                  for (let i = 0; i < 34; i++) {
+                  for (let i = 0; i < 36; i++) {
                     t.save(); t.translate(rand(0, 512), rand(0, 512)); t.rotate(rand(0, 6.28));
                     t.fillStyle = Math.random() < 0.5 ? 'rgba(128,96,42,0.34)' : 'rgba(64,112,40,0.32)';
                     t.beginPath(); t.ellipse(0, 0, rand(5, 10), rand(2, 4), 0, 0, Math.PI * 2); t.fill();
@@ -885,7 +931,7 @@ jobs:
                     if (!waterZones.some(w => distSq(pt.x, pt.y, w.x, w.y) < (w.r + rad) ** 2)) mudZones.push({ x: pt.x, y: pt.y, r: rad });
                   }
 
-                  for (let i = 0; i < 180; i++) {
+                  for (let i = 0; i < 190; i++) {
                     const pt = randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 260);
                     if (waterZones.some(w => distSq(pt.x, pt.y, w.x, w.y) < (w.r + 60) ** 2)) continue;
                     const r = Math.random();
@@ -965,6 +1011,7 @@ jobs:
                   c.restore();
                 }
 
+                // -------------------- HYPER-REALISTIC 6-SPECIES SNAKE CLASS --------------------
                 class Snake {
                   constructor({ name, species, x, y, isPlayer = false, mass = 28 }) {
                     this.name = name; this.species = species; this.isPlayer = isPlayer; this.alive = true;
@@ -972,10 +1019,11 @@ jobs:
                     this.mass = mass; this.kills = 0; this.terrain = 'ground';
                     this.maxHp = this.calcMaxHp(); this.hp = this.maxHp;
                     this.spawnShield = isPlayer ? 3.2 : 1.5;
-                    this.hitFlash = 0; this.biteCd = 0; this.poisonTimer = 0; this.poisonDps = 6; this.poisonOwner = null;
+                    this.hitFlash = 0; this.biteCd = 0; this.biteLunge = 0;
+                    this.poisonTimer = 0; this.poisonDps = 6; this.poisonOwner = null;
                     this.combatTimer = 0; this.stamina = 100; this.boosting = false;
                     this.vxKnock = 0; this.vyKnock = 0;
-                    this.hoodFlare = 0; this.spitTimer = 0;
+                    this.hoodFlare = species.hood ? 0.35 : 0; this.spitTimer = 0;
                     this.venomCd = 0; this.venomMax = species.id === 'krait' ? 3.6 : 4.8;
                     this.camoCd = 0; this.camoMax = 11.0; this.camoTimer = 0; this.slowTimer = 0;
                     this.slitherPhase = rand(0, 6.28); this.tongueTimer = rand(0.6, 2.0); this.tongueExt = 0;
@@ -987,18 +1035,18 @@ jobs:
 
                   calcMaxHp() { return Math.min(360, Math.round(130 + this.species.bonusHp + Math.max(0, this.mass - 24) * 1.15)); }
                   getRadius() { return clamp(11.5 + Math.pow(this.mass, 0.44) * 1.4, 11.5, 30); }
-                  getSegCount() { return Math.min(68, Math.floor(18 + this.mass * 0.52)); }
+                  getSegCount() { return Math.min(70, Math.floor(18 + this.mass * 0.52)); }
                   getLen() { return Math.floor(this.mass * 4.5); }
                   isCamo() { return this.camoTimer > 0; }
 
                   getHalfWidth(i, len, baseR) {
                     const t = i / Math.max(1, len - 1);
-                    let pw = t < 0.08 ? lerp(0.75, 1.0, t / 0.08)
+                    let pw = t < 0.08 ? lerp(0.72, 1.0, t / 0.08)
                            : t < 0.58 ? (1.0 + Math.sin(((t - 0.08) / 0.5) * Math.PI) * 0.14)
                            : lerp(1.0, this.species.rattle ? 0.24 : 0.1, Math.pow((t - 0.58) / 0.42, 1.2));
                     let hood = 1.0;
-                    if (this.hoodFlare > 0.04 && i >= 1 && i <= 7) {
-                      hood = 1 + Math.sin(clamp((i - 0.5) / 6.8, 0, 1) * Math.PI) * 0.95 * this.hoodFlare;
+                    if (this.species.hood && this.hoodFlare > 0.04 && i >= 1 && i <= 8) {
+                      hood = 1 + Math.sin(clamp((i - 0.5) / 7.5, 0, 1) * Math.PI) * 0.92 * this.hoodFlare;
                     }
                     return baseR * this.species.girth * pw * hood;
                   }
@@ -1017,7 +1065,7 @@ jobs:
                     this.hp = Math.max(0, this.hp - amt);
                     this.hitFlash = 0.18; this.combatTimer = 5.0;
                     if (attacker) attacker.combatTimer = 5.0;
-                    if (this.isPlayer && crit) camera.shake = 7;
+                    if (this.isPlayer) { vibrate(crit ? 45 : 22); if (crit) camera.shake = 7; }
                     if (this.isPlayer || (attacker && attacker.isPlayer) || isNearCam(this.x, this.y, 450)) {
                       floatTexts.push({
                         x: this.x + rand(-12, 12), y: this.y - 22,
@@ -1030,15 +1078,15 @@ jobs:
 
                   activateVenom() {
                     if (!this.alive || this.venomCd > 0) return;
-                    this.venomCd = this.venomMax; this.spitTimer = 1.4;
+                    this.venomCd = this.venomMax; this.spitTimer = 1.6; this.biteLunge = 1.0;
                     const r = this.getRadius();
                     const sx = this.x + Math.cos(this.angle) * (r + 14), sy = this.y + Math.sin(this.angle) * (r + 14);
                     projectiles.push({
-                      owner: this, x: sx, y: sy, vx: Math.cos(this.angle) * 630, vy: Math.sin(this.angle) * 630,
+                      owner: this, x: sx, y: sy, vx: Math.cos(this.angle) * 650, vy: Math.sin(this.angle) * 650,
                       life: 0.85, r: 10, dmg: 24, dps: this.species.id === 'cobra' ? 8 : 6
                     });
                     if (isNearCam(sx, sy, 500)) spawnParticles(sx, sy, '#7eff3b', 7, 110);
-                    if (this.isPlayer) Sound.venom();
+                    if (this.isPlayer) { Sound.venom(); vibrate(18); }
                   }
 
                   activateCamo() {
@@ -1103,6 +1151,7 @@ jobs:
                     if (this.spawnShield > 0) this.spawnShield = Math.max(0, this.spawnShield - dt);
                     if (this.hitFlash > 0) this.hitFlash = Math.max(0, this.hitFlash - dt);
                     if (this.biteCd > 0) this.biteCd = Math.max(0, this.biteCd - dt);
+                    if (this.biteLunge > 0) this.biteLunge = Math.max(0, this.biteLunge - dt * 4);
                     if (this.venomCd > 0) this.venomCd = Math.max(0, this.venomCd - dt);
                     if (this.camoCd > 0) this.camoCd = Math.max(0, this.camoCd - dt);
                     if (this.camoTimer > 0) this.camoTimer = Math.max(0, this.camoTimer - dt);
@@ -1172,8 +1221,8 @@ jobs:
                     while (this.segments.length > tLen && this.segments.length > 14) this.segments.pop();
 
                     if (near) {
-                      const wantHood = this.species.hood && (canBoost || this.spitTimer > 0) ? 1 : 0;
-                      this.hoodFlare = lerp(this.hoodFlare, wantHood, dt * 7);
+                      const wantHood = this.species.hood ? ((canBoost || this.spitTimer > 0) ? 1.0 : 0.35) : 0;
+                      this.hoodFlare = lerp(this.hoodFlare, wantHood, dt * 6);
                       this.tongueTimer -= dt;
                       if (this.tongueTimer <= 0) {
                         const p = -this.tongueTimer / 0.4;
@@ -1186,14 +1235,15 @@ jobs:
                   draw(c, showLabel = true) {
                     if (!this.alive || this.segments.length < 4) return;
                     const baseR = this.getRadius(), len = this.segments.length;
+                    const detail = profile.settings.gfx !== 'low';
                     const pts = new Array(len);
                     for (let i = 0; i < len; i++) {
                       const seg = this.segments[i];
                       const prev = this.segments[Math.max(0, i - 1)], next = this.segments[Math.min(len - 1, i + 1)];
                       const ang = i === 0 ? this.angle : Math.atan2(prev.y - next.y, prev.x - next.x);
                       const nx = -Math.sin(ang), ny = Math.cos(ang);
-                      const mask = i < 2 ? 0 : Math.min(1, (i - 1) / 4) * (1 - (i / len) * 0.3);
-                      const wave = Math.sin(this.slitherPhase - i * 0.42) * (baseR * 0.22 * mask);
+                      const mask = i < 2 ? 0 : Math.min(1, (i - 1) / 4) * (1 - (i / len) * 0.25);
+                      const wave = Math.sin(this.slitherPhase - i * 0.42) * (baseR * 0.2 * mask);
                       pts[i] = { x: seg.x + nx * wave, y: seg.y + ny * wave, ang, nx, ny, w: this.getHalfWidth(i, len, baseR) };
                     }
 
@@ -1208,7 +1258,7 @@ jobs:
                         c.quadraticCurveTo(ax, ay, (ax + bx) * 0.5, (ay + by) * 0.5);
                       }
                       const tl = pts[len - 1];
-                      c.lineTo(tl.x - Math.cos(tl.ang) * tl.w * 2.1 + ox, tl.y - Math.sin(tl.ang) * tl.w * 2.1 + oy);
+                      c.lineTo(tl.x - Math.cos(tl.ang) * tl.w * 2.2 + ox, tl.y - Math.sin(tl.ang) * tl.w * 2.2 + oy);
                       for (let i = len - 2; i >= 1; i--) {
                         const a = pts[i], b = pts[i - 1];
                         const ax = a.x - a.nx * a.w * sw + ox, ay = a.y - a.ny * a.w * sw + oy;
@@ -1219,132 +1269,248 @@ jobs:
                     };
 
                     c.save();
-                    c.globalAlpha = this.isCamo() ? (this.isPlayer ? 0.38 : 0.16) : 1;
+                    c.globalAlpha = this.isCamo() ? (this.isPlayer ? 0.36 : 0.14) : 1;
 
-                    traceBody(5, 8, 1.04);
-                    c.fillStyle = 'rgba(0,0,0,0.36)';
-                    c.fill();
+                    // 1. Soft Ambient Ground Shadow
+                    if (detail) {
+                      traceBody(6, 9, 1.05);
+                      c.fillStyle = 'rgba(0,0,0,0.4)';
+                      c.fill();
+                    }
 
+                    // 2. Organic Continuous Cylindrical Body + Unique Species Skin
                     c.save();
                     traceBody(0, 0, 1.0);
                     c.fillStyle = this.species.dark;
                     c.fill();
                     c.clip();
 
-                    traceBody(-1, -1, 0.84);
+                    // Belly-rim tint + Mid-body tone for 3D cylindrical volume
+                    traceBody(0, 0, 0.92);
+                    c.fillStyle = this.species.belly;
+                    c.globalAlpha *= 0.35;
+                    c.fill();
+                    c.globalAlpha = this.isCamo() ? (this.isPlayer ? 0.36 : 0.14) : 1;
+
+                    traceBody(-1.2, -1.2, 0.84);
                     c.fillStyle = this.species.base;
                     c.fill();
 
+                    // SPECIES-SPECIFIC REALISTIC SKIN PATTERNS
+                    const sid = this.species.id;
                     for (let i = 2; i < len - 1; i++) {
                       const p = pts[i];
                       c.save();
                       c.translate(p.x, p.y);
                       c.rotate(p.ang);
-                      if (this.species.id === 'anaconda') {
-                        if (i % 3 === 0) {
-                          c.fillStyle = this.species.stripe;
-                          c.beginPath(); c.ellipse(0, (i % 6 === 0 ? -1 : 1) * p.w * 0.28, p.w * 0.52, p.w * 0.34, 0.2, 0, Math.PI * 2); c.fill();
+
+                      if (sid === 'cobra') {
+                        // King Cobra: Spectacle marks on flared hood + subtle banded body rings
+                        if (i === 4 && this.hoodFlare > 0.2) {
+                          c.strokeStyle = this.species.accent; c.lineWidth = Math.max(2, p.w * 0.14);
+                          c.beginPath(); c.arc(0, -p.w * 0.42, p.w * 0.22, 0, Math.PI * 2); c.stroke();
+                          c.beginPath(); c.arc(0, p.w * 0.42, p.w * 0.22, 0, Math.PI * 2); c.stroke();
+                          c.beginPath(); c.moveTo(-p.w * 0.12, -p.w * 0.2); c.quadraticCurveTo(-p.w * 0.35, 0, -p.w * 0.12, p.w * 0.2); c.stroke();
+                        } else if (i > 7 && i % 4 === 0) {
+                          c.strokeStyle = 'rgba(225, 206, 120, 0.55)'; c.lineWidth = Math.max(1.8, p.w * 0.18);
+                          c.beginPath(); c.moveTo(-p.w * 0.15, -p.w * 0.95); c.quadraticCurveTo(p.w * 0.25, 0, -p.w * 0.15, p.w * 0.95); c.stroke();
                         }
-                      } else if (this.species.id === 'boa') {
+                      } else if (sid === 'boa') {
+                        // Emerald Tree Boa: Crisp white lightning saddles + yellow dorsal stripe
                         if (i % 4 === 0) {
-                          c.fillStyle = this.species.stripe;
-                          c.beginPath(); c.moveTo(p.w * 0.35, 0); c.lineTo(0, -p.w * 0.72); c.lineTo(-p.w * 0.35, 0); c.lineTo(0, p.w * 0.72); c.closePath(); c.fill();
+                          c.fillStyle = this.species.accent;
+                          c.beginPath();
+                          c.moveTo(p.w * 0.32, 0); c.lineTo(0, -p.w * 0.78); c.lineTo(-p.w * 0.22, -p.w * 0.32);
+                          c.lineTo(-p.w * 0.38, 0); c.lineTo(-p.w * 0.22, p.w * 0.32); c.lineTo(0, p.w * 0.78);
+                          c.closePath(); c.fill();
                         }
-                      } else if (this.species.id === 'viper') {
+                      } else if (sid === 'viper') {
+                        // Desert Horned Viper: Linked dark brown diamond blotches with pale tan outlines
                         if (i % 3 === 0) {
-                          c.fillStyle = this.species.stripe;
-                          c.beginPath(); c.moveTo(p.w * 0.45, 0); c.lineTo(0, -p.w * 0.65); c.lineTo(-p.w * 0.45, 0); c.lineTo(0, p.w * 0.65); c.closePath(); c.fill();
+                          c.fillStyle = this.species.accent;
+                          c.strokeStyle = '#edd8b0'; c.lineWidth = 1.2;
+                          c.beginPath();
+                          c.moveTo(p.w * 0.58, 0); c.lineTo(0, -p.w * 0.62); c.lineTo(-p.w * 0.58, 0); c.lineTo(0, p.w * 0.62);
+                          c.closePath(); c.fill(); c.stroke();
                         }
-                      } else if (this.species.id === 'krait') {
-                        if (i % 4 === 0) { c.fillStyle = this.species.dark; c.fillRect(-p.w * 0.45, -p.w * 1.1, p.w * 0.9, p.w * 2.2); }
-                        else if (i % 4 === 1) { c.fillStyle = this.species.stripe; c.fillRect(-p.w * 0.16, -p.w * 1.1, p.w * 0.32, p.w * 2.2); }
-                      } else {
+                      } else if (sid === 'python') {
+                        // Shadow Python: Reticulated iridescent hexagonal diamond-net mesh!
+                        if (i % 2 === 0) {
+                          c.strokeStyle = i % 4 === 0 ? 'rgba(110, 212, 255, 0.55)' : 'rgba(176, 118, 255, 0.55)';
+                          c.lineWidth = 1.6;
+                          c.beginPath();
+                          c.moveTo(p.w * 0.55, 0); c.lineTo(p.w * 0.18, -p.w * 0.68); c.lineTo(-p.w * 0.38, -p.w * 0.68);
+                          c.lineTo(-p.w * 0.55, 0); c.lineTo(-p.w * 0.38, p.w * 0.68); c.lineTo(p.w * 0.18, p.w * 0.68);
+                          c.closePath(); c.stroke();
+                        }
+                      } else if (sid === 'anaconda') {
+                        // Golden Anaconda: Alternating dark dorsal ovals + yellow-ringed side ocelli
                         if (i % 3 === 0) {
-                          c.strokeStyle = this.species.stripe; c.lineWidth = Math.max(2, p.w * 0.22);
-                          c.beginPath(); c.moveTo(-p.w * 0.3, -p.w * 0.78); c.lineTo(p.w * 0.28, 0); c.lineTo(-p.w * 0.3, p.w * 0.78); c.stroke();
+                          const sgn = i % 6 === 0 ? -1 : 1;
+                          c.fillStyle = this.species.accent;
+                          c.beginPath(); c.ellipse(0, sgn * p.w * 0.28, p.w * 0.52, p.w * 0.34, sgn * 0.2, 0, Math.PI * 2); c.fill();
+                          c.fillStyle = '#e8d768'; c.beginPath(); c.arc(-p.w * 0.1, -sgn * p.w * 0.66, p.w * 0.2, 0, Math.PI * 2); c.fill();
+                          c.fillStyle = '#1c1806'; c.beginPath(); c.arc(-p.w * 0.1, -sgn * p.w * 0.66, p.w * 0.11, 0, Math.PI * 2); c.fill();
                         }
+                      } else if (sid === 'krait') {
+                        // Crimson Krait: High-gloss jet-black, crimson & gold tri-color bands
+                        if (i % 4 === 0) { c.fillStyle = '#0c0a0e'; c.fillRect(-p.w * 0.48, -p.w * 1.15, p.w * 0.96, p.w * 2.3); }
+                        else if (i % 4 === 1) { c.fillStyle = this.species.accent; c.fillRect(-p.w * 0.18, -p.w * 1.15, p.w * 0.36, p.w * 2.3); }
                       }
-                      if (i % 2 === 0) {
+
+                      // Realistic Overlapping Reptile Scale Rim
+                      if (detail && i % 2 === 0) {
                         c.strokeStyle = 'rgba(0,0,0,0.22)'; c.lineWidth = 1;
-                        c.beginPath(); c.arc(-p.w * 0.15, 0, p.w * 0.72, -1.1, 1.1); c.stroke();
+                        c.beginPath(); c.arc(-p.w * 0.12, 0, p.w * 0.78, -1.15, 1.15); c.stroke();
                       }
                       c.restore();
                     }
 
-                    traceBody(-baseR * 0.14, -baseR * 0.14, 0.32);
-                    c.fillStyle = 'rgba(255,255,245,0.2)';
+                    // Cylindrical Dorsal Specular Wet-Gloss Highlight
+                    traceBody(-baseR * 0.16, -baseR * 0.16, sid === 'krait' ? 0.38 : 0.28);
+                    c.fillStyle = sid === 'krait' ? 'rgba(255,255,255,0.34)' : 'rgba(255,255,245,0.18)';
                     c.fill();
 
                     if (this.hitFlash > 0) {
                       traceBody(0, 0, 1.0);
-                      c.fillStyle = 'rgba(255, 70, 50, 0.42)';
+                      c.fillStyle = 'rgba(255, 65, 45, 0.42)';
                       c.fill();
                     }
                     c.restore();
 
+                    // Desert Viper Segmented Vibrating Rattle Tail
                     if (this.species.rattle) {
                       const tl = pts[len - 1];
                       c.save();
-                      c.translate(tl.x, tl.y); c.rotate(tl.ang + Math.sin(globalTime * 45) * 0.12);
-                      for (let b = 0; b < 4; b++) {
-                        c.fillStyle = b % 2 === 0 ? '#d4b483' : '#8c6e42';
-                        c.beginPath(); c.ellipse(-b * 4.5 - 4, 0, 3.8 - b * 0.4, 3.2 - b * 0.3, 0, 0, Math.PI * 2); c.fill();
+                      c.translate(tl.x, tl.y);
+                      c.rotate(tl.ang + Math.sin(globalTime * 52) * 0.16);
+                      for (let b = 0; b < 5; b++) {
+                        c.fillStyle = b % 2 === 0 ? '#dec08e' : '#967442';
+                        c.strokeStyle = 'rgba(40,24,8,0.6)'; c.lineWidth = 0.8;
+                        c.beginPath(); c.ellipse(-b * 4.2 - 4, 0, 3.8 - b * 0.35, 3.3 - b * 0.28, 0, 0, Math.PI * 2); c.fill(); c.stroke();
                       }
                       c.restore();
                     }
 
-                    const hr = baseR * this.species.girth;
+                    // 3. SPECIES-UNIQUE SCULPTED REALISTIC HEAD & FACE
+                    const hr = baseR * this.species.girth * (1 + this.biteLunge * 0.12);
                     c.save();
                     c.translate(pts[0].x, pts[0].y);
                     c.rotate(this.angle);
 
+                    // Flickering Forked Red Tongue
                     if (this.tongueExt > 0.05) {
-                      const tl = hr * 1.1 + this.tongueExt * hr * 1.15;
-                      c.strokeStyle = '#ff3842'; c.lineWidth = 1.8; c.lineCap = 'round';
+                      const tl = hr * 1.1 + this.tongueExt * hr * 1.25;
+                      c.strokeStyle = '#ff2e3b'; c.lineWidth = 1.9; c.lineCap = 'round';
                       c.beginPath(); c.moveTo(hr * 0.9, 0); c.lineTo(tl, 0);
-                      c.lineTo(tl + 5.5, -4); c.moveTo(tl, 0); c.lineTo(tl + 5.5, 4); c.stroke();
+                      c.lineTo(tl + 6, -4.5); c.moveTo(tl, 0); c.lineTo(tl + 6, 4.5); c.stroke();
                     }
 
-                    const hg = c.createRadialGradient(hr * 0.25, -hr * 0.2, 2, 0, 0, hr * 1.45);
+                    const hg = c.createRadialGradient(hr * 0.25, -hr * 0.2, 2, 0, 0, hr * 1.5);
                     hg.addColorStop(0, this.species.base); hg.addColorStop(1, this.species.dark);
                     c.fillStyle = hg;
                     c.beginPath();
-                    if (this.species.head === 'viper') {
-                      c.moveTo(hr * 1.45, 0);
-                      c.quadraticCurveTo(hr * 0.5, -hr * 1.15, -hr * 0.85, -hr * 0.95);
-                      c.quadraticCurveTo(-hr * 1.1, 0, -hr * 0.85, hr * 0.95);
-                      c.quadraticCurveTo(hr * 0.5, hr * 1.15, hr * 1.45, 0);
-                    } else {
+
+                    if (sid === 'viper') {
+                      // Wide triangular venomous viper arrowhead
                       c.moveTo(hr * 1.48, 0);
-                      c.quadraticCurveTo(hr * 0.85, -hr * 0.95, -hr * 0.7, -hr * 0.84);
-                      c.quadraticCurveTo(-hr * 1.05, 0, -hr * 0.7, hr * 0.84);
-                      c.quadraticCurveTo(hr * 0.85, hr * 0.95, hr * 1.48, 0);
+                      c.lineTo(hr * 0.4, -hr * 1.25);
+                      c.quadraticCurveTo(-hr * 0.9, -hr * 1.18, -hr * 0.95, -hr * 0.65);
+                      c.quadraticCurveTo(-hr * 1.12, 0, -hr * 0.95, hr * 0.65);
+                      c.quadraticCurveTo(-hr * 0.9, hr * 1.18, hr * 0.4, hr * 1.25);
+                    } else if (sid === 'boa') {
+                      // Muscular heart/pear-shaped Emerald Boa head
+                      c.moveTo(hr * 1.4, 0);
+                      c.quadraticCurveTo(hr * 0.85, -hr * 0.72, 0, -hr * 1.12);
+                      c.quadraticCurveTo(-hr * 1.05, -hr * 1.08, -hr * 0.92, 0);
+                      c.quadraticCurveTo(-hr * 1.05, hr * 1.08, 0, hr * 1.12);
+                      c.quadraticCurveTo(hr * 0.85, hr * 0.72, hr * 1.4, 0);
+                    } else if (sid === 'anaconda') {
+                      // Heavy broad rounded aquatic titan snout
+                      c.moveTo(hr * 1.42, -hr * 0.26);
+                      c.quadraticCurveTo(hr * 1.6, 0, hr * 1.42, hr * 0.26);
+                      c.quadraticCurveTo(hr * 0.7, hr * 1.08, -hr * 0.85, hr * 0.98);
+                      c.quadraticCurveTo(-hr * 1.15, 0, -hr * 0.85, -hr * 0.98);
+                      c.quadraticCurveTo(hr * 0.7, -hr * 1.08, hr * 1.42, -hr * 0.26);
+                    } else if (sid === 'krait') {
+                      // Narrow sleek venomous krait head
+                      c.moveTo(hr * 1.55, 0);
+                      c.quadraticCurveTo(hr * 0.9, -hr * 0.75, -hr * 0.8, -hr * 0.72);
+                      c.quadraticCurveTo(-hr * 1.05, 0, -hr * 0.8, hr * 0.72);
+                      c.quadraticCurveTo(hr * 0.9, hr * 0.75, hr * 1.55, 0);
+                    } else if (sid === 'python') {
+                      // Elongated tapered reticulated python skull
+                      c.moveTo(hr * 1.62, 0);
+                      c.quadraticCurveTo(hr * 0.75, -hr * 0.85, -hr * 0.75, -hr * 0.92);
+                      c.quadraticCurveTo(-hr * 1.08, 0, -hr * 0.75, hr * 0.92);
+                      c.quadraticCurveTo(hr * 0.75, hr * 0.85, hr * 1.62, 0);
+                    } else {
+                      // King Cobra: Armored royal crown head with defined brows
+                      c.moveTo(hr * 1.5, 0);
+                      c.quadraticCurveTo(hr * 0.95, -hr * 0.88, -hr * 0.72, -hr * 0.88);
+                      c.quadraticCurveTo(-hr * 1.08, 0, -hr * 0.72, hr * 0.88);
+                      c.quadraticCurveTo(hr * 0.95, hr * 0.88, hr * 1.5, 0);
                     }
                     c.closePath();
                     c.fill();
-                    c.strokeStyle = 'rgba(0,0,0,0.45)'; c.lineWidth = 1.2; c.stroke();
+                    c.strokeStyle = 'rgba(0,0,0,0.52)'; c.lineWidth = 1.3; c.stroke();
 
-                    if (this.species.horns) {
-                      c.fillStyle = '#e8cfa0';
+                    // UNIQUE HEAD MARKINGS & ANATOMY PER SPECIES
+                    if (sid === 'cobra') {
+                      // Crown shield plates
+                      c.strokeStyle = 'rgba(235, 210, 110, 0.45)'; c.lineWidth = 1.1;
+                      c.beginPath(); c.moveTo(hr * 0.7, 0); c.lineTo(-hr * 0.2, -hr * 0.42); c.lineTo(-hr * 0.65, 0); c.lineTo(-hr * 0.2, hr * 0.42); c.closePath(); c.stroke();
+                    } else if (sid === 'viper') {
+                      // Curved brow horns + dark V-mark on skull
+                      c.fillStyle = '#f0d8a8';
                       for (const s of [-1, 1]) {
-                        c.beginPath(); c.moveTo(hr * 0.35, s * hr * 0.55); c.lineTo(hr * 0.05, s * hr * 1.05); c.lineTo(-hr * 0.08, s * hr * 0.55); c.closePath(); c.fill();
+                        c.beginPath(); c.moveTo(hr * 0.38, s * hr * 0.56); c.lineTo(hr * 0.02, s * hr * 1.25); c.lineTo(-hr * 0.14, s * hr * 0.56); c.closePath(); c.fill();
                       }
+                      c.strokeStyle = '#3d220a'; c.lineWidth = 2.2;
+                      c.beginPath(); c.moveTo(-hr * 0.55, -hr * 0.45); c.lineTo(hr * 0.2, 0); c.lineTo(-hr * 0.55, hr * 0.45); c.stroke();
+                    } else if (sid === 'boa') {
+                      // Labial heat-sensing pits along upper jaw
+                      c.fillStyle = 'rgba(0,0,0,0.68)';
+                      for (const s of [-1, 1]) for (let k = 0; k < 3; k++) {
+                        c.beginPath(); c.arc(hr * (0.75 + k * 0.18), s * hr * (0.48 - k * 0.11), 1.3, 0, Math.PI * 2); c.fill();
+                      }
+                    } else if (sid === 'python') {
+                      // Reticulated Python signature central dark spear-stripe + glowing temple lines
+                      c.strokeStyle = '#68d4ff'; c.lineWidth = 1.6;
+                      c.beginPath(); c.moveTo(hr * 1.1, 0); c.lineTo(-hr * 0.75, 0); c.stroke();
+                    } else if (sid === 'anaconda') {
+                      // Signature dark post-ocular stripes behind eyes
+                      c.strokeStyle = '#1c1606'; c.lineWidth = 2.6;
+                      for (const s of [-1, 1]) {
+                        c.beginPath(); c.moveTo(hr * 0.25, s * hr * 0.52); c.lineTo(-hr * 0.72, s * hr * 0.85); c.stroke();
+                      }
+                    } else if (sid === 'krait') {
+                      // Bright golden collar band behind skull
+                      c.strokeStyle = '#ffda47'; c.lineWidth = 3.2;
+                      c.beginPath(); c.moveTo(-hr * 0.62, -hr * 0.72); c.lineTo(-hr * 0.62, hr * 0.72); c.stroke();
                     }
 
-                    c.fillStyle = 'rgba(0,0,0,0.65)';
-                    c.beginPath(); c.arc(hr * 1.08, -hr * 0.22, 1.3, 0, Math.PI * 2); c.arc(hr * 1.08, hr * 0.22, 1.3, 0, Math.PI * 2); c.fill();
+                    // Nostrils + Fierce Vertical-Slit Predator Eyes
+                    c.fillStyle = 'rgba(0,0,0,0.72)';
+                    c.beginPath(); c.arc(hr * 1.12, -hr * 0.22, 1.3, 0, Math.PI * 2); c.arc(hr * 1.12, hr * 0.22, 1.3, 0, Math.PI * 2); c.fill();
                     for (const s of [-1, 1]) {
+                      // Eye ridge shadow
+                      c.fillStyle = 'rgba(0,0,0,0.45)';
+                      c.beginPath(); c.ellipse(hr * 0.4, s * hr * 0.52, hr * 0.29, hr * 0.22, s * 0.2, 0, Math.PI * 2); c.fill();
+                      // Glowing Iris
                       c.fillStyle = this.species.eye;
-                      c.beginPath(); c.ellipse(hr * 0.42, s * hr * 0.48, hr * 0.24, hr * 0.19, s * 0.2, 0, Math.PI * 2); c.fill();
-                      c.fillStyle = '#070707';
-                      c.beginPath(); c.ellipse(hr * 0.48, s * hr * 0.48, hr * 0.06, hr * 0.16, 0, 0, Math.PI * 2); c.fill();
-                      c.fillStyle = 'rgba(255,255,255,0.85)';
-                      c.beginPath(); c.arc(hr * 0.38, s * hr * 0.44, hr * 0.06, 0, Math.PI * 2); c.fill();
+                      c.beginPath(); c.ellipse(hr * 0.42, s * hr * 0.5, hr * 0.24, hr * 0.18, s * 0.2, 0, Math.PI * 2); c.fill();
+                      // Razor Vertical Slit Pupil
+                      c.fillStyle = '#060606';
+                      c.beginPath(); c.ellipse(hr * 0.47, s * hr * 0.5, hr * 0.055, hr * 0.16, 0, 0, Math.PI * 2); c.fill();
+                      // Specular Eye Glint
+                      c.fillStyle = 'rgba(255,255,255,0.9)';
+                      c.beginPath(); c.arc(hr * 0.37, s * hr * 0.45, hr * 0.06, 0, Math.PI * 2); c.fill();
                     }
 
                     if (this.spawnShield > 0) {
                       c.strokeStyle = 'rgba(77, 226, 240, 0.85)'; c.lineWidth = 2.5;
-                      c.beginPath(); c.arc(0, 0, hr * 1.9, 0, Math.PI * 2); c.stroke();
+                      c.beginPath(); c.arc(0, 0, hr * 1.95, 0, Math.PI * 2); c.stroke();
                     }
                     c.restore();
 
@@ -1360,16 +1526,17 @@ jobs:
                   }
                 }
 
+                // -------------------- COMBAT & MATCH LOGIC --------------------
                 function killSnake(victim, killer, cause) {
                   if (!victim.alive) return;
                   victim.alive = false;
-                  spawnParticles(victim.x, victim.y, victim.species.stripe, 14, 140);
+                  spawnParticles(victim.x, victim.y, victim.species.accent, 14, 140);
                   for (let i = 0; i < victim.segments.length; i += 4) {
                     meatList.push({ x: victim.segments[i].x + rand(-8, 8), y: victim.segments[i].y + rand(-8, 8), r: 9, mass: 4.8, heal: 14, life: 24 });
                   }
                   if (killer && killer !== victim) {
-                    killer.kills++; killer.heal(28, true);
-                    if (killer.isPlayer) { matchStats.kills++; Sound.kill(); }
+                    killer.kills++; killer.heal(30, true);
+                    if (killer.isPlayer) { matchStats.kills++; Sound.kill(); vibrate(55); }
                     pushKillFeed(`${killer.name} [${cause}] ${victim.name}`);
                   } else {
                     pushKillFeed(`${victim.name} (${cause})`);
@@ -1394,9 +1561,17 @@ jobs:
                   }
                 }
 
+                function spawnGoldenDrop() {
+                  const pt = randInCircle(safeZone.cx, safeZone.cy, Math.min(safeZone.r * 0.8, ARENA_RADIUS - 400), 200);
+                  feastDrops.push({ x: pt.x, y: pt.y, r: 24, life: 45 });
+                  Sound.drop();
+                  const al = document.getElementById('dropAlert');
+                  al.style.display = 'block';
+                  setTimeout(() => { al.style.display = 'none'; }, 4500);
+                }
+
                 function startMatch() {
-                  screenState = 'playing';
-                  tacMapOpen = false;
+                  screenState = 'playing'; tacMapOpen = false;
                   document.getElementById('tacMapOverlay').classList.remove('open');
                   document.getElementById('lobbyScreen').style.display = 'none';
                   document.getElementById('resultsScreen').classList.remove('open');
@@ -1404,11 +1579,12 @@ jobs:
                   document.getElementById('killFeed').innerHTML = '';
 
                   generateWorld(profile.selectedBiome);
-                  snakes = []; preyList = []; meatList = []; projectiles = []; particles = []; floatTexts = [];
+                  snakes = []; preyList = []; meatList = []; feastDrops = []; projectiles = []; particles = []; floatTexts = [];
                   safeZone.active = profile.selectedMode === 'br';
                   safeZone.cx = WORLD_CENTER; safeZone.cy = WORLD_CENTER;
                   safeZone.r = ARENA_RADIUS; safeZone.targetR = ARENA_RADIUS * 0.72;
                   safeZone.stage = 1; safeZone.timer = 40; safeZone.shrinking = false;
+                  dayCycle = 0; weatherRain = false; weatherTimer = 36; dropTimer = 22;
 
                   matchStats.kills = 0; matchStats.prey = 0; matchStats.maxLen = 126; matchStats.rank = TOTAL_SNAKES; matchStats.reason = '';
 
@@ -1420,13 +1596,15 @@ jobs:
                   for (let i = 1; i < TOTAL_SNAKES; i++) {
                     const sp = SPECIES[Math.floor(Math.random() * SPECIES.length)];
                     let pt = randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 320);
-                    if (dist(pt.x, pt.y, player.x, player.y) < 520) pt = randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 320);
+                    if (dist(pt.x, pt.y, player.x, player.y) < 550) pt = randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 320);
                     const nm = AI_PREFIX[i % AI_PREFIX.length] + AI_SUFFIX[Math.floor(i / 3) % AI_SUFFIX.length];
                     snakes.push(new Snake({ name: nm, species: sp, x: pt.x, y: pt.y, mass: rand(22, 34) }));
                   }
 
                   spawnPrey(340);
                   camera.x = player.x; camera.y = player.y; camera.lookX = 0; camera.lookY = 0;
+                  camera.zoom = profile.settings.zoom;
+                  applySettingsToDOM();
                   const hint = document.getElementById('controlsHint');
                   if (hint) { hint.style.opacity = '1'; setTimeout(() => { hint.style.opacity = '0'; }, 5500); }
                 }
@@ -1465,12 +1643,20 @@ jobs:
                   document.getElementById('lobbyScreen').style.display = 'block';
                   generateWorld(profile.selectedBiome);
                   const sp = SPECIES.find(s => s.id === profile.selectedSnake) || SPECIES[0];
-                  lobbySnake = new Snake({ name: profile.name, species: sp, x: appW * 0.5, y: appH * 0.5, isPlayer: true, mass: 36 });
+                  lobbySnake = new Snake({ name: profile.name, species: sp, x: appW * 0.5, y: appH * 0.5, isPlayer: true, mass: 38 });
                   lobbySnake.spawnShield = 0;
+                  lobbySnake.hoodFlare = sp.hood ? 0.9 : 0;
                   refreshLobbyUI();
                 }
 
+                // -------------------- UPDATE & RENDER LOOP --------------------
                 function updateGame(dt) {
+                  dayCycle = (dayCycle + dt) % 120;
+                  weatherTimer -= dt;
+                  if (weatherTimer <= 0) { weatherRain = !weatherRain; weatherTimer = rand(28, 48); }
+                  dropTimer -= dt;
+                  if (dropTimer <= 0 && feastDrops.length < 2) { spawnGoldenDrop(); dropTimer = 38; }
+
                   if (player && player.alive) {
                     let kx = (ctrl.keys.right ? 1 : 0) - (ctrl.keys.left ? 1 : 0);
                     let ky = (ctrl.keys.down ? 1 : 0) - (ctrl.keys.up ? 1 : 0);
@@ -1496,6 +1682,7 @@ jobs:
                   rebuildGrids();
                   for (const s of snakes) s.update(dt);
 
+                  // Bite Combat with Knockback
                   for (const s of snakes) {
                     if (!s.alive || s.biteCd > 0 || s.spawnShield > 0) continue;
                     const r = s.getRadius();
@@ -1508,7 +1695,7 @@ jobs:
                         if (distSq(s.x, s.y, o.segments[k].x, o.segments[k].y) < (r + oR * 0.82) ** 2) { hit = true; break; }
                       }
                       if (hit) {
-                        s.biteCd = 0.65;
+                        s.biteCd = 0.65; s.biteLunge = 1.0;
                         const isCrit = s.boosting && s.stamina > 8;
                         const dmg = isCrit ? (s.species.id === 'viper' ? 36 : 30) : 18;
                         o.takeDamage(dmg, s, isCrit ? 'CRIT Bite' : 'Bite', isCrit);
@@ -1517,6 +1704,23 @@ jobs:
                         o.vxKnock -= Math.cos(ka) * 140; o.vyKnock -= Math.sin(ka) * 140;
                         if (s.isPlayer || o.isPlayer) Sound.bite(isCrit);
                         break;
+                      }
+                    }
+                  }
+
+                  // Golden Feast Supply Drops
+                  for (let i = feastDrops.length - 1; i >= 0; i--) {
+                    const f = feastDrops[i]; f.life -= dt;
+                    if (f.life <= 0) { feastDrops.splice(i, 1); continue; }
+                    const nearS = queryGrid(snakeGrid, f.x, f.y, 60);
+                    for (const s of nearS) {
+                      if (!s.alive) continue;
+                      if (distSq(s.x, s.y, f.x, f.y) < (s.getRadius() + f.r) ** 2) {
+                        s.mass += 24; s.heal(s.maxHp, true);
+                        spawnParticles(f.x, f.y, '#ffe45c', 18, 150);
+                        if (s.isPlayer) { Sound.win(); vibrate(40); }
+                        pushKillFeed(`${s.name} claimed Golden Feast!`);
+                        feastDrops.splice(i, 1); break;
                       }
                     }
                   }
@@ -1583,6 +1787,7 @@ jobs:
                   if (player && player.alive) {
                     camera.x = lerp(camera.x, player.x, clamp(dt * 8, 0, 1));
                     camera.y = lerp(camera.y, player.y, clamp(dt * 8, 0, 1));
+                    camera.zoom = lerp(camera.zoom, profile.settings.zoom, clamp(dt * 5, 0, 1));
                     if (!ctrl.lookActive && profile.settings.autoCenter) {
                       camera.lookX = lerp(camera.lookX, 0, clamp(dt * 7, 0, 1));
                       camera.lookY = lerp(camera.lookY, 0, clamp(dt * 7, 0, 1));
@@ -1618,8 +1823,10 @@ jobs:
                     document.getElementById('btnCamo').classList.toggle('on-cd', player.camoCd > 0);
                     document.getElementById('cdTxtCamo').textContent = player.camoCd > 0 ? Math.ceil(player.camoCd) : '';
 
-                    const reg = getRegionAt(player.x, player.y);
-                    document.getElementById('regionPill').textContent = reg.name;
+                    document.getElementById('regionPill').textContent = getRegionAt(player.x, player.y).name;
+                    const timeIcon = dayCycle < 48 ? '☀️ Sunlit' : dayCycle < 78 ? '🌅 Dusk' : '🌙 Night';
+                    document.getElementById('envPill').textContent = `${timeIcon} • ${weatherRain ? '🌧️ Rain' : 'Clear'}`;
+                    if (profile.settings.showFps) document.getElementById('fpsPill').textContent = `${fpsVal} FPS`;
 
                     const tTag = document.getElementById('terrainTag');
                     if (player.terrain === 'water') { tTag.style.display = 'block'; tTag.style.background = 'rgba(26,136,148,0.85)'; tTag.textContent = '🌊 RIVER BOOST'; }
@@ -1651,14 +1858,18 @@ jobs:
                     rc.beginPath(); rc.arc(cx + (safeZone.cx - WORLD_CENTER) * sc, cy + (safeZone.cy - WORLD_CENTER) * sc, safeZone.r * sc, 0, Math.PI * 2); rc.stroke();
                   }
                   if (showLabels) {
-                    rc.font = 'bold 11px sans-serif'; rc.textAlign = 'center'; rc.fillStyle = 'rgba(255,235,160,0.88)';
+                    rc.font = 'bold 10px sans-serif'; rc.textAlign = 'center'; rc.fillStyle = 'rgba(255,235,160,0.88)';
                     for (const r of REGIONS) rc.fillText(r.name.toUpperCase(), cx + (r.x - WORLD_CENTER) * sc, cy + (r.y - WORLD_CENTER) * sc);
+                  }
+                  // Golden Drops on Radar
+                  rc.fillStyle = '#ffe44d';
+                  for (const f of feastDrops) {
+                    rc.beginPath(); rc.arc(cx + (f.x - WORLD_CENTER) * sc, cy + (f.y - WORLD_CENTER) * sc, showLabels ? 5 : 3.5, 0, Math.PI * 2); rc.fill();
                   }
                   rc.fillStyle = 'rgba(255,90,78,0.85)';
                   for (const s of snakes) {
                     if (!s.alive || s.isPlayer || s.isCamo()) continue;
-                    const sx = cx + (s.x - WORLD_CENTER) * sc, sy = cy + (s.y - WORLD_CENTER) * sc;
-                    rc.beginPath(); rc.arc(sx, sy, showLabels ? 3 : 1.7, 0, Math.PI * 2); rc.fill();
+                    rc.beginPath(); rc.arc(cx + (s.x - WORLD_CENTER) * sc, cy + (s.y - WORLD_CENTER) * sc, showLabels ? 3 : 1.7, 0, Math.PI * 2); rc.fill();
                   }
                   if (player && player.alive) {
                     const px = cx + (player.x - WORLD_CENTER) * sc, py = cy + (player.y - WORLD_CENTER) * sc;
@@ -1668,22 +1879,31 @@ jobs:
                   }
                 }
 
-                function renderGame() {
+                function renderGame(dt) {
                   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
                   ctx.fillStyle = '#060b07'; ctx.fillRect(0, 0, appW, appH);
 
                   if (screenState !== 'playing') {
+                    // Smooth Graceful Wide-Orbit Lobby Showcase (Zero Kinks!)
                     const biome = BIOMES.find(b => b.id === profile.selectedBiome) || BIOMES[0];
                     ctx.fillStyle = biome.floor; ctx.fillRect(0, 0, appW, appH);
+                    const g = ctx.createRadialGradient(appW * 0.5, appH * 0.48, 20, appW * 0.5, appH * 0.48, Math.max(appW, appH) * 0.52);
+                    g.addColorStop(0, 'rgba(130, 220, 80, 0.14)'); g.addColorStop(1, 'rgba(0,0,0,0.48)');
+                    ctx.fillStyle = g; ctx.fillRect(0, 0, appW, appH);
+
                     if (lobbySnake) {
-                      lobbySnake.slitherPhase += 0.14;
-                      lobbySnake.x = appW * 0.5 + Math.cos(globalTime * 0.65) * Math.min(appW * 0.17, 115);
-                      lobbySnake.y = appH * 0.46 + Math.sin(globalTime * 1.1) * Math.min(appH * 0.11, 65);
-                      lobbySnake.angle = Math.atan2(Math.cos(globalTime * 1.1) * 65, -Math.sin(globalTime * 0.65) * 115);
-                      lobbySnake.segments[0].x = lobbySnake.x; lobbySnake.segments[0].y = lobbySnake.y;
+                      lobbySnake.slitherPhase += dt * 7.5;
+                      const rx = Math.min(appW * 0.25, 190), ry = Math.min(appH * 0.22, 95);
+                      const t = globalTime * 0.85;
+                      const nx = appW * 0.5 + Math.cos(t) * rx;
+                      const ny = appH * 0.48 + Math.sin(t) * ry;
+                      lobbySnake.angle = Math.atan2(ny - lobbySnake.y, nx - lobbySnake.x);
+                      lobbySnake.x = nx; lobbySnake.y = ny;
+                      lobbySnake.segments[0].x = nx; lobbySnake.segments[0].y = ny;
+                      const spc = lobbySnake.getRadius() * 0.56;
                       for (let i = 1; i < lobbySnake.segments.length; i++) {
                         const p = lobbySnake.segments[i - 1], c = lobbySnake.segments[i], dx = c.x - p.x, dy = c.y - p.y, d = Math.hypot(dx, dy) || 1;
-                        if (d > 8.5) { c.x = p.x + (dx / d) * 8.5; c.y = p.y + (dy / d) * 8.5; }
+                        if (d > spc) { c.x = p.x + (dx / d) * spc; c.y = p.y + (dy / d) * spc; }
                       }
                       lobbySnake.draw(ctx, false);
                     }
@@ -1735,6 +1955,16 @@ jobs:
                     ctx.beginPath(); ctx.arc(safeZone.cx, safeZone.cy, safeZone.r, 0, Math.PI * 2); ctx.stroke();
                   }
 
+                  // Golden Feast Supply Drops
+                  for (const f of feastDrops) {
+                    if (!isNearCam(f.x, f.y, 120)) continue;
+                    const pulse = 1 + Math.sin(globalTime * 6) * 0.18;
+                    const gr = ctx.createRadialGradient(f.x, f.y, 4, f.x, f.y, 46 * pulse);
+                    gr.addColorStop(0, 'rgba(255,235,90,0.9)'); gr.addColorStop(1, 'rgba(255,190,20,0)');
+                    ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(f.x, f.y, 46 * pulse, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = '#ffe052'; ctx.beginPath(); ctx.arc(f.x, f.y, 14, 0, Math.PI * 2); ctx.fill();
+                  }
+
                   for (const p of preyList) { if (isNearCam(p.x, p.y, 50)) drawPrey(ctx, p); }
                   for (const m of meatList) {
                     if (!isNearCam(m.x, m.y, 40)) continue;
@@ -1760,16 +1990,47 @@ jobs:
                     ctx.fillStyle = ft.color; ctx.fillText(ft.text, ft.x, ft.y);
                   }
                   ctx.restore();
+
+                  // Atmospheric Day/Night Tint + Ultra Weather FX
+                  if (dayCycle >= 48) {
+                    const dusk = dayCycle < 78 ? Math.sin(((dayCycle - 48) / 30) * Math.PI) : 0;
+                    const night = dayCycle >= 78 ? Math.sin(((dayCycle - 78) / 42) * Math.PI) : 0;
+                    if (dusk > 0.02) { ctx.fillStyle = `rgba(180, 90, 25, ${dusk * 0.16})`; ctx.fillRect(0, 0, appW, appH); }
+                    if (night > 0.02) { ctx.fillStyle = `rgba(6, 14, 30, ${night * 0.34})`; ctx.fillRect(0, 0, appW, appH); }
+                  }
+                  if (profile.settings.gfx === 'ultra') {
+                    if (weatherRain) {
+                      ctx.strokeStyle = 'rgba(180, 225, 255, 0.28)'; ctx.lineWidth = 1.2;
+                      ctx.beginPath();
+                      for (const rd of rainDrops) {
+                        rd.x -= rd.v * 0.2 * dt; rd.y += rd.v * dt;
+                        if (rd.y > appH) { rd.y = -20; rd.x = rand(0, appW + 100); }
+                        ctx.moveTo(rd.x, rd.y); ctx.lineTo(rd.x - 4, rd.y + rd.l);
+                      }
+                      ctx.stroke();
+                    }
+                    if (dayCycle >= 72) {
+                      for (const ff of fireflies) {
+                        ff.x = (ff.x + ff.vx * dt + appW) % appW; ff.y = (ff.y + ff.vy * dt + appH) % appH;
+                        const al = 0.25 + 0.55 * (0.5 + 0.5 * Math.sin(globalTime * 4 + ff.ph));
+                        ctx.fillStyle = `rgba(185, 255, 110, ${al})`;
+                        ctx.beginPath(); ctx.arc(ff.x, ff.y, 2.2, 0, Math.PI * 2); ctx.fill();
+                      }
+                    }
+                  }
                 }
 
                 function mainLoop(ts) {
                   const dt = Math.min(0.05, (ts - (lastFrame || ts)) / 1000);
                   lastFrame = ts; globalTime += dt;
+                  fpsCount++; fpsTimer += dt;
+                  if (fpsTimer >= 0.5) { fpsVal = Math.round(fpsCount / fpsTimer); fpsCount = 0; fpsTimer = 0; }
                   if (screenState === 'playing') updateGame(dt);
-                  renderGame();
+                  renderGame(dt);
                   requestAnimationFrame(mainLoop);
                 }
 
+                // -------------------- UI & PRO SETTINGS WIRING --------------------
                 function refreshLobbyUI() {
                   document.getElementById('lbAvatar').textContent = profile.avatar;
                   document.getElementById('lbLvl').textContent = `LV.${profile.level}`;
@@ -1785,6 +2046,36 @@ jobs:
                   const muteIcon = profile.settings.muted ? '🔇' : '🔊';
                   document.getElementById('btnLobbyAudio').textContent = muteIcon;
                   document.getElementById('hudAudioBtn').textContent = muteIcon;
+                }
+
+                function applySettingsToDOM() {
+                  document.getElementById('setZoom').value = Math.round(profile.settings.zoom * 100);
+                  document.getElementById('setSens').value = Math.round(profile.settings.lookSens * 100);
+                  document.getElementById('setSfxVol').value = Math.round(profile.settings.sfxVol * 100);
+                  const ac = document.getElementById('btnAutoCenter');
+                  ac.textContent = profile.settings.autoCenter ? 'ON' : 'OFF'; ac.classList.toggle('selected', profile.settings.autoCenter);
+                  const vb = document.getElementById('btnVib');
+                  vb.textContent = profile.settings.vib ? 'ON' : 'OFF'; vb.classList.toggle('selected', profile.settings.vib);
+                  const fp = document.getElementById('btnFps');
+                  fp.textContent = profile.settings.showFps ? 'ON' : 'OFF'; fp.classList.toggle('selected', profile.settings.showFps);
+                  document.getElementById('fpsPill').style.display = profile.settings.showFps ? 'block' : 'none';
+                  document.getElementById('floatingJoy').classList.toggle('fixed-mode', profile.settings.joyMode === 'fixed');
+
+                  const gr = document.getElementById('setGfxRow'); gr.innerHTML = '';
+                  ['low', 'high', 'ultra'].forEach(q => {
+                    const b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (profile.settings.gfx === q ? ' selected' : '');
+                    b.textContent = q.toUpperCase();
+                    b.onclick = () => { profile.settings.gfx = q; saveProfile(); resizeCanvas(); applySettingsToDOM(); Sound.click(); };
+                    gr.appendChild(b);
+                  });
+
+                  const jr = document.getElementById('setJoyRow'); jr.innerHTML = '';
+                  ['floating', 'fixed'].forEach(m => {
+                    const b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (profile.settings.joyMode === m ? ' selected' : '');
+                    b.textContent = m.toUpperCase();
+                    b.onclick = () => { profile.settings.joyMode = m; saveProfile(); applySettingsToDOM(); Sound.click(); };
+                    jr.appendChild(b);
+                  });
                 }
 
                 function renderProfileModal() {
@@ -1814,9 +2105,9 @@ jobs:
                     const owned = profile.ownedSnakes.includes(s.id), sel = profile.selectedSnake === s.id;
                     const card = document.createElement('div'); card.className = 'card-item' + (sel ? ' selected' : '');
                     card.innerHTML = `
-                      <div style="display:flex;justify-content:space-between;align-items:center;"><strong style="color:#ffe47a;">${s.name}</strong><span style="width:18px;height:18px;border-radius:50%;background:${s.base};border:2px solid #ffe47a;"></span></div>
-                      <div style="font-size:11px;color:#b8d1b4;">${s.trait}</div>
-                      <button type="button" class="btn-gold" style="padding:8px;font-size:11px;">${sel ? 'EQUIPPED' : (owned ? 'SELECT' : `UNLOCK ${s.price} 🪙`)}</button>`;
+                      <div style="display:flex;justify-content:space-between;align-items:center;"><strong style="color:#ffe47a;">${s.name}</strong><span style="width:18px;height:18px;border-radius:50%;background:${s.base};border:2px solid ${s.accent};"></span></div>
+                      <div style="font-size:10.5px;color:#b8d1b4;">${s.trait}</div>
+                      <button type="button" class="btn-gold" style="padding:7px;font-size:10.5px;">${sel ? 'EQUIPPED' : (owned ? 'SELECT' : `UNLOCK ${s.price} 🪙`)}</button>`;
                     card.onclick = () => {
                       if (owned) profile.selectedSnake = s.id;
                       else if (profile.coins >= s.price) { profile.coins -= s.price; profile.ownedSnakes.push(s.id); profile.selectedSnake = s.id; }
@@ -1830,7 +2121,7 @@ jobs:
                   BIOMES.forEach(b => {
                     const sel = profile.selectedBiome === b.id;
                     const card = document.createElement('div'); card.className = 'card-item' + (sel ? ' selected' : '');
-                    card.innerHTML = `<strong style="color:var(--gold);">${b.name}</strong><div style="height:24px;border-radius:8px;background:${b.floor};border:1px solid ${b.water};"></div><div style="font-size:11px;color:var(--green);font-weight:800;">${sel ? 'ACTIVE BIOME' : 'TAP TO SELECT'}</div>`;
+                    card.innerHTML = `<strong style="color:var(--gold);">${b.name}</strong><div style="height:22px;border-radius:8px;background:${b.floor};border:1px solid ${b.water};"></div><div style="font-size:10.5px;color:var(--green);font-weight:800;">${sel ? 'ACTIVE BIOME' : 'TAP TO SELECT'}</div>`;
                     card.onclick = () => { profile.selectedBiome = b.id; saveProfile(); Sound.click(); renderProfileModal(); enterLobby(); };
                     bg.appendChild(card);
                   });
@@ -1854,15 +2145,15 @@ jobs:
                   let pct = 0;
                   const fill = document.getElementById('loaderFill'), txt = document.getElementById('loaderPct');
                   const iv = setInterval(() => {
-                    pct = Math.min(100, pct + rand(15, 25));
+                    pct = Math.min(100, pct + rand(16, 26));
                     fill.style.width = `${pct}%`; txt.textContent = `${Math.floor(pct)}%`;
                     if (pct >= 100) {
                       clearInterval(iv);
                       const sp = document.getElementById('splashScreen');
                       sp.classList.add('fade-out');
-                      setTimeout(() => { sp.style.display = 'none'; enterLobby(); }, 320);
+                      setTimeout(() => { sp.style.display = 'none'; enterLobby(); }, 300);
                     }
-                  }, 85);
+                  }, 80);
                 }
 
                 document.getElementById('btnTapEnter').addEventListener('click', handleSplashEnter);
@@ -1887,8 +2178,8 @@ jobs:
                   const iv = setInterval(() => {
                     cnt = Math.min(TOTAL_SNAKES, cnt + Math.floor(rand(8, 15)));
                     mt.textContent = `${cnt} / ${TOTAL_SNAKES} SNAKES READY`;
-                    if (cnt >= TOTAL_SNAKES) { clearInterval(iv); setTimeout(() => { mm.classList.remove('open'); startMatch(); }, 220); }
-                  }, 115);
+                    if (cnt >= TOTAL_SNAKES) { clearInterval(iv); setTimeout(() => { mm.classList.remove('open'); startMatch(); }, 200); }
+                  }, 110);
                 });
 
                 document.getElementById('minimapBox').addEventListener('click', () => {
@@ -1902,20 +2193,23 @@ jobs:
                 document.getElementById('tacMapOverlay').addEventListener('click', e => { if (e.target.id === 'tacMapOverlay') closeTacMap(); });
 
                 const toggleMute = () => { profile.settings.muted = !profile.settings.muted; saveProfile(); refreshLobbyUI(); Sound.click(); };
+                const openSettings = () => { applySettingsToDOM(); document.getElementById('settingsModal').classList.add('open'); Sound.click(); };
                 document.getElementById('btnLobbyAudio').addEventListener('click', toggleMute);
                 document.getElementById('hudAudioBtn').addEventListener('click', toggleMute);
                 document.getElementById('hudLobbyBtn').addEventListener('click', () => { Sound.click(); enterLobby(); });
-                document.getElementById('btnLobbySettings').addEventListener('click', () => { document.getElementById('settingsModal').classList.add('open'); Sound.click(); });
+                document.getElementById('btnLobbySettings').addEventListener('click', openSettings);
+                document.getElementById('hudSetBtn').addEventListener('click', openSettings);
+
+                document.getElementById('setZoom').addEventListener('input', e => { profile.settings.zoom = e.target.value / 100; saveProfile(); });
+                document.getElementById('setSens').addEventListener('input', e => { profile.settings.lookSens = e.target.value / 100; saveProfile(); });
                 document.getElementById('setSfxVol').addEventListener('input', e => { profile.settings.sfxVol = e.target.value / 100; saveProfile(); });
-                document.getElementById('btnAutoCenter').addEventListener('click', e => {
-                  profile.settings.autoCenter = !profile.settings.autoCenter;
-                  e.target.textContent = profile.settings.autoCenter ? 'ON' : 'OFF';
-                  e.target.classList.toggle('selected', profile.settings.autoCenter);
-                  saveProfile(); Sound.click();
-                });
+                document.getElementById('btnAutoCenter').addEventListener('click', () => { profile.settings.autoCenter = !profile.settings.autoCenter; saveProfile(); applySettingsToDOM(); Sound.click(); });
+                document.getElementById('btnVib').addEventListener('click', () => { profile.settings.vib = !profile.settings.vib; saveProfile(); applySettingsToDOM(); Sound.click(); });
+                document.getElementById('btnFps').addEventListener('click', () => { profile.settings.showFps = !profile.settings.showFps; saveProfile(); applySettingsToDOM(); Sound.click(); });
                 document.getElementById('btnResLobby').addEventListener('click', () => { Sound.click(); enterLobby(); });
                 document.getElementById('btnResAgain').addEventListener('click', () => { Sound.click(); startMatch(); });
 
+                // -------------------- CONTROLS --------------------
                 const joyEl = document.getElementById('floatingJoy'), joyKnob = document.getElementById('floatingJoyKnob');
                 function updateJoyVisual(x, y) {
                   const dx = x - ctrl.joyOx, dy = y - ctrl.joyOy, d = Math.hypot(dx, dy);
@@ -1929,8 +2223,14 @@ jobs:
                   e.preventDefault();
                   for (const t of e.changedTouches) {
                     if (t.clientX < appW * 0.5 && ctrl.joyTouchId === null) {
-                      ctrl.joyTouchId = t.identifier; ctrl.joyActive = true; ctrl.joyOx = t.clientX; ctrl.joyOy = t.clientY;
-                      joyEl.style.left = `${t.clientX}px`; joyEl.style.top = `${t.clientY}px`; joyEl.classList.add('visible');
+                      ctrl.joyTouchId = t.identifier; ctrl.joyActive = true;
+                      if (profile.settings.joyMode === 'fixed') {
+                        ctrl.joyOx = 82; ctrl.joyOy = appH - 82;
+                      } else {
+                        ctrl.joyOx = t.clientX; ctrl.joyOy = t.clientY;
+                        joyEl.style.left = `${t.clientX}px`; joyEl.style.top = `${t.clientY}px`;
+                      }
+                      joyEl.classList.add('visible');
                       updateJoyVisual(t.clientX, t.clientY);
                     } else if (t.clientX >= appW * 0.5 && ctrl.lookTouchId === null) {
                       ctrl.lookTouchId = t.identifier; ctrl.lookActive = true; ctrl.lookLastX = t.clientX; ctrl.lookLastY = t.clientY;
@@ -1944,8 +2244,9 @@ jobs:
                   for (const t of e.changedTouches) {
                     if (t.identifier === ctrl.joyTouchId) updateJoyVisual(t.clientX, t.clientY);
                     else if (t.identifier === ctrl.lookTouchId) {
-                      camera.lookX = clamp(camera.lookX - (t.clientX - ctrl.lookLastX) * 1.3, -FREE_LOOK_MAX, FREE_LOOK_MAX);
-                      camera.lookY = clamp(camera.lookY - (t.clientY - ctrl.lookLastY) * 1.3, -FREE_LOOK_MAX, FREE_LOOK_MAX);
+                      const sens = profile.settings.lookSens || 1.3;
+                      camera.lookX = clamp(camera.lookX - (t.clientX - ctrl.lookLastX) * sens, -FREE_LOOK_MAX, FREE_LOOK_MAX);
+                      camera.lookY = clamp(camera.lookY - (t.clientY - ctrl.lookLastY) * sens, -FREE_LOOK_MAX, FREE_LOOK_MAX);
                       ctrl.lookLastX = t.clientX; ctrl.lookLastY = t.clientY;
                     }
                   }
@@ -1953,7 +2254,11 @@ jobs:
 
                 const endTouch = e => {
                   for (const t of e.changedTouches) {
-                    if (t.identifier === ctrl.joyTouchId) { ctrl.joyTouchId = null; ctrl.joyActive = false; ctrl.joyMag = 0; joyEl.classList.remove('visible'); }
+                    if (t.identifier === ctrl.joyTouchId) {
+                      ctrl.joyTouchId = null; ctrl.joyActive = false; ctrl.joyMag = 0;
+                      joyEl.classList.remove('visible');
+                      joyKnob.style.transform = 'translate(-50%,-50%)';
+                    }
                     if (t.identifier === ctrl.lookTouchId) { ctrl.lookTouchId = null; ctrl.lookActive = false; }
                   }
                 };
@@ -2000,8 +2305,9 @@ jobs:
                 resizeCanvas();
                 generateWorld(profile.selectedBiome);
                 const initSpec = SPECIES.find(s => s.id === profile.selectedSnake) || SPECIES[0];
-                lobbySnake = new Snake({ name: profile.name, species: initSpec, x: appW * 0.5, y: appH * 0.46, isPlayer: true, mass: 36 });
+                lobbySnake = new Snake({ name: profile.name, species: initSpec, x: appW * 0.5, y: appH * 0.48, isPlayer: true, mass: 38 });
                 lobbySnake.spawnShield = 0;
+                lobbySnake.hoodFlare = initSpec.hood ? 0.9 : 0;
                 requestAnimationFrame(mainLoop);
               })();
             </script>
