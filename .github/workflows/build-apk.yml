@@ -1,4 +1,4 @@
-name: Build Serpent-Wild v20 7-Maps & Giant Growth APK
+name: Build Serpent-Wild v21 50KM Mega Open-World APK
 
 on:
   push:
@@ -91,7 +91,7 @@ jobs:
               wf.writeframes(data)
           PYEOF
 
-      - name: Generate Serpent-Wild v20 Android Project
+      - name: Generate Serpent-Wild v21 Android Project
         run: |
           mkdir -p app/src/main/java/com/apexwild/serpent app/src/main/assets app/src/main/res/values
 
@@ -138,8 +138,8 @@ jobs:
                   applicationId = "com.apexwild.serpent.royale"
                   minSdk = 26
                   targetSdk = 35
-                  versionCode = 20
-                  versionName = "20.0.0"
+                  versionCode = 21
+                  versionName = "21.0.0"
               }
               signingConfigs {
                   create("release") {
@@ -267,8 +267,8 @@ jobs:
                       val iconRes = context.applicationInfo.icon.takeIf { it != 0 } ?: android.R.drawable.sym_def_app_icon
                       val notif = NotificationCompat.Builder(context, CHANNEL_ID)
                           .setSmallIcon(iconRes)
-                          .setContentTitle("🐍 Serpent Wild: Apex Awaits!")
-                          .setContentText("7 Ultra-Realistic Maps & Daily Rewards are ready! Become the #1 Apex King!")
+                          .setContentTitle("🐍 Serpent Wild: 50KM Open World!")
+                          .setContentText("80 Beasts are battling in the 50KM Arena! Claim your daily rewards & become #1!")
                           .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                           .setAutoCancel(true)
                           .setContentIntent(pi)
@@ -514,7 +514,7 @@ jobs:
           <head>
             <meta charset="UTF-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-            <title>SERPENT WILD: APEX — v20 7-Maps &amp; Giant Growth</title>
+            <title>SERPENT WILD: APEX — v21 50KM Mega Open-World</title>
             <style>
               :root {
                 --bg-dark: #060b07;
@@ -786,16 +786,16 @@ jobs:
                   </svg>
                 </div>
                 <div class="splash-title">SERPENT WILD: APEX</div>
-                <div class="splash-subtitle">v20 • 7 ULTRA MAPS • GIANT GROWTH • KING CROWN</div>
+                <div class="splash-subtitle">v21 • 50KM OPEN WORLD • 80 BEASTS • 7 MAPS</div>
               </div>
               <div id="tapEnterWrap">
                 <button class="btn-gold" id="btnTapEnter" type="button">TAP TO ENTER JUNGLE</button>
                 <div style="font-size:10.5px;color:var(--text-muted);text-align:center;">Press the button above to enter</div>
               </div>
               <div id="loaderWrap">
-                <div class="loader-row"><span id="loaderStatus">Loading 7 Ultra-Realistic Maps &amp; Giant Growth...</span><span id="loaderPct">0%</span></div>
+                <div class="loader-row"><span id="loaderStatus">Loading 50KM Open-World &amp; 80-Beast Royale...</span><span id="loaderPct">0%</span></div>
                 <div class="loader-bar"><div id="loaderFill"></div></div>
-                <div id="loaderTip">Tip: Reach #1 on the leaderboard to wear the glowing Golden Apex Crown!</div>
+                <div id="loaderTip">Tip: Explore 12 massive regions across the 50KM world &amp; claim the #1 Crown!</div>
               </div>
             </div>
 
@@ -831,7 +831,7 @@ jobs:
               </div>
 
               <div id="startCluster">
-                <div id="modePill" class="mode-pill glass"><span class="mode-dot"></span><span id="modeLabel">Classic Royale (50)</span><span style="opacity:0.7;">▾</span></div>
+                <div id="modePill" class="mode-pill glass"><span class="mode-dot"></span><span id="modeLabel">Classic Royale (80)</span><span style="opacity:0.7;">▾</span></div>
                 <button class="btn-gold" id="btnStartMatch" type="button">TO BATTLE!</button>
               </div>
             </div>
@@ -840,7 +840,7 @@ jobs:
               <div class="mm-card glass">
                 <div class="mm-spin"></div>
                 <div style="font-size:15px;font-weight:900;letter-spacing:1.4px;color:var(--gold);margin-bottom:5px;">MATCHMAKING...</div>
-                <div style="font-size:12px;font-weight:800;color:#d6ead0;" id="mmText">12 / 50 BEASTS READY</div>
+                <div style="font-size:12px;font-weight:800;color:#d6ead0;" id="mmText">16 / 80 BEASTS READY</div>
               </div>
             </div>
 
@@ -888,7 +888,7 @@ jobs:
                   <div class="tab-pane" id="tabDecor">
                     <div class="section-lbl">Food &amp; Prey Style</div>
                     <div class="armory-grid" id="foodStyleGrid" style="margin-bottom:12px;"></div>
-                    <div class="section-lbl">7 Ultra-Realistic Arena Maps (All Free to Play!)</div>
+                    <div class="section-lbl">7 Ultra-Realistic 50KM Maps (All Free to Play!)</div>
                     <div class="armory-grid" id="biomeGrid"></div>
                   </div>
 
@@ -1004,7 +1004,7 @@ jobs:
                     <button class="chip selected" id="btnXpPop" type="button">ON</button>
                   </div>
                   <div class="setting-row">
-                    <div><div style="font-size:12.5px;font-weight:800;">Show Minimap</div><div style="font-size:9.5px;color:var(--text-muted);">Display 18KM radar in top-left corner</div></div>
+                    <div><div style="font-size:12.5px;font-weight:800;">Show Minimap</div><div style="font-size:9.5px;color:var(--text-muted);">Display 50KM radar in top-left corner</div></div>
                     <button class="chip selected" id="btnShowMap" type="button">ON</button>
                   </div>
                   <div class="setting-row">
@@ -1025,12 +1025,12 @@ jobs:
             <div id="hud">
               <div id="stormVignette"></div>
               <div id="hudTopLeft">
-                <div id="minimapBox" title="Tap to open Full 18KM Map">
+                <div id="minimapBox" title="Tap to open Full 50KM Map">
                   <canvas id="minimapCanvas" width="160" height="160"></canvas>
-                  <span class="map-scale-tag">18KM MAP</span>
+                  <span class="map-scale-tag">50KM MAP</span>
                 </div>
                 <div class="tl-tags">
-                  <div id="regionPill" class="glass">EMERALD BASIN</div>
+                  <div id="regionPill" class="glass">APEX CITADEL</div>
                   <div id="potionBadge">🧲 MAGNET 10s</div>
                   <div id="terrainTag"></div>
                   <div id="fpsPill" class="glass">60 FPS</div>
@@ -1039,15 +1039,15 @@ jobs:
 
               <div id="hudTopCenter">
                 <div class="br-stats-bar glass">
-                  <div class="br-stat"><span style="color:var(--green);">ALIVE</span><strong id="hudAlive">50/50</strong></div>
+                  <div class="br-stat"><span style="color:var(--green);">ALIVE</span><strong id="hudAlive">80/80</strong></div>
                   <div class="br-stat"><span>KILLS</span><strong id="hudKills" style="color:var(--gold);">0</strong></div>
-                  <div class="br-stat"><span>LEN</span><strong id="hudLen" style="color:#61e4ff;">18m</strong></div>
+                  <div class="br-stat"><span>LEN</span><strong id="hudLen" style="color:#61e4ff;">21m</strong></div>
                   <div class="br-stat"><span>XP</span><strong id="hudXp" style="color:#a8ff78;">0</strong></div>
                 </div>
                 <div id="missionBar" class="glass"><span id="missionTxt">🎯 Eat 40 Animals</span><span id="missionProg">0/40</span></div>
                 <div class="zone-pill glass">
                   <span id="zoneLabel" style="color:#52e5ff;">◎ ZONE <span id="hudZoneStage">1</span></span>
-                  <span id="hudZoneTimer">1:25</span>
+                  <span id="hudZoneTimer">2:00</span>
                 </div>
                 <div id="streakBanner">🔥 DOUBLE KILL!</div>
                 <div id="shieldBadge">🛡️ SPAWN SHIELD</div>
@@ -1086,11 +1086,11 @@ jobs:
             <div id="tacMapOverlay">
               <div class="tac-card glass">
                 <div style="width:100%;display:flex;justify-content:space-between;align-items:center;">
-                  <span style="font-size:12px;font-weight:900;color:var(--gold);letter-spacing:1px;">18,000m MEGA MAP (6 REGIONS)</span>
+                  <span style="font-size:12px;font-weight:900;color:var(--gold);letter-spacing:1px;">50,000m OPEN WORLD (12 REGIONS)</span>
                   <button class="close-btn" id="btnCloseTacMap" type="button" style="width:28px;height:28px;font-size:13px;">✕</button>
                 </div>
                 <canvas id="tacMapCanvas" width="380" height="380"></canvas>
-                <div style="font-size:9.5px;color:var(--text-muted);">🟢 You • 🔴 Rivals • ⭐ Treasure • 🔵 Rivers • ◎ Safe Zone</div>
+                <div style="font-size:9.5px;color:var(--text-muted);">🟢 You • 🔴 Rivals (80) • ⭐ Treasure • 🔵 Rivers • ◎ Safe Zone</div>
               </div>
             </div>
 
@@ -1120,20 +1120,28 @@ jobs:
               (() => {
                 'use strict';
 
-                const TOTAL_SNAKES = 50;
-                const WORLD_SIZE = 18000;
+                // 50KM OPEN-WORLD CONSTANTS + 80 BEASTS!
+                const TOTAL_SNAKES = 80;
+                const WORLD_SIZE = 50000;
                 const WORLD_CENTER = WORLD_SIZE / 2;
-                const ARENA_RADIUS = 8500;
-                const CELL_SIZE = 450;
-                const FREE_LOOK_MAX = 640;
+                const ARENA_RADIUS = 24000;
+                const CELL_SIZE = 600;
+                const FREE_LOOK_MAX = 680;
 
+                // 12 NAMED REGIONS ACROSS THE 50KM MEGA MAP
                 const REGIONS = [
-                  { id: 'basin',  name: 'Emerald Basin',  x: 9000,  y: 9000,  r: 2800, col: 'rgba(56,120,38,0.16)' },
-                  { id: 'ruins',  name: 'Ancient Ruins',  x: 5000,  y: 5000,  r: 2600, col: 'rgba(110,115,96,0.18)' },
-                  { id: 'swamp',  name: 'Venom Swamp',    x: 13000, y: 5200,  r: 2700, col: 'rgba(30,84,58,0.2)' },
-                  { id: 'river',  name: 'Crystal River',  x: 3800,  y: 9600,  r: 2600, col: 'rgba(26,128,144,0.16)' },
-                  { id: 'canyon', name: 'Red Canyon',     x: 5200,  y: 13200, r: 2700, col: 'rgba(148,74,34,0.2)' },
-                  { id: 'delta',  name: 'Golden Delta',   x: 12800, y: 12800, r: 2800, col: 'rgba(164,132,44,0.18)' }
+                  { id: 'citadel', name: 'Apex Citadel',   x: 25000, y: 25000, r: 5200, col: 'rgba(56,120,38,0.16)' },
+                  { id: 'basin',   name: 'Emerald Basin',  x: 15000, y: 15000, r: 5600, col: 'rgba(48,132,52,0.16)' },
+                  { id: 'ruins',   name: 'Ancient Ruins',  x: 35000, y: 15000, r: 5400, col: 'rgba(110,115,96,0.18)' },
+                  { id: 'swamp',   name: 'Venom Swamp',    x: 15000, y: 35000, r: 5500, col: 'rgba(30,84,58,0.2)' },
+                  { id: 'delta',   name: 'Golden Delta',   x: 35000, y: 35000, r: 5600, col: 'rgba(164,132,44,0.18)' },
+                  { id: 'frost',   name: 'Frost Peaks',    x: 25000, y: 8000,  r: 5200, col: 'rgba(110,190,235,0.18)' },
+                  { id: 'magma',   name: 'Magma Rift',     x: 25000, y: 42000, r: 5200, col: 'rgba(185,68,28,0.2)' },
+                  { id: 'river',   name: 'Crystal River',  x: 8000,  y: 25000, r: 5200, col: 'rgba(26,128,144,0.18)' },
+                  { id: 'sakura',  name: 'Sakura Grove',   x: 42000, y: 25000, r: 5200, col: 'rgba(220,105,155,0.16)' },
+                  { id: 'dunes',   name: 'Sunlit Dunes',   x: 10000, y: 10000, r: 4600, col: 'rgba(186,142,68,0.18)' },
+                  { id: 'canyon',  name: 'Red Canyon',     x: 40000, y: 40000, r: 4600, col: 'rgba(148,74,34,0.2)' },
+                  { id: 'hollow',  name: 'Shadow Hollow',  x: 40000, y: 10000, r: 4600, col: 'rgba(72,48,112,0.18)' }
                 ];
 
                 const AVATARS = ['🐍', '🦁', '🐯', '🐺', '🦈', '🐉'];
@@ -1143,8 +1151,8 @@ jobs:
                   { lv: 8, name: 'Gold Python' }, { lv: 14, name: 'Platinum Beast' }, { lv: 20, name: 'Apex Emperor' }
                 ];
                 const MODES = [
-                  { id: 'br',       label: 'Classic Royale (50)' },
-                  { id: 'infinity', label: 'Infinity Mode' },
+                  { id: 'br',       label: 'Classic Royale (80)' },
+                  { id: 'infinity', label: 'Infinity Mode (50KM)' },
                   { id: 'treasure', label: 'Treasure Hunter' }
                 ];
                 const STORE_PACKS = [
@@ -1179,7 +1187,6 @@ jobs:
                   { id: 'w1',   name: 'Jungle Champion', desc: 'Win 1 Classic Royale match',   stat: 'wins',       goal: 1,    coins: 1000, dias: 12 }
                 ];
 
-                // 7 ULTRA-REALISTIC ARENA MAPS WITH UNIQUE WEATHER, RIVERS & TREES!
                 const BIOMES = [
                   { id: 'amazon',  name: '🌿 Amazon Rainforest', desc: 'Lush emerald jungle, rivers & butterflies',   floor: '#182812', moss: 'rgba(54,104,34,0.48)',  soil: 'rgba(66,48,29,0.38)',   water: '#1a7d8a', waterDeep: '#0d4e59', shore: 'rgba(130,115,82,0.52)', mud: '#362415', tree1: '#1b521a', tree2: '#266b22', tree3: '#36852c', fx: 'butterfly' },
                   { id: 'tundra',  name: '❄️ Frozen Tundra',     desc: 'Snowy glaciers, ice rivers & snowfall',       floor: '#cbdceb', moss: 'rgba(240,248,255,0.6)', soil: 'rgba(145,175,200,0.38)',water: '#2b95c4', waterDeep: '#125a82', shore: 'rgba(220,240,255,0.75)',mud: '#7d92a6', tree1: '#1a4a3a', tree2: '#25614d', tree3: '#e8f5ff', fx: 'snow' },
@@ -1284,7 +1291,7 @@ jobs:
 
                 let profile = (() => {
                   try {
-                    const raw = localStorage.getItem('serpent_wild_v20') || localStorage.getItem('serpent_wild_v19') || localStorage.getItem('serpent_wild_v18');
+                    const raw = localStorage.getItem('serpent_wild_v21') || localStorage.getItem('serpent_wild_v20') || localStorage.getItem('serpent_wild_v19') || localStorage.getItem('serpent_wild_v18');
                     if (!raw) return JSON.parse(JSON.stringify(DEFAULT_PROFILE));
                     const d = JSON.parse(raw);
                     const merged = {
@@ -1299,7 +1306,7 @@ jobs:
                   } catch (e) { return JSON.parse(JSON.stringify(DEFAULT_PROFILE)); }
                 })();
 
-                const saveProfile = () => { try { localStorage.setItem('serpent_wild_v20', JSON.stringify(profile)); } catch (e) {} };
+                const saveProfile = () => { try { localStorage.setItem('serpent_wild_v21', JSON.stringify(profile)); } catch (e) {} };
                 const getRank = lv => { let n = RANK_TIERS[0].name; for (const r of RANK_TIERS) if (lv >= r.lv) n = r.name; return n; };
                 const getXpNeed = lv => 1000 + (lv - 1) * 500;
 
@@ -1309,7 +1316,7 @@ jobs:
                 const distSq = (x1, y1, x2, y2) => (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
                 const dist = (x1, y1, x2, y2) => Math.hypot(x2 - x1, y2 - y1);
                 const angleDiff = (a, b) => Math.atan2(Math.sin(a - b), Math.cos(a - b));
-                const randInCircle = (cx, cy, r, m = 200) => { const a = rand(0, Math.PI * 2), d = Math.sqrt(Math.random()) * Math.max(40, r - m); return { x: cx + Math.cos(a) * d, y: cy + Math.sin(a) * d }; };
+                const randInCircle = (cx, cy, r, m = 250) => { const a = rand(0, Math.PI * 2), d = Math.sqrt(Math.random()) * Math.max(40, r - m); return { x: cx + Math.cos(a) * d, y: cy + Math.sin(a) * d }; };
                 const vibrate = ms => { try { if (profile.settings.vib && navigator.vibrate) navigator.vibrate(ms); } catch (e) {} };
 
                 const Sound = {
@@ -1405,7 +1412,7 @@ jobs:
                 let emojiIdx = 0, killStreak = 0, streakTimer = 0;
 
                 const camera = { x: WORLD_CENTER, y: WORLD_CENTER, zoom: profile.settings.zoom, lookX: 0, lookY: 0, shake: 0 };
-                const safeZone = { active: true, cx: WORLD_CENTER, cy: WORLD_CENTER, r: ARENA_RADIUS, targetR: ARENA_RADIUS, stage: 1, timer: 85, shrinking: false };
+                const safeZone = { active: true, cx: WORLD_CENTER, cy: WORLD_CENTER, r: ARENA_RADIUS, targetR: ARENA_RADIUS, stage: 1, timer: 120, shrinking: false };
                 const matchStats = { kills: 0, prey: 0, xp: 0, maxLen: 0, rank: 1, reason: '' };
                 let globalTime = 0, dayCycle = 0, weatherRain = false, weatherTimer = 35, dropTimer = 20;
                 let lastFrame = 0, hudTick = 0, fpsCount = 0, fpsVal = 60, fpsTimer = 0;
@@ -1480,6 +1487,7 @@ jobs:
                   return false;
                 }
 
+                // 50KM OPEN-WORLD GENERATOR (LONG FLOWING RIVERS + 12 REGIONS + ZERO-LAG PROP DENSITY!)
                 function generateWorld(biomeId) {
                   const biome = BIOMES.find(b => b.id === biomeId) || BIOMES[0];
                   const tile = document.createElement('canvas');
@@ -1523,41 +1531,42 @@ jobs:
                     let rx = sx, ry = sy, a = ang;
                     const pts = [];
                     for (let s = 0; s < steps; s++) {
-                      if (dist(rx, ry, WORLD_CENTER, WORLD_CENTER) < ARENA_RADIUS - 380) {
+                      if (dist(rx, ry, WORLD_CENTER, WORLD_CENTER) < ARENA_RADIUS - 500) {
                         pts.push({ x: rx, y: ry });
-                        waterZones.push({ x: rx, y: ry, r: width * 0.52 });
-                        if (biome.id !== 'volcano' && biome.id !== 'tundra' && Math.random() < 0.7) {
+                        waterZones.push({ x: rx, y: ry, r: width * 0.54 });
+                        if (biome.id !== 'volcano' && biome.id !== 'tundra' && Math.random() < 0.65) {
                           for (let l = 0; l < 2; l++) {
-                            const la = rand(0, 6.28), ld = rand(15, width * 0.32);
+                            const la = rand(0, 6.28), ld = rand(18, width * 0.34);
                             lilyPads.push({ x: rx + Math.cos(la) * ld, y: ry + Math.sin(la) * ld, r: rand(14, 24), rot: rand(0, 6.28), lotus: Math.random() < 0.45 });
                           }
                         }
                       }
-                      a += rand(-0.32, 0.32); rx += Math.cos(a) * 260; ry += Math.sin(a) * 260;
+                      a += rand(-0.28, 0.28); rx += Math.cos(a) * 520; ry += Math.sin(a) * 520;
                     }
                     if (pts.length > 2) rivers.push({ pts, width });
                   };
-                  addRiver(2400, 6600, 0.42, 24, 340);
-                  addRiver(9200, 12800, -1.25, 20, 300);
-                  addRiver(13400, 13200, -2.3, 18, 290);
+                  // 5 Massive Flowing Rivers across the 50KM World
+                  addRiver(7000,  16000, 0.35,  34, 420);
+                  addRiver(18000, 36000, -1.15, 30, 380);
+                  addRiver(38000, 36000, -2.35, 30, 360);
+                  addRiver(14000, 8000,  0.9,   26, 350);
+                  addRiver(40000, 14000, 2.5,   26, 360);
 
-                  for (let i = 0; i < 52; i++) {
-                    const pt = i < 16 ? randInCircle(13000, 5200, 2200, 160) : randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 420);
-                    const rad = rand(140, 240);
+                  for (let i = 0; i < 110; i++) {
+                    const pt = randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 600);
+                    const rad = rand(160, 290);
                     if (!waterZones.some(w => distSq(pt.x, pt.y, w.x, w.y) < (w.r + rad) ** 2)) mudZones.push({ x: pt.x, y: pt.y, r: rad });
                   }
-                  for (let i = 0; i < 360; i++) {
-                    const pt = randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 280);
-                    if (waterZones.some(w => distSq(pt.x, pt.y, w.x, w.y) < (w.r + 70) ** 2)) continue;
-                    const nearRuins = dist(pt.x, pt.y, 5000, 5000) < 2500;
+                  for (let i = 0; i < 820; i++) {
+                    const pt = randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 400);
+                    const nearRuins = dist(pt.x, pt.y, 35000, 15000) < 5000;
                     const r = Math.random();
                     const kind = (nearRuins && r < 0.55) ? 'ruin' : (r < 0.28 ? 'log' : r < 0.56 ? 'rock' : r < 0.68 ? 'ruin' : 'fern');
-                    worldProps.push({ x: pt.x, y: pt.y, kind, sz: rand(28, 56), rot: rand(0, 6.28) });
+                    worldProps.push({ x: pt.x, y: pt.y, kind, sz: rand(30, 62), rot: rand(0, 6.28) });
                   }
-                  for (let i = 0; i < 130; i++) {
-                    const pt = randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 360);
-                    if (waterZones.some(w => distSq(pt.x, pt.y, w.x, w.y) < (w.r + 100) ** 2)) continue;
-                    trees.push({ x: pt.x, y: pt.y, r: rand(95, 148), ph: rand(0, 6.28) });
+                  for (let i = 0; i < 320; i++) {
+                    const pt = randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 500);
+                    trees.push({ x: pt.x, y: pt.y, r: rand(105, 165), ph: rand(0, 6.28) });
                   }
                 }
 
@@ -1788,7 +1797,6 @@ jobs:
                   tc.restore();
                 }
 
-                // BALANCED GIANT GROWTH SERPENT (GROWS VISIBLY THICKER + LONGER LIKE AN APEX ANACONDA!)
                 class Snake {
                   constructor({ name, species, x, y, isPlayer = false, mass = 16 }) {
                     this.name = name; this.species = species; this.isPlayer = isPlayer; this.alive = true;
@@ -1805,7 +1813,6 @@ jobs:
                     for (let i = 0; i < cnt; i++) this.segments.push({ x: x - Math.cos(this.angle) * i * 4.8, y: y - Math.sin(this.angle) * i * 4.8 });
                   }
 
-                  // 1.6x MORE VISIBLE THICKNESS + BALANCED ENDLESS LENGTH!
                   getRadius() { return clamp(10.0 + Math.pow(this.mass, 0.44) * 1.92, 10.0, 56); }
                   getSegCount() { return Math.min(250, Math.floor(16 + this.mass * 0.66)); }
                   getLen() { return Math.floor(10 + this.mass * 0.72); }
@@ -1826,27 +1833,27 @@ jobs:
                     this.aiTimer -= dt;
                     if (this.aiBoost > 0) this.aiBoost -= dt;
                     const dZone = dist(this.x, this.y, safeZone.cx, safeZone.cy);
-                    if (safeZone.active && dZone > safeZone.r - 240) { this.targetAngle = Math.atan2(safeZone.cy - this.y, safeZone.cx - this.x); this.boosting = dZone > safeZone.r; return; }
-                    if (dist(this.x, this.y, WORLD_CENTER, WORLD_CENTER) > ARENA_RADIUS - 360) { this.targetAngle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x); this.boosting = false; return; }
-                    const rivals = queryGrid(snakeGrid, this.x, this.y, 260);
+                    if (safeZone.active && dZone > safeZone.r - 360) { this.targetAngle = Math.atan2(safeZone.cy - this.y, safeZone.cx - this.x); this.boosting = dZone > safeZone.r; return; }
+                    if (dist(this.x, this.y, WORLD_CENTER, WORLD_CENTER) > ARENA_RADIUS - 480) { this.targetAngle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x); this.boosting = false; return; }
+                    const rivals = queryGrid(snakeGrid, this.x, this.y, 280);
                     let avX = 0, avY = 0, danger = false;
                     for (const o of rivals) {
                       if (o === this || !o.alive) continue;
                       const step = Math.max(1, Math.floor(o.segments.length / 12));
                       for (let k = 0; k < o.segments.length; k += step) {
                         const sg = o.segments[k], d2 = distSq(this.x, this.y, sg.x, sg.y);
-                        if (d2 < 140 * 140) { const d = Math.sqrt(d2) || 1; avX += (this.x - sg.x) / d; avY += (this.y - sg.y) / d; danger = true; }
+                        if (d2 < 145 * 145) { const d = Math.sqrt(d2) || 1; avX += (this.x - sg.x) / d; avY += (this.y - sg.y) / d; danger = true; }
                       }
                     }
                     if (danger) { this.targetAngle = Math.atan2(avY, avX); this.boosting = this.stamina > 40; return; }
                     if (this.aiTimer <= 0) {
-                      this.aiTimer = near ? rand(0.3, 0.6) : rand(0.7, 1.3);
+                      this.aiTimer = near ? rand(0.3, 0.6) : rand(0.8, 1.5);
                       this.aiWander += rand(-1.0, 1.0);
                       this.targetAngle = this.aiWander;
-                      let bestX = null, bestY = null, bestD = 380 * 380;
+                      let bestX = null, bestY = null, bestD = 420 * 420;
                       for (const m of meatList) { const d2 = distSq(this.x, this.y, m.x, m.y); if (d2 < bestD) { bestD = d2; bestX = m.x; bestY = m.y; } }
                       if (bestX === null) {
-                        const pIdxs = queryGrid(preyGrid, this.x, this.y, 340);
+                        const pIdxs = queryGrid(preyGrid, this.x, this.y, 380);
                         for (const idx of pIdxs) { const p = preyList[idx]; if (!p) continue; const d2 = distSq(this.x, this.y, p.x, p.y); if (d2 < bestD) { bestD = d2; bestX = p.x; bestY = p.y; } }
                       }
                       if (bestX !== null) { this.targetAngle = Math.atan2(bestY - this.y, bestX - this.x); if (bestD < 160 * 160 && this.stamina > 55 && Math.random() < 0.25) this.aiBoost = 0.45; }
@@ -1859,7 +1866,7 @@ jobs:
                     if (this.spawnShield > 0) this.spawnShield = Math.max(0, this.spawnShield - dt);
                     if (this.jawOpen > 0) this.jawOpen = Math.max(0, this.jawOpen - dt * 3.2);
 
-                    const near = this.isPlayer || isNearCam(this.x, this.y, 800);
+                    const near = this.isPlayer || isNearCam(this.x, this.y, 850);
                     if (!this.isPlayer) this.updateAI(dt, near);
 
                     this.terrain = getTerrainAt(this.x, this.y);
@@ -1872,8 +1879,8 @@ jobs:
                     else this.stamina = Math.min(100, this.stamina + dt * (19 + stBonus * 2.5));
 
                     const spdBonus = this.isPlayer ? profile.upgrades.speed * 7 : 0;
-                    let spd = 178 + this.species.speed * 0.3 + spdBonus;
-                    if (canBoost) spd *= turboOn ? 1.72 : 1.6;
+                    let spd = 185 + this.species.speed * 0.3 + spdBonus;
+                    if (canBoost) spd *= turboOn ? 1.75 : 1.62;
                     if (this.terrain === 'water') spd *= (this.species.id === 'shark' || this.species.id === 'croco' || this.species.id === 'waterdrag' ? 1.35 : 1.18);
                     else if (this.terrain === 'mud') spd *= 0.72;
 
@@ -1888,7 +1895,7 @@ jobs:
                     this.y += Math.sin(sAng) * spd * dt;
 
                     const r = this.getRadius();
-                    if (dist(this.x, this.y, WORLD_CENTER, WORLD_CENTER) + r > ARENA_RADIUS) { killSnake(this, null, 'Jungle Cliff'); return; }
+                    if (dist(this.x, this.y, WORLD_CENTER, WORLD_CENTER) + r > ARENA_RADIUS) { killSnake(this, null, 'World Edge'); return; }
                     if (safeZone.active && dist(this.x, this.y, safeZone.cx, safeZone.cy) > safeZone.r) {
                       this.mass -= (2.5 + (safeZone.stage - 1) * 1.2) * dt;
                       if (this.mass < 9) { killSnake(this, null, 'Storm Zone'); return; }
@@ -2067,7 +2074,6 @@ jobs:
                     if (this.isPlayer && showLabel) { c.fillStyle = 'rgba(255, 148, 36, 0.9)'; c.beginPath(); c.moveTo(hr * 2.55, 0); c.lineTo(hr * 2.0, -hr * 0.42); c.lineTo(hr * 2.15, 0); c.lineTo(hr * 2.0, hr * 0.42); c.closePath(); c.fill(); }
                     c.restore();
 
-                    // LIVE #1 APEX KING CROWN!
                     if (showLabel && this === leaderSnake) {
                       const bob = Math.sin(globalTime * 5) * 3;
                       c.save();
@@ -2119,8 +2125,8 @@ jobs:
                   }
                   if (!victim.isPlayer && profile.selectedMode === 'infinity') {
                     const sp = SPECIES[Math.floor(Math.random() * SPECIES.length)];
-                    const pt = randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 340);
-                    snakes.push(new Snake({ name: victim.name, species: sp, x: pt.x, y: pt.y, mass: rand(14, 24) }));
+                    const pt = randInCircle(player ? player.x : WORLD_CENTER, player ? player.y : WORLD_CENTER, 4500, 600);
+                    snakes.push(new Snake({ name: victim.name, species: sp, x: clamp(pt.x, 2000, WORLD_SIZE - 2000), y: clamp(pt.y, 2000, WORLD_SIZE - 2000), mass: rand(14, 26) }));
                     return;
                   }
                   const aliveCount = snakes.filter(s => s.alive).length;
@@ -2130,28 +2136,39 @@ jobs:
                     endMatch(false);
                   } else if (player && player.alive && aliveCount === 1) {
                     matchStats.rank = 1;
-                    matchStats.reason = 'Last Beast Standing — 50-Player Champion!';
+                    matchStats.reason = 'Last Beast Standing — 80-Player 50KM Champion!';
                     endMatch(true);
                   }
                 }
 
-                function spawnPrey(count = 1) {
+                // SMART DYNAMIC SPAWNING SO THE 50KM WORLD ALWAYS FEELS ALIVE AROUND YOU!
+                function spawnPrey(count = 1, nearPlayer = false) {
                   for (let i = 0; i < count; i++) {
                     const t = PREY_TYPES[Math.floor(Math.random() * PREY_TYPES.length)];
-                    const pt = randInCircle(safeZone.cx, safeZone.cy, Math.min(safeZone.r, ARENA_RADIUS), 200);
+                    let pt;
+                    if (nearPlayer && player && player.alive) {
+                      pt = randInCircle(player.x, player.y, 3800, 350);
+                      if (dist(pt.x, pt.y, WORLD_CENTER, WORLD_CENTER) > ARENA_RADIUS - 300) pt = randInCircle(safeZone.cx, safeZone.cy, Math.min(safeZone.r, ARENA_RADIUS), 300);
+                    } else {
+                      pt = randInCircle(safeZone.cx, safeZone.cy, Math.min(safeZone.r, ARENA_RADIUS), 300);
+                    }
                     preyList.push({ ...t, x: pt.x, y: pt.y, angle: rand(0, Math.PI * 2), timer: rand(0.5, 2.5) });
                   }
                 }
-                function spawnPotions(count = 1) {
+                function spawnPotions(count = 1, nearPlayer = false) {
                   for (let i = 0; i < count; i++) {
                     const t = POTION_TYPES[Math.floor(Math.random() * POTION_TYPES.length)];
-                    const pt = randInCircle(safeZone.cx, safeZone.cy, Math.min(safeZone.r, ARENA_RADIUS), 280);
-                    potions.push({ ...t, x: pt.x, y: pt.y, r: 18, life: 45 });
+                    const pt = (nearPlayer && player && player.alive)
+                      ? randInCircle(player.x, player.y, 4500, 400)
+                      : randInCircle(safeZone.cx, safeZone.cy, Math.min(safeZone.r, ARENA_RADIUS), 400);
+                    potions.push({ ...t, x: clamp(pt.x, 1500, WORLD_SIZE - 1500), y: clamp(pt.y, 1500, WORLD_SIZE - 1500), r: 18, life: 55 });
                   }
                 }
                 function spawnGoldenDrop() {
-                  const pt = randInCircle(safeZone.cx, safeZone.cy, Math.min(safeZone.r * 0.8, ARENA_RADIUS - 400), 220);
-                  feastDrops.push({ x: pt.x, y: pt.y, r: 24, life: 50 });
+                  const pt = player && player.alive
+                    ? randInCircle(player.x, player.y, 5000, 600)
+                    : randInCircle(safeZone.cx, safeZone.cy, Math.min(safeZone.r * 0.8, ARENA_RADIUS - 600), 400);
+                  feastDrops.push({ x: clamp(pt.x, 2000, WORLD_SIZE - 2000), y: clamp(pt.y, 2000, WORLD_SIZE - 2000), r: 24, life: 60 });
                   Sound.drop();
                   const al = document.getElementById('dropAlert');
                   al.style.display = 'block';
@@ -2179,27 +2196,32 @@ jobs:
                   snakes = []; preyList = []; meatList = []; potions = []; feastDrops = []; particles = []; floatTexts = [];
                   safeZone.active = profile.selectedMode === 'br';
                   safeZone.cx = WORLD_CENTER; safeZone.cy = WORLD_CENTER;
-                  safeZone.r = ARENA_RADIUS; safeZone.targetR = ARENA_RADIUS * 0.78;
-                  safeZone.stage = 1; safeZone.timer = 85; safeZone.shrinking = false;
+                  safeZone.r = ARENA_RADIUS; safeZone.targetR = ARENA_RADIUS * 0.72;
+                  safeZone.stage = 1; safeZone.timer = 120; safeZone.shrinking = false;
                   dayCycle = 0; weatherRain = false; weatherTimer = 36; dropTimer = profile.selectedMode === 'treasure' ? 6 : 20;
 
                   matchStats.kills = 0; matchStats.prey = 0; matchStats.xp = 0; matchStats.maxLen = 21; matchStats.rank = TOTAL_SNAKES; matchStats.reason = '';
 
                   const pSpec = SPECIES.find(s => s.id === profile.selectedSnake) || SPECIES[0];
-                  const pSpawn = randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS * 0.55, 350);
+                  const pSpawn = randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS * 0.45, 500);
                   player = new Snake({ name: profile.name, species: pSpec, x: pSpawn.x, y: pSpawn.y, isPlayer: true, mass: 16 });
                   snakes.push(player);
 
+                  // Spawn 80 Beasts: 20 nearby for instant action + 59 across the 50KM world
                   for (let i = 1; i < TOTAL_SNAKES; i++) {
                     const sp = SPECIES[Math.floor(Math.random() * SPECIES.length)];
-                    let pt = randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 360);
-                    if (dist(pt.x, pt.y, player.x, player.y) < 650) pt = randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 360);
+                    let pt = i <= 20
+                      ? randInCircle(player.x, player.y, 4800, 750)
+                      : randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 600);
+                    if (dist(pt.x, pt.y, player.x, player.y) < 700) pt = randInCircle(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 600);
                     const nm = AI_PREFIX[i % AI_PREFIX.length] + AI_SUFFIX[Math.floor(i / 3) % AI_SUFFIX.length];
-                    snakes.push(new Snake({ name: nm, species: sp, x: pt.x, y: pt.y, mass: rand(14, 26) }));
+                    snakes.push(new Snake({ name: nm, species: sp, x: pt.x, y: pt.y, mass: rand(14, 30) }));
                   }
 
-                  spawnPrey(480);
-                  spawnPotions(34);
+                  spawnPrey(260, true);
+                  spawnPrey(480, false);
+                  spawnPotions(24, true);
+                  spawnPotions(30, false);
                   if (profile.selectedMode === 'treasure') { spawnGoldenDrop(); spawnGoldenDrop(); }
                   camera.x = player.x; camera.y = player.y; camera.lookX = 0; camera.lookY = 0;
                   camera.zoom = profile.settings.zoom;
@@ -2211,8 +2233,8 @@ jobs:
                   screenState = 'results';
                   document.getElementById('hud').style.display = 'none';
                   document.getElementById('tacMapOverlay').classList.remove('open');
-                  const gold = (isWin ? 120 : Math.max(15, Math.floor((TOTAL_SNAKES - matchStats.rank) * 2))) + matchStats.kills * 25 + (mission.done ? 60 : 0);
-                  const dias = (isWin ? 5 : (matchStats.rank <= 5 ? 2 : 0)) + matchStats.kills * 1;
+                  const gold = (isWin ? 150 : Math.max(15, Math.floor((TOTAL_SNAKES - matchStats.rank) * 1.5))) + matchStats.kills * 25 + (mission.done ? 60 : 0);
+                  const dias = (isWin ? 6 : (matchStats.rank <= 5 ? 2 : 0)) + matchStats.kills * 1;
                   const totalXp = matchStats.xp;
 
                   profile.coins += gold; profile.diamonds += dias; profile.xp += totalXp;
@@ -2254,7 +2276,7 @@ jobs:
                   weatherTimer -= dt;
                   if (weatherTimer <= 0) { weatherRain = !weatherRain; weatherTimer = rand(28, 48); }
                   dropTimer -= dt;
-                  const maxDrops = profile.selectedMode === 'treasure' ? 5 : 2;
+                  const maxDrops = profile.selectedMode === 'treasure' ? 6 : 3;
                   if (dropTimer <= 0 && feastDrops.length < maxDrops) { spawnGoldenDrop(); dropTimer = profile.selectedMode === 'treasure' ? 14 : 36; }
                   if (streakTimer > 0) streakTimer = Math.max(0, streakTimer - dt);
                   if (activePotion.timer > 0) { activePotion.timer = Math.max(0, activePotion.timer - dt); if (activePotion.timer <= 0) activePotion.id = null; }
@@ -2270,10 +2292,10 @@ jobs:
 
                   if (safeZone.active) {
                     safeZone.timer -= dt;
-                    if (!safeZone.shrinking && safeZone.timer <= 0) { safeZone.shrinking = true; safeZone.timer = 65; safeZone.targetR = Math.max(700, safeZone.r * 0.72); }
+                    if (!safeZone.shrinking && safeZone.timer <= 0) { safeZone.shrinking = true; safeZone.timer = 80; safeZone.targetR = Math.max(900, safeZone.r * 0.68); }
                     else if (safeZone.shrinking) {
-                      safeZone.r = Math.max(safeZone.targetR, safeZone.r - (ARENA_RADIUS * 0.0042) * dt);
-                      if (safeZone.timer <= 0 || safeZone.r <= safeZone.targetR) { safeZone.shrinking = false; safeZone.stage = Math.min(6, safeZone.stage + 1); safeZone.timer = 75; }
+                      safeZone.r = Math.max(safeZone.targetR, safeZone.r - (ARENA_RADIUS * 0.004) * dt);
+                      if (safeZone.timer <= 0 || safeZone.r <= safeZone.targetR) { safeZone.shrinking = false; safeZone.stage = Math.min(7, safeZone.stage + 1); safeZone.timer = 90; }
                     }
                   }
 
@@ -2308,7 +2330,7 @@ jobs:
                       potions.splice(i, 1);
                     }
                   }
-                  if (potions.length < 24) spawnPotions(2);
+                  if (potions.length < 40) spawnPotions(2, true);
 
                   for (let i = feastDrops.length - 1; i >= 0; i--) {
                     const f = feastDrops[i]; f.life -= dt;
@@ -2331,11 +2353,11 @@ jobs:
 
                   for (let i = preyList.length - 1; i >= 0; i--) {
                     const p = preyList[i];
-                    if (p.speed > 0 && profile.selectedFood === 'prey') {
+                    if (p.speed > 0 && profile.selectedFood === 'prey' && isNearCam(p.x, p.y, 900)) {
                       p.timer -= dt;
                       if (p.timer <= 0) { p.angle += rand(-1.3, 1.3); p.timer = rand(0.8, 2.2); }
                       p.x += Math.cos(p.angle) * p.speed * dt; p.y += Math.sin(p.angle) * p.speed * dt;
-                      if (dist(p.x, p.y, WORLD_CENTER, WORLD_CENTER) > ARENA_RADIUS - 200) p.angle = Math.atan2(WORLD_CENTER - p.y, WORLD_CENTER - p.x);
+                      if (dist(p.x, p.y, WORLD_CENTER, WORLD_CENTER) > ARENA_RADIUS - 250) p.angle = Math.atan2(WORLD_CENTER - p.y, WORLD_CENTER - p.x);
                     }
                     if (magR > 50 && player && player.alive && distSq(player.x, player.y, p.x, p.y) < magR * magR) { p.x = lerp(p.x, player.x, dt * 6.5); p.y = lerp(p.y, player.y, dt * 6.5); }
                     const nearS = queryGrid(snakeGrid, p.x, p.y, 65);
@@ -2352,7 +2374,7 @@ jobs:
                       }
                     }
                   }
-                  if (preyList.length < 440) spawnPrey(10);
+                  if (preyList.length < 680) spawnPrey(12, true);
 
                   for (let i = meatList.length - 1; i >= 0; i--) {
                     const m = meatList[i]; m.life -= dt;
@@ -2447,7 +2469,7 @@ jobs:
                   for (const r of REGIONS) { const rx = cx + (r.x - WORLD_CENTER) * sc, ry = cy + (r.y - WORLD_CENTER) * sc; rc.fillStyle = r.col; rc.beginPath(); rc.arc(rx, ry, r.r * sc, 0, Math.PI * 2); rc.fill(); }
                   rc.strokeStyle = biome.water; rc.globalAlpha = 0.65; rc.lineCap = 'round'; rc.lineJoin = 'round';
                   for (const rv of rivers) {
-                    rc.lineWidth = Math.max(2, rv.width * sc);
+                    rc.lineWidth = Math.max(1.8, rv.width * sc);
                     rc.beginPath();
                     rv.pts.forEach((pt, idx) => { const px = cx + (pt.x - WORLD_CENTER) * sc, py = cy + (pt.y - WORLD_CENTER) * sc; idx === 0 ? rc.moveTo(px, py) : rc.lineTo(px, py); });
                     rc.stroke();
@@ -2455,11 +2477,11 @@ jobs:
                   rc.globalAlpha = 1;
                   rc.strokeStyle = 'rgba(255,75,58,0.5)'; rc.lineWidth = showLabels ? 2.5 : 1.5; rc.beginPath(); rc.arc(cx, cy, ARENA_RADIUS * sc, 0, Math.PI * 2); rc.stroke();
                   if (safeZone.active) { rc.strokeStyle = '#4de2f0'; rc.lineWidth = showLabels ? 3 : 2; rc.beginPath(); rc.arc(cx + (safeZone.cx - WORLD_CENTER) * sc, cy + (safeZone.cy - WORLD_CENTER) * sc, safeZone.r * sc, 0, Math.PI * 2); rc.stroke(); }
-                  if (showLabels) { rc.font = 'bold 10px sans-serif'; rc.textAlign = 'center'; rc.fillStyle = 'rgba(255,235,160,0.88)'; for (const r of REGIONS) rc.fillText(r.name.toUpperCase(), cx + (r.x - WORLD_CENTER) * sc, cy + (r.y - WORLD_CENTER) * sc); }
+                  if (showLabels) { rc.font = 'bold 8.5px sans-serif'; rc.textAlign = 'center'; rc.fillStyle = 'rgba(255,235,160,0.88)'; for (const r of REGIONS) rc.fillText(r.name.toUpperCase(), cx + (r.x - WORLD_CENTER) * sc, cy + (r.y - WORLD_CENTER) * sc); }
                   rc.fillStyle = '#ffe44d';
                   for (const f of feastDrops) { rc.beginPath(); rc.arc(cx + (f.x - WORLD_CENTER) * sc, cy + (f.y - WORLD_CENTER) * sc, showLabels ? 5 : 3.5, 0, Math.PI * 2); rc.fill(); }
                   rc.fillStyle = 'rgba(255,90,78,0.85)';
-                  for (const s of snakes) { if (!s.alive || s.isPlayer) continue; rc.beginPath(); rc.arc(cx + (s.x - WORLD_CENTER) * sc, cy + (s.y - WORLD_CENTER) * sc, showLabels ? 3 : 1.7, 0, Math.PI * 2); rc.fill(); }
+                  for (const s of snakes) { if (!s.alive || s.isPlayer) continue; rc.beginPath(); rc.arc(cx + (s.x - WORLD_CENTER) * sc, cy + (s.y - WORLD_CENTER) * sc, showLabels ? 2.6 : 1.5, 0, Math.PI * 2); rc.fill(); }
                   if (player && player.alive) { const px = cx + (player.x - WORLD_CENTER) * sc, py = cy + (player.y - WORLD_CENTER) * sc; rc.fillStyle = '#7ce846'; rc.beginPath(); rc.arc(px, py, showLabels ? 6 : 4, 0, Math.PI * 2); rc.fill(); rc.strokeStyle = '#fff'; rc.lineWidth = 1.5; rc.stroke(); }
                 }
 
@@ -2478,10 +2500,10 @@ jobs:
                     ctx.lineTo(last.x, last.y);
                   };
                   for (const rv of rivers) {
-                    traceRiver(rv); ctx.strokeStyle = biome.shore; ctx.lineWidth = rv.width + 38; ctx.stroke();
+                    traceRiver(rv); ctx.strokeStyle = biome.shore; ctx.lineWidth = rv.width + 42; ctx.stroke();
                     traceRiver(rv); ctx.strokeStyle = biome.water; ctx.lineWidth = rv.width; ctx.stroke();
                     traceRiver(rv); ctx.strokeStyle = biome.waterDeep; ctx.lineWidth = rv.width * 0.58; ctx.stroke();
-                    ctx.save(); ctx.setLineDash([45, 75]); ctx.lineDashOffset = -globalTime * 48;
+                    ctx.save(); ctx.setLineDash([50, 80]); ctx.lineDashOffset = -globalTime * 48;
                     traceRiver(rv); ctx.strokeStyle = biome.id === 'volcano' ? 'rgba(255,245,140,0.42)' : 'rgba(200,248,255,0.18)'; ctx.lineWidth = 10; ctx.stroke();
                     ctx.restore();
                   }
@@ -2593,8 +2615,8 @@ jobs:
                     ctx.restore();
                   }
 
-                  ctx.strokeStyle = 'rgba(255,75,58,0.6)'; ctx.lineWidth = 18; ctx.beginPath(); ctx.arc(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 0, Math.PI * 2); ctx.stroke();
-                  if (safeZone.active) { ctx.strokeStyle = 'rgba(77,226,240,0.88)'; ctx.lineWidth = 10; ctx.beginPath(); ctx.arc(safeZone.cx, safeZone.cy, safeZone.r, 0, Math.PI * 2); ctx.stroke(); }
+                  ctx.strokeStyle = 'rgba(255,75,58,0.6)'; ctx.lineWidth = 22; ctx.beginPath(); ctx.arc(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 0, Math.PI * 2); ctx.stroke();
+                  if (safeZone.active) { ctx.strokeStyle = 'rgba(77,226,240,0.88)'; ctx.lineWidth = 12; ctx.beginPath(); ctx.arc(safeZone.cx, safeZone.cy, safeZone.r, 0, Math.PI * 2); ctx.stroke(); }
 
                   for (const tr of trees) { if (!isNearCam(tr.x, tr.y, tr.r + 40)) continue; ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.beginPath(); ctx.arc(tr.x + 12, tr.y + 16, tr.r * 0.9, 0, Math.PI * 2); ctx.fill(); }
 
@@ -2626,7 +2648,6 @@ jobs:
                     ctx.fillStyle = '#4de2f0'; ctx.beginPath(); ctx.moveTo(12, 0); ctx.lineTo(-6, -8); ctx.lineTo(-3, 0); ctx.lineTo(-6, 8); ctx.closePath(); ctx.fill(); ctx.restore();
                   }
 
-                  // BIOME-THEMED TREE CANOPIES (Emerald, Snowy Pine, Pink Sakura, Volcanic, Palm!)
                   for (const tr of trees) {
                     if (!isNearCam(tr.x, tr.y, tr.r + 40)) continue;
                     const pUnder = player && player.alive && distSq(player.x, player.y, tr.x, tr.y) < (tr.r * 1.15) ** 2;
@@ -2640,7 +2661,6 @@ jobs:
                   for (const ft of floatTexts) { ctx.globalAlpha = clamp(ft.life / ft.maxLife, 0, 1); ctx.fillStyle = ft.color; ctx.fillText(ft.text, ft.x, ft.y); }
                   ctx.restore();
 
-                  // BIOME-SPECIFIC LIVING WEATHER (Snow, Fire Embers, Sakura Petals, Sand, Butterflies!)
                   if (profile.settings.gfx !== 'low') {
                     ctx.fillStyle = 'rgba(0, 12, 4, 0.07)';
                     for (const cl of clouds) {
@@ -3010,9 +3030,9 @@ jobs:
                   Sound.init(); Sound.click();
                   const mm = document.getElementById('matchmakingOverlay'), mt = document.getElementById('mmText');
                   mm.classList.add('open');
-                  let cnt = 8;
+                  let cnt = 12;
                   const iv = setInterval(() => {
-                    cnt = Math.min(TOTAL_SNAKES, cnt + Math.floor(rand(8, 15)));
+                    cnt = Math.min(TOTAL_SNAKES, cnt + Math.floor(rand(12, 22)));
                     mt.textContent = `${cnt} / ${TOTAL_SNAKES} BEASTS READY`;
                     if (cnt >= TOTAL_SNAKES) { clearInterval(iv); setTimeout(() => { mm.classList.remove('open'); startMatch(); }, 200); }
                   }, 110);
