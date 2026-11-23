@@ -1,4 +1,4 @@
-name: Build Serpent-Wild v24 Ultimate Worms-Zone APK
+name: Build Serpent-Wild v25 Exact-50-Snakes Funky-BGM APK
 
 on:
   push:
@@ -29,69 +29,128 @@ jobs:
             yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null 2>&1 || true
           fi
 
-      - name: Generate Crystal-Clear Native BGM WAV
+      - name: Generate Upbeat Funky Arcade BGM WAV
         run: |
           mkdir -p app/src/main/res/raw
           python3 - << 'PYEOF'
-          import math, wave, struct
+          import math, wave, struct, random
           sr = 44100
-          bpm = 112
-          step = 60.0 / bpm / 2.0
-          melody = [
-              329.63, 0, 392.00, 440.00, 523.25, 0, 440.00, 392.00,
-              329.63, 0, 293.66, 329.63, 392.00, 0, 329.63, 0,
-              349.23, 0, 440.00, 523.25, 587.33, 0, 523.25, 440.00,
-              392.00, 0, 349.23, 329.63, 293.66, 0, 0, 0
+          bpm = 126
+          step = 60.0 / bpm / 4.0  # 16th note groove
+          # 64-step upbeat playful Worms-Zone style funky arcade loop
+          lead = [
+              523.25, 0, 659.25, 0, 783.99, 0, 659.25, 587.33,
+              523.25, 0, 440.00, 523.25, 587.33, 0, 0, 0,
+              659.25, 0, 783.99, 0, 880.00, 0, 783.99, 659.25,
+              587.33, 0, 523.25, 587.33, 659.25, 0, 0, 0,
+              698.46, 0, 880.00, 0, 783.99, 0, 659.25, 0,
+              587.33, 0, 659.25, 587.33, 523.25, 0, 440.00, 0,
+              523.25, 587.33, 659.25, 0, 783.99, 0, 1046.50, 0,
+              880.00, 0, 783.99, 0, 523.25, 0, 0, 0
+          ]
+          bass = [
+              130.81, 0, 130.81, 196.00, 0, 130.81, 164.81, 196.00,
+              146.83, 0, 146.83, 220.00, 0, 146.83, 174.61, 220.00,
+              164.81, 0, 164.81, 246.94, 0, 164.81, 196.00, 246.94,
+              174.61, 0, 174.61, 261.63, 196.00, 0, 246.94, 196.00,
+              174.61, 0, 174.61, 261.63, 0, 174.61, 220.00, 261.63,
+              146.83, 0, 146.83, 220.00, 0, 146.83, 196.00, 174.61,
+              130.81, 0, 164.81, 0, 196.00, 0, 261.63, 0,
+              196.00, 0, 246.94, 0, 130.81, 0, 196.00, 0
           ]
           chords = [
-              (130.81, 196.00, 261.63),
-              (146.83, 220.00, 293.66),
-              (174.61, 220.00, 261.63),
-              (196.00, 246.94, 293.66)
+              (261.63, 329.63, 392.00),
+              (293.66, 349.23, 440.00),
+              (329.63, 392.00, 493.88),
+              (349.23, 440.00, 523.25)
           ]
-          total_sec = step * len(melody)
+          n_steps = len(lead)
+          total_sec = step * n_steps
           n_samples = int(sr * total_sec)
           buf = [0.0] * n_samples
-          pad_ph = [0.0, 0.0, 0.0]
-          for i in range(n_samples):
-              t = i / sr
-              c_idx = min(3, int(t / (total_sec / 4.0)))
-              cf = chords[c_idx]
-              c_local = (t % (total_sec / 4.0)) / (total_sec / 4.0)
-              c_env = math.sin(math.pi * c_local) ** 0.5
-              s = 0.0
-              for k in range(3):
-                  pad_ph[k] += 2.0 * math.pi * cf[k] / sr
-                  s += math.sin(pad_ph[k]) * (0.065 if k == 0 else 0.04)
-              buf[i] += s * c_env
-          for idx, freq in enumerate(melody):
-              if freq <= 0:
-                  continue
-              start = int(idx * step * sr)
-              dur_s = int(step * 1.45 * sr)
-              for j in range(dur_s):
-                  if start + j >= n_samples:
-                      break
-                  u = j / dur_s
-                  env = min(1.0, j / (sr * 0.015)) * ((1.0 - u) ** 2.2)
-                  val = math.sin(2.0 * math.pi * freq * j / sr) * 0.16 + math.sin(4.0 * math.pi * freq * j / sr) * 0.03
-                  buf[start + j] += val * env
-          fade = int(sr * 0.08)
+          rng = random.Random(2026)
+
+          # Bouncy funky bass + staccato chord stabs + brassy synth lead + crisp drums
+          for idx in range(n_steps):
+              st = int(idx * step * sr)
+              # 1. Punchy Kick on beats 0, 4, 8, 12 + syncopated funk kick
+              if idx % 4 == 0 or idx % 16 == 10:
+                  k_len = int(sr * 0.11)
+                  for j in range(k_len):
+                      if st + j >= n_samples: break
+                      t = j / sr
+                      f = 135.0 * math.exp(-t * 28.0) + 46.0
+                      buf[st + j] += math.sin(2.0 * math.pi * f * t) * math.exp(-t * 24.0) * 0.28
+              # 2. Crisp Snare on beats 4, 12
+              if idx % 8 == 4:
+                  s_len = int(sr * 0.09)
+                  for j in range(s_len):
+                      if st + j >= n_samples: break
+                      t = j / sr
+                      env = math.exp(-t * 32.0)
+                      noise = (rng.random() * 2.0 - 1.0) * 0.14
+                      body = math.sin(2.0 * math.pi * 195.0 * t) * 0.10
+                      buf[st + j] += (noise + body) * env
+              # 3. Off-beat Hi-Hat tick
+              if idx % 2 == 1:
+                  h_len = int(sr * 0.035)
+                  for j in range(h_len):
+                      if st + j >= n_samples: break
+                      t = j / sr
+                      buf[st + j] += (rng.random() * 2.0 - 1.0) * math.exp(-t * 85.0) * 0.055
+              # 4. Funky Slap/Synth Bass
+              bf = bass[idx]
+              if bf > 0:
+                  b_len = int(step * 1.4 * sr)
+                  for j in range(b_len):
+                      if st + j >= n_samples: break
+                      t = j / sr
+                      u = j / b_len
+                      env = min(1.0, j / (sr * 0.008)) * ((1.0 - u) ** 1.6)
+                      val = math.sin(2.0 * math.pi * bf * t) * 0.19 + math.sin(4.0 * math.pi * bf * t) * 0.07
+                      buf[st + j] += val * env
+              # 5. Upbeat Funky Chord Stabs on off-beats
+              if idx % 4 == 2:
+                  cf = chords[(idx // 8) % 4]
+                  c_len = int(step * 1.1 * sr)
+                  for j in range(c_len):
+                      if st + j >= n_samples: break
+                      t = j / sr
+                      u = j / c_len
+                      env = min(1.0, j / (sr * 0.006)) * ((1.0 - u) ** 2.0)
+                      s = sum(math.sin(2.0 * math.pi * f * t) for f in cf) * 0.042
+                      buf[st + j] += s * env
+              # 6. Cheerful Brassy/Marimba Lead Melody
+              lf = lead[idx]
+              if lf > 0:
+                  l_len = int(step * 1.65 * sr)
+                  for j in range(l_len):
+                      if st + j >= n_samples: break
+                      t = j / sr
+                      u = j / l_len
+                      env = min(1.0, j / (sr * 0.01)) * ((1.0 - u) ** 1.8)
+                      val = (math.sin(2.0 * math.pi * lf * t) * 0.14 +
+                             math.sin(4.0 * math.pi * lf * t) * 0.055 +
+                             math.sin(6.0 * math.pi * lf * t) * 0.025)
+                      buf[st + j] += val * env
+
+          fade = int(sr * 0.04)
           for i in range(fade):
               buf[i] *= (i / fade)
               buf[n_samples - 1 - i] *= (i / fade)
+
           with wave.open("app/src/main/res/raw/bgm.wav", "w") as wf:
               wf.setnchannels(1)
               wf.setsampwidth(2)
               wf.setframerate(sr)
               data = bytearray()
               for sample in buf:
-                  clamped = max(-0.85, min(0.85, sample))
+                  clamped = max(-0.88, min(0.88, sample))
                   data += struct.pack("<h", int(clamped * 32767))
               wf.writeframes(data)
           PYEOF
 
-      - name: Generate Serpent-Wild v24 Android Project
+      - name: Generate Serpent-Wild v25 Android Project
         run: |
           mkdir -p app/src/main/java/com/apexwild/serpent app/src/main/assets app/src/main/res/values
 
@@ -138,8 +197,8 @@ jobs:
                   applicationId = "com.apexwild.serpent.royale"
                   minSdk = 26
                   targetSdk = 35
-                  versionCode = 24
-                  versionName = "24.0.0"
+                  versionCode = 25
+                  versionName = "25.0.0"
               }
               signingConfigs {
                   create("release") {
@@ -268,7 +327,7 @@ jobs:
                       val iconRes = context.applicationInfo.icon.takeIf { it != 0 } ?: android.R.drawable.sym_def_app_icon
                       val notif = NotificationCompat.Builder(context, CHANNEL_ID)
                           .setSmallIcon(iconRes)
-                          .setContentTitle("🐍 Serpent Wild: Daily Gift Ready!")
+                          .setContentTitle("🐍 Serpent Wild: 50 Custom Snakes!")
                           .setContentText("Your Free Chest & Lucky Wheel Spin are ready! Become World #1!")
                           .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                           .setAutoCancel(true)
@@ -316,7 +375,7 @@ jobs:
               private lateinit var webView: WebView
               private var bgmPlayer: MediaPlayer? = null
               private var bgmEnabled = true
-              private var bgmVolume = 0.65f
+              private var bgmVolume = 0.72f
               private var notifEnabled = true
               private var userStarted = false
               private var lastBackPressMs = 0L
@@ -517,7 +576,7 @@ jobs:
           <head>
             <meta charset="UTF-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-            <title>SERPENT WILD: APEX — v24 Ultimate Edition</title>
+            <title>SERPENT WILD: APEX — v25 Exact 50 Snakes</title>
             <style>
               :root {
                 --bg-grass: #145e1c;
@@ -593,7 +652,6 @@ jobs:
                 box-shadow: 0 0 12px rgba(255, 218, 71, 0.85);
               }
 
-              /* CINEMATIC APP OPEN INTRO ANIMATION */
               #introScreen {
                 position: fixed; inset: 0; z-index: 160; display: flex; flex-direction: column;
                 align-items: center; justify-content: center; gap: 10px;
@@ -619,17 +677,13 @@ jobs:
               .intro-bar { position: relative; z-index: 2; width: 250px; height: 10px; border-radius: 999px; background: rgba(0,0,0,0.4); border: 2px solid #ffd23f; overflow: hidden; }
               #introFill { width: 0%; height: 100%; background: linear-gradient(90deg, #7cff3b, #ffd23f); transition: width 0.12s linear; }
 
-              /* EXACT 1ST VIDEO LOBBY LAYOUT */
               #lobbyScreen { position: fixed; inset: 0; z-index: 30; display: none; pointer-events: none; }
               #lobbyTopBar {
                 position: absolute; top: 8px; left: max(10px, env(safe-area-inset-left)); right: max(10px, env(safe-area-inset-right));
                 display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;
               }
               .top-left-grp, .top-right-grp { pointer-events: auto; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-              .prof-card {
-                display: flex; align-items: center; gap: 8px; padding: 5px 10px 5px 6px;
-                border-radius: 14px; cursor: pointer;
-              }
+              .prof-card { display: flex; align-items: center; gap: 8px; padding: 5px 10px 5px 6px; border-radius: 14px; cursor: pointer; }
               .lvl-badge {
                 width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(180deg, #42c6ff, #0c4894);
                 border: 2px solid #fff; display: flex; align-items: center; justify-content: center;
@@ -637,10 +691,7 @@ jobs:
               }
               .xp-mini-track { width: 84px; height: 6px; border-radius: 99px; background: rgba(0,0,0,0.45); overflow: hidden; margin-top: 2px; }
               .xp-mini-fill { height: 100%; background: linear-gradient(90deg, #69f03a, #ffe259); width: 35%; }
-              .curr-pill {
-                display: flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 13px;
-                font-size: 11.5px; font-weight: 900; cursor: pointer;
-              }
+              .curr-pill { display: flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 13px; font-size: 11.5px; font-weight: 900; cursor: pointer; }
               .net-pill {
                 padding: 5px 9px; border-radius: 999px; font-size: 9.5px; font-weight: 900;
                 cursor: pointer; border: 2px solid #7cff3b; background: rgba(15, 74, 24, 0.92); color: #a8ff78;
@@ -648,7 +699,6 @@ jobs:
               .net-pill.offline { border-color: #ff9f43; background: rgba(74, 38, 12, 0.92); color: #ffd280; }
               .icon-sq { width: 36px; height: 36px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; color: #fff; }
 
-              /* LEFT & RIGHT ACTION RAILS + CENTER REWARD ICON ROW (LIKE VIDEO 1) */
               #lobbyLeftRail {
                 position: absolute; left: max(10px, env(safe-area-inset-left)); top: 53%; transform: translateY(-50%);
                 display: flex; flex-direction: column; gap: 7px; pointer-events: auto;
@@ -674,7 +724,6 @@ jobs:
               }
               .mode-chip { padding: 9px 13px; border-radius: 14px; font-size: 11px; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
 
-              /* MODALS */
               .modal-backdrop {
                 position: fixed; inset: 0; z-index: 90; display: none; align-items: center; justify-content: center;
                 padding: 8px; background: rgba(4, 14, 24, 0.86); backdrop-filter: blur(7px);
@@ -695,7 +744,6 @@ jobs:
               .tab-pill { padding: 6px 12px; border-radius: 10px; border: 1.5px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); color: #a8d2ff; font-size: 10.5px; font-weight: 900; text-transform: uppercase; cursor: pointer; white-space: nowrap; }
               .tab-pill.active { background: linear-gradient(180deg, #32a8ff, #1258b5); border-color: #fff; color: #fff; }
 
-              /* WORKSHOP */
               .ws-layout { display: flex; gap: 9px; height: 100%; min-height: 0; }
               .ws-left-tabs { display: flex; flex-direction: column; gap: 6px; width: 60px; flex-shrink: 0; }
               .ws-ico-tab {
@@ -706,7 +754,7 @@ jobs:
               .ws-ico-tab span { font-size: 7.5px; font-weight: 900; text-transform: uppercase; }
               .ws-ico-tab.active { background: linear-gradient(180deg, #32a8ff, #1258b5); border-color: #fff; color: #fff; }
               .ws-center-preview {
-                width: 220px; flex-shrink: 0; border-radius: 15px; padding: 9px;
+                width: 225px; flex-shrink: 0; border-radius: 15px; padding: 9px;
                 background: radial-gradient(circle at 50% 44%, #247829 0%, #103d14 78%);
                 border: 2px solid rgba(155, 245, 118, 0.55);
                 display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 5px;
@@ -728,7 +776,6 @@ jobs:
               .sc-name { font-size: 9px; font-weight: 900; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
               .sc-price { font-size: 8.5px; font-weight: 900; padding: 2px 4px; border-radius: 6px; background: rgba(0,0,0,0.52); width: 100%; }
 
-              /* DOSSIER PROFILE (EXACT VIDEO 1 STYLE) */
               .dossier-grid { display: grid; grid-template-columns: 205px 1fr; gap: 12px; }
               .dossier-left { background: rgba(6, 18, 42, 0.72); border: 1.5px solid rgba(118,206,255,0.3); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
               .dossier-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
@@ -736,7 +783,6 @@ jobs:
               .stat-card .sv { font-size: 18px; font-weight: 900; color: #ffe259; }
               .stat-card .sl { font-size: 9.5px; font-weight: 800; color: #b8d8f8; text-transform: uppercase; }
 
-              /* 18 COUNTRY LANGUAGE GRID */
               .lang-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(126px, 1fr)); gap: 7px; }
               .lang-btn {
                 padding: 8px 9px; border-radius: 11px; border: 1.5px solid rgba(255,255,255,0.22);
@@ -780,7 +826,6 @@ jobs:
               .chip.selected { border-color: var(--gold); background: rgba(255,210,63,0.25); color: #fff; }
               .text-input { width: 100%; padding: 6px 10px; border-radius: 9px; border: 2px solid #6ec6ff; background: rgba(5,16,36,0.9); color: #fff; font-size: 12.5px; font-weight: 900; outline: none; }
 
-              /* CLEAN ZERO-OVERLAP HUD */
               #hud { position: fixed; inset: 0; z-index: 20; display: none; pointer-events: none; }
               #hudTopLeft { position: absolute; top: 8px; left: max(10px, env(safe-area-inset-left)); display: flex; flex-direction: column; gap: 5px; }
               .score-pill { padding: 5px 12px; border-radius: 13px; display: flex; align-items: center; gap: 9px; font-size: 11.5px; font-weight: 900; }
@@ -846,17 +891,15 @@ jobs:
           <body>
             <canvas id="gameCanvas"></canvas>
 
-            <!-- CINEMATIC APP OPEN INTRO ANIMATION -->
             <div id="introScreen">
               <canvas id="introCanvas"></canvas>
               <div class="intro-logo-ring">🐍</div>
               <div class="intro-title">SERPENT WILD</div>
-              <div style="position:relative;z-index:2;font-size:11px;font-weight:900;letter-spacing:2.5px;color:#a8ff78;">v24 • WORMS ZONE EDITION</div>
+              <div style="position:relative;z-index:2;font-size:11px;font-weight:900;letter-spacing:2.5px;color:#a8ff78;">v25 • 50 EXACT SNAKES • FUNKY BGM</div>
               <div class="intro-bar"><div id="introFill"></div></div>
-              <div id="introSub" style="position:relative;z-index:2;font-size:10.5px;font-weight:800;color:#e0ffd1;">Loading 64 Animated Snakes...</div>
+              <div id="introSub" style="position:relative;z-index:2;font-size:10.5px;font-weight:800;color:#e0ffd1;">Loading 50 Custom Animated Snakes...</div>
             </div>
 
-            <!-- EXACT 1ST VIDEO LOBBY -->
             <div id="lobbyScreen">
               <div id="lobbyTopBar">
                 <div class="top-left-grp">
@@ -899,7 +942,6 @@ jobs:
               </div>
             </div>
 
-            <!-- DOSSIER PROFILE + ACHIEVEMENTS MODAL (EXACT VIDEO 1) -->
             <div class="modal-backdrop" id="profileModal">
               <div class="modal-box wz-panel" style="max-width:780px;">
                 <div class="modal-head">
@@ -914,11 +956,10 @@ jobs:
               </div>
             </div>
 
-            <!-- WORKSHOP MODAL -->
             <div class="modal-backdrop" id="workshopModal">
               <div class="modal-box wz-panel">
                 <div class="modal-head">
-                  <div class="modal-title" data-i18n="workshopTitle">🎨 Worm Workshop — 64 Skins</div>
+                  <div class="modal-title" data-i18n="workshopTitle">🎨 Worm Workshop — 50 Exact Skins</div>
                   <div style="display:flex;align-items:center;gap:10px;">
                     <span style="font-size:12px;font-weight:900;color:#ffe259;">🪙 <span id="wsCoins">0</span></span>
                     <span style="font-size:12px;font-weight:900;color:#8cf0ff;">💎 <span id="wsDias">0</span></span>
@@ -935,7 +976,7 @@ jobs:
                     </div>
                     <div class="ws-center-preview">
                       <div style="text-align:center;">
-                        <div id="wsName" style="font-size:13px;font-weight:900;color:#ffe259;">Croco</div>
+                        <div id="wsName" style="font-size:13px;font-weight:900;color:#ffe259;">Rose</div>
                         <div id="wsMeta" style="font-size:9px;font-weight:800;color:#a8ff78;">FREE</div>
                       </div>
                       <canvas id="wsPreviewCanvas" width="210" height="205"></canvas>
@@ -948,7 +989,6 @@ jobs:
               </div>
             </div>
 
-            <!-- SHOP MODAL (ONLY WATCH AD + INR PACKS, NO EXCHANGE!) -->
             <div class="modal-backdrop" id="shopModal">
               <div class="modal-box wz-panel" style="max-width:760px;">
                 <div class="modal-head">
@@ -975,7 +1015,6 @@ jobs:
               </div>
             </div>
 
-            <!-- 4-TAB SETTINGS MODAL (EXACT VIDEO 1: GENERAL, ARENA, CONTROLS, 18 LANGUAGES) -->
             <div class="modal-backdrop" id="settingsModal">
               <div class="modal-box wz-panel" style="max-width:650px;height:88vh;">
                 <div class="modal-head">
@@ -992,7 +1031,6 @@ jobs:
               </div>
             </div>
 
-            <!-- PLAY CALENDAR MODAL -->
             <div class="modal-backdrop" id="calendarModal">
               <div class="modal-box wz-panel" style="max-width:560px;height:auto;max-height:94vh;">
                 <div class="modal-head">
@@ -1010,7 +1048,6 @@ jobs:
               </div>
             </div>
 
-            <!-- WORLD LEADERBOARD MODAL -->
             <div class="modal-backdrop" id="worldModal">
               <div class="modal-box wz-panel" style="max-width:640px;">
                 <div class="modal-head">
@@ -1031,7 +1068,6 @@ jobs:
               </div>
             </div>
 
-            <!-- LUCKY SPIN WHEEL MODAL (EXTRA BONUS) -->
             <div class="modal-backdrop" id="spinModal" style="z-index:118;">
               <div class="popup-card wz-panel">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
@@ -1047,7 +1083,6 @@ jobs:
               </div>
             </div>
 
-            <!-- REWARD DOUBLE POPUP (LIKE VIDEO 1 00:57) -->
             <div class="modal-backdrop" id="rewardModal" style="z-index:125;">
               <div class="popup-card wz-panel">
                 <div style="font-size:36px;" id="rwIcon">🎁</div>
@@ -1060,7 +1095,6 @@ jobs:
               </div>
             </div>
 
-            <!-- INR PAYMENT CONFIRM MODAL -->
             <div class="modal-backdrop" id="payModal" style="z-index:128;">
               <div class="popup-card wz-panel">
                 <div style="font-size:16px;font-weight:900;color:#ffe259;" id="payTitle">10,000 COINS</div>
@@ -1158,7 +1192,6 @@ jobs:
                 const ARENA_RADIUS = 7400;
                 const TOTAL_WORMS = 45;
 
-                // 18 COUNTRY LANGUAGES (TRANSLATES CORE LOBBY & MODALS INSTANTLY!)
                 const LANGUAGES = [
                   { id: 'en', flag: '🇺🇸', name: 'English',    battle: 'To battle!', workshop: '🎨 Workshop', shop: 'Shop', gift: 'Open Gift', chest: 'Ready Chest', spin: 'Lucky Spin', world: 'World Top', settings: '⚙️ Settings', profile: '👤 Player Dossier' },
                   { id: 'hi', flag: '🇮🇳', name: 'हिन्दी',      battle: 'लड़ाई शुरू!', workshop: '🎨 वर्कशॉप',  shop: 'दुकान', gift: 'उपहार',     chest: 'खजाना',       spin: 'लकी व्हील',  world: 'वर्ल्ड टॉप', settings: '⚙️ सेटिंग्स',  profile: '👤 प्रोफ़ाइल' },
@@ -1186,7 +1219,6 @@ jobs:
                   { id: 'treasure', label: 'Treasure Hunter', icon: '💰' }
                 ];
 
-                // EXACT SHOP INR PACKS (NO COIN<->DIAMOND EXCHANGE!)
                 const SHOP_PACKS = [
                   { id: 'p10',  title: '🪙 10,000 Coins',   desc: 'Starter Gold Pack',              inr: 10,  coins: 10000,  dias: 0,    potions: 0 },
                   { id: 'p25',  title: '💎 500 Diamonds',   desc: 'Unlock Legendary Dragons!',      inr: 25,  coins: 0,      dias: 500,  potions: 0 },
@@ -1257,72 +1289,59 @@ jobs:
                   { id: 'radar',  name: 'Treasure Radar',icon: '📡', col: '#ff9f43', dur: 18, cost: 300, desc: 'Shows giant worms & chests' }
                 ];
 
-                // 64 SNAKES WITH 8 DISTINCT BODY SHAPES (bodyType: smooth, fins, cubes, honey, flames, wings, sprinkles, bones)
+                // 50 EXACT SNAKES FROM VIDEO (16 UNIQUE BODY SHAPES & ANIMATIONS!)
+                // [id, name, tier, acc, pat, bodyType, base, mid, dark, accent, curr, price]
                 const RAW_SKINS = [
-                  ['croco',      'Croco',          'Free',      'croco',    'scales',  'fins',      '#55c934','#2d8c18','#104008','#ffe259','free',0],
-                  ['corgi',      'Corgi',          'Free',      'foxEars',  'band',    'smooth',    '#f59b38','#c96c14','#5c2b04','#fff7eb','free',0],
-                  ['watermelon', 'Watermelon',     'Free',      'leaf',     'melon',   'smooth',    '#ff4769','#38c94b','#12521b','#141414','free',0],
-                  ['honey',      'Honey Bee',      'Free',      'antenna',  'honey',   'honey',     '#ffd23f','#e09800','#3b2200','#1c1405','free',0],
-                  ['turtle',     'Turtle',         'Rare',      'shell',    'scales',  'fins',      '#45b858','#247a35','#0e3817','#d9b648','coin',600],
-                  ['octopus',    'Octopus',        'Rare',      'tentacle', 'dots',    'smooth',    '#b84dff','#7b1cc9','#300859','#ff94e0','coin',700],
-                  ['dolphin',    'Dolphin',        'Rare',      'fin',      'stripe',  'fins',      '#4dc3ff','#1d7ec4','#0a3459','#e8f7ff','coin',800],
-                  ['gentleman',  'Gentleman',      'Rare',      'tophat',   'tux',     'smooth',    '#384252','#1e2430','#0c0f14','#ffffff','coin',900],
-                  ['gamer',      'Gamer',          'Rare',      'headset',  'neon',    'cubes',     '#262b40','#141826','#080a12','#00f7ff','coin',1000],
-                  ['racer',      'Racer',          'Rare',      'helmet',   'checker', 'smooth',    '#ff3847','#ba1422','#45040a','#ffffff','coin',1100],
-                  ['marshmallow','Marshmallow',    'Rare',      'bow',      'pastel',  'cubes',     '#fff2f7','#ffd4e5','#a86b82','#9cf4ff','coin',1150],
-                  ['pudding',    'Pudding',        'Rare',      'berry',    'drizzle', 'sprinkles', '#ffe885','#e6b835','#6e480a','#8c4212','coin',1200],
-                  ['donut',      'Donut',          'Rare',      'sprinkle', 'sprinkle','sprinkles', '#ff73b9','#d43b84','#631238','#ffe85c','coin',1250],
-                  ['brownbear',  'Brown Bear',     'Rare',      'bearEars', 'fur',     'smooth',    '#9c6134','#693c1b','#2e1606','#e6c29f','coin',1300],
-                  ['zebra',      'Zebra',          'Rare',      'horseEars','zebra',   'smooth',    '#f5f8fa','#dce3ea','#1a1e24','#14171a','coin',1350],
-                  ['poodle',     'Poodle',         'Rare',      'fluff',    'dots',    'sprinkles', '#ff9ce0','#d65cb0','#631d4e','#fff0fa','coin',1400],
-                  ['luckycat',   'Lucky Cat',      'Rare',      'catEars',  'band',    'smooth',    '#ffffff','#e0e8f0','#47525e','#ff3b30','coin',1450],
-                  ['hippo',      'Hippo',          'Rare',      'bearEars', 'dots',    'smooth',    '#9880b8','#675285','#2e2142','#d8c8eb','coin',1500],
-                  ['cherrypie',  'Cherry Pie',     'Rare',      'cherry',   'lattice', 'sprinkles', '#e8a854','#ba7524','#593208','#d91e36','coin',1550],
-                  ['piranha',    'Piranha',        'Rare',      'fin',      'scales',  'fins',      '#ff4254','#b81829','#4a050d','#ffe259','coin',1600],
-                  ['polaroid',   'Polaroid',       'Rare',      'camera',   'polaroid','cubes',     '#f2f5f7','#c4d0db','#242b33','#ff4757','coin',1650],
-                  ['tiramisu',   'Tiramisu',       'Rare',      'leaf',     'band',    'cubes',     '#d4a878','#7a4b2a','#331a0b','#fff4e0','coin',1700],
-                  ['blocks',     'Blocks',         'Rare',      'block',    'blocks',  'cubes',     '#38b6ff','#ff4757','#1c2640','#ffe259','coin',1750],
-                  ['monkey',     'Monkey',         'Rare',      'bearEars', 'fur',     'smooth',    '#a86832','#73421a','#331a07','#f0cfa8','coin',1800],
-                  ['duck',       'Duck',           'Rare',      'beak',     'stripe',  'wings',     '#ffe847','#e0b800','#6e5200','#ff7a18','coin',1850],
-                  ['eagle',      'Eagle',          'Rare',      'beak',     'scales',  'wings',     '#6e4724','#422710','#1a0d04','#ffffff','coin',1900],
-                  ['panther',    'Panther',        'Rare',      'catEars',  'neon',    'smooth',    '#262436','#14121f','#06050a','#a855ff','coin',1950],
-                  ['rhino',      'Rhino',          'Rare',      'rhinoHorn','scales',  'fins',      '#828c99','#545d69','#22272e','#f2ebd9','coin',2000],
-                  ['panda',      'Panda',          'Rare',      'pandaEars','panda',   'smooth',    '#ffffff','#dce4eb','#14171a','#14171a','coin',2100],
-                  ['owl',        'Owl',            'Rare',      'owlEars',  'scales',  'wings',     '#c79c6e','#8c633b','#3d2712','#ffe85c','coin',2200],
-                  ['pineapple',  'Pineapple',      'Rare',      'pineLeaf', 'honey',   'honey',     '#ffd23f','#d9980c','#6e4602','#4be35d','coin',2300],
-                  ['lemon',      'Lemon',          'Rare',      'leaf',     'stripe',  'smooth',    '#f5ff47','#c9d40c','#595e02','#ffffff','coin',2400],
-                  ['shark',      'Shark',          'Rare',      'fin',      'stripe',  'fins',      '#5e8eb8','#345d85','#142940','#ffffff','coin',2500],
-                  ['parrot',     'Parrot',         'Rare',      'beak',     'rainbow', 'wings',     '#ff3b30','#24c94b','#0d387a','#ffe259','coin',2600],
-                  ['sheep',      'Sheep',          'Rare',      'fluff',    'dots',    'sprinkles', '#ffffff','#dfe8f0','#47525e','#ffb8c9','coin',2700],
-                  ['kitty',      'Kitty',          'Rare',      'catEars',  'pastel',  'smooth',    '#ffb8d6','#e070a0','#6e2445','#ffffff','coin',2800],
-                  ['strawberry', 'Strawberry',     'Rare',      'pineLeaf', 'dots',    'sprinkles', '#ff3355','#c91432','#5c0412','#ffe85c','coin',2900],
-                  ['koifish',    'Koi Fish',       'Rare',      'fin',      'koi',     'fins',      '#ffffff','#ff6b1a','#8c2b04','#1a1a1a','coin',3000],
-                  ['capybara',   'Capybara',       'Rare',      'orangeHat','fur',     'smooth',    '#b88254','#855732','#3d2410','#ff9f1a','coin',3100],
-                  ['teddy',      'Teddy',          'Rare',      'bearEars', 'band',    'smooth',    '#c4874b','#8f5926','#42240a','#ff4757','coin',3200],
-                  ['elephant',   'Elephant',       'Rare',      'elephEars','dots',    'smooth',    '#8ba3ba','#5d748a','#263442','#fff7e0','coin',3300],
-                  ['tiger',      'Tiger',          'Rare',      'catEars',  'zebra',   'smooth',    '#ff8c24','#c75608','#381502','#14100d','coin',3400],
-                  ['pirate',     'Pirate',         'Epic',      'pirateHat','stripe',  'smooth',    '#2e333d','#171a21','#08090d','#ff3b30','coin',4000],
-                  ['clown',      'Clown',          'Epic',      'clownHat', 'dots',    'sprinkles', '#ffffff','#ff4757','#1c54b8','#ffe259','coin',4200],
-                  ['jester',     'Jester',         'Epic',      'jesterHat','checker', 'cubes',     '#9b38ff','#ffd23f','#2b0a59','#ff4757','coin',4400],
-                  ['wizard',     'Wizard',         'Epic',      'wizardHat','stars',   'flames',    '#3848b8','#1b246e','#0a0e36','#ffe259','coin',4600],
-                  ['knight',     'Knight',         'Epic',      'helmet',   'scales',  'cubes',     '#b8c7d9','#7a8a9e','#2c3440','#ff3b30','coin',4800],
-                  ['golem',      'Golem',          'Epic',      'horns',    'cracks',  'cubes',     '#696e75','#3e4247','#181a1c','#ff6b1a','coin',5000],
-                  ['skeleton',   'Skeleton',       'Epic',      'skull',    'bones',   'bones',     '#242a33','#14181f','#07090d','#f2f7ff','coin',5200],
-                  ['vampire',    'Bat Vampire',    'Epic',      'batEars',  'band',    'wings',     '#472459','#241030','#0c0412','#ff3847','coin',5400],
-                  ['spider',     'Spider',         'Epic',      'spider',   'neon',    'bones',     '#26212e','#14111a','#060508','#ff3b30','coin',5600],
-                  ['witch',      'Witch',          'Epic',      'witchHat', 'stars',   'flames',    '#5c248c','#31104f','#120521','#69f03a','coin',5800],
-                  ['santa',      'Santa',          'Epic',      'santaHat', 'band',    'smooth',    '#e82538','#a81120','#45040a','#ffffff','coin',6000],
-                  ['xmastree',   'Xmas Tree',      'Epic',      'starTop',  'dots',    'fins',      '#24a842','#126925','#062e0f','#ff3b30','coin',6200],
-                  ['rudolph',    'Rudolph',        'Epic',      'antler',   'fur',     'smooth',    '#a66332','#733e18','#331906','#ff2438','coin',6400],
-                  ['elf',        'Elf',            'Epic',      'elfHat',   'stripe',  'smooth',    '#38c94b','#1c852a','#093d10','#ff3b30','coin',6500],
-                  ['dullahan',   'Dullahan',       'Legendary', 'pumpkin',  'glow',    'flames',    '#ff7a18','#a83804','#240802','#ffe259','dia',35],
-                  ['medusa',     'Medusa',         'Legendary', 'snakes',   'scales',  'fins',      '#38c97a','#197845','#07301b','#ffe259','dia',45],
-                  ['reaper',     'Grim Reaper',    'Legendary', 'hood',     'glow',    'flames',    '#262b38','#11141c','#05070a','#4de2f0','dia',55],
-                  ['unicorn',    'Unicorn',        'Legendary', 'uniHorn',  'rainbow', 'wings',     '#fff5fc','#ffc4eb','#753463','#59f4ff','dia',65],
-                  ['waterdrag',  'Water Dragon',   'Legendary', 'dragHorn', 'scales',  'fins',      '#29b6ff','#0e63b8','#04244d','#8cf5ff','dia',75],
-                  ['greendrag',  'Green Dragon',   'Legendary', 'dragHorn', 'scales',  'wings',     '#38e05c','#168c30','#063811','#ffe259','dia',85],
-                  ['reddrag',    'Red Dragon',     'Mythic',    'dragHorn', 'glow',    'flames',    '#ff3b1f','#a81004','#360301','#ffd23f','dia',110],
-                  ['golddrag',   'Golden Dragon',  'Mythic',    'crown',    'rainbow', 'wings',     '#ffe259','#e09800','#4d2c00','#ffffff','dia',140]
+                  ['rose',         'Rose',           'Free',      'roseHead',  'vine',     'vine',     '#2fb83d','#1b7a24','#0a360e','#ff2442','free',0],
+                  ['pot',          'Pot of Gold',    'Free',      'goldPot',   'rainbow',  'beam',     '#ff4757','#ffe259','#1c2640','#59f4ff','free',0],
+                  ['marshmallow',  'Marshmallow',    'Free',      'bow',       'pastel',   'mallow',   '#fff5f8','#ffd4e5','#b5788f','#f2c288','free',0],
+                  ['donut',        'Donut',          'Free',      'sprinkle',  'donut',    'donuts',   '#ff73b9','#e6a86e','#6e3a12','#ffe85c','free',0],
+                  ['icecreamy',    'Ice Creamy',     'Rare',      'cherry',    'scoops',   'scoops',   '#ff94c2','#9cf4ff','#593047','#ffe875','coin',700],
+                  ['chocotobby',   'Choco Tobby',    'Rare',      'choco',     'choco',    'chocoBar', '#6e3a1a','#4d250d','#240e03','#d99b52','coin',800],
+                  ['pudding',      'Pudding',        'Rare',      'berry',     'drizzle',  'pudding',  '#ffe885','#e6b835','#6e480a','#8c4212','coin',900],
+                  ['cherrypie',    'Cherry Pie',     'Rare',      'cherry',    'lattice',  'pie',      '#e8a854','#ba7524','#593208','#d91e36','coin',1000],
+                  ['pineapple',    'Pineapple',      'Rare',      'pineLeaf',  'honey',    'honey',    '#ffd23f','#d9980c','#6e4602','#4be35d','coin',1100],
+                  ['polaroid',     'Polaroid',       'Rare',      'camera',    'polaroid', 'polaroid', '#f2f5f7','#c4d0db','#242b33','#ff4757','coin',1200],
+                  ['blocks',       'Blocks',         'Rare',      'block',     'blocks',   'blocks',   '#38b6ff','#ff4757','#1c2640','#ffe259','coin',1300],
+                  ['dolphin',      'Dolphin',        'Rare',      'fin',       'stripe',   'fins',     '#4dc3ff','#1d7ec4','#0a3459','#e8f7ff','coin',1400],
+                  ['piranha',      'Piranha',        'Rare',      'fin',       'scales',   'fins',     '#ff4254','#b81829','#4a050d','#ffe259','coin',1500],
+                  ['zebra',        'Zebra',          'Rare',      'horseEars', 'zebra',    'smooth',   '#f5f8fa','#dce3ea','#1a1e24','#14171a','coin',1600],
+                  ['panda',        'Panda',          'Rare',      'pandaEars', 'panda',    'smooth',   '#ffffff','#dce4eb','#14171a','#14171a','coin',1700],
+                  ['capybara',     'Capybara',       'Rare',      'orangeHat', 'fur',      'smooth',   '#b88254','#855732','#3d2410','#ff9f1a','coin',1800],
+                  ['hare',         'Hare',           'Rare',      'bunnyEars', 'fur',      'smooth',   '#d9cfc4','#a69a8d','#4a423a','#ffb8c9','coin',1900],
+                  ['hippo',        'Hippo',          'Rare',      'bearEars',  'dots',     'smooth',   '#9880b8','#675285','#2e2142','#d8c8eb','coin',2000],
+                  ['brownbear',    'Brown Bear',     'Rare',      'bearEars',  'fur',      'smooth',   '#9c6134','#693c1b','#2e1606','#e6c29f','coin',2100],
+                  ['duck',         'Duck',           'Rare',      'beak',      'stripe',   'wings',    '#ffe847','#e0b800','#6e5200','#ff7a18','coin',2200],
+                  ['eagle',        'Eagle',          'Rare',      'beak',      'feathers', 'feathers', '#6e4724','#422710','#1a0d04','#ffffff','coin',2300],
+                  ['owl',          'Owl',            'Rare',      'owlEars',   'feathers', 'feathers', '#c79c6e','#8c633b','#3d2712','#ffe85c','coin',2400],
+                  ['sheep',        'Sheep',          'Rare',      'fluff',     'clouds',   'wool',     '#ffffff','#dfe8f0','#47525e','#ffb8c9','coin',2500],
+                  ['poodle',       'Poodle',         'Rare',      'fluff',     'clouds',   'wool',     '#ff9ce0','#d65cb0','#631d4e','#fff0fa','coin',2600],
+                  ['kitty',        'Kitty',          'Rare',      'catEars',   'paws',     'smooth',   '#ffb8d6','#e070a0','#6e2445','#ffffff','coin',2700],
+                  ['luckycat',     'Lucky Cat',      'Rare',      'catEars',   'coins',    'smooth',   '#ffffff','#e0e8f0','#47525e','#ffd23f','coin',2800],
+                  ['octopus',      'Octopus',        'Rare',      'tentacle',  'suckers',  'suckers',  '#b84dff','#7b1cc9','#300859','#ffd23f','coin',2900],
+                  ['smilodon',     'Smilodon',       'Epic',      'catEars',   'zebra',    'smooth',   '#f2a649','#ba6e18','#4a2704','#ffffff','coin',3200],
+                  ['circusrabbit', 'Circus Rabbit',  'Epic',      'tophat',    'checker',  'smooth',   '#ffffff','#ff4757','#2b1238','#ffe259','coin',3400],
+                  ['patricia',     'Patricia',       'Epic',      'bow',       'dots',     'smooth',   '#ff6be6','#b824a0','#47083d','#ffe259','coin',3600],
+                  ['lola',         'Lola',           'Epic',      'flower',    'pastel',   'smooth',   '#ff85a2','#d9486b','#5c1428','#fff082','coin',3800],
+                  ['racer',        'Racer',          'Epic',      'helmet',    'f1',       'smooth',   '#ff3847','#ba1422','#45040a','#00f7ff','coin',4000],
+                  ['pirate',       'Pirate',         'Epic',      'pirateHat', 'coat',     'smooth',   '#b81424','#6e0812','#210205','#ffd23f','coin',4200],
+                  ['gambler',      'Gambler',        'Epic',      'tophat',    'cards',    'cards',    '#1c2436','#0e131f','#05070c','#ff3847','coin',4400],
+                  ['jester',       'Jester',         'Epic',      'jesterHat', 'checker',  'blocks',   '#9b38ff','#ffd23f','#2b0a59','#ff4757','coin',4600],
+                  ['patchvara',    'Patch Vara',     'Epic',      'bolts',     'stitches', 'stitches', '#58b847','#367a2a','#12330d','#1a1a1a','coin',4800],
+                  ['knight',       'Knight',         'Epic',      'helmet',    'armor',    'armor',    '#b8c7d9','#7a8a9e','#2c3440','#ffd23f','coin',5000],
+                  ['spider',       'Spider',         'Epic',      'spider',    'neon',     'spiderLegs','#26212e','#14111a','#060508','#ff3b30','coin',5200],
+                  ['xmastree',     'Christmas Tree', 'Epic',      'starTop',   'pine',     'pineTree', '#24a842','#126925','#062e0f','#ff3b30','coin',5500],
+                  ['skeleton',     'Skeleton',       'Epic',      'skull',     'bones',    'bones',    '#242a33','#14181f','#07090d','#f2f7ff','coin',5800],
+                  ['snake',        'Snake',          'Epic',      'dragHorn',  'scales',   'fins',     '#42d957','#1c8a2c','#07360d','#ffe259','coin',6000],
+                  ['beast',        'Beast',          'Legendary', 'horns',     'fur',      'flames',   '#7a381e','#471d0c','#1a0802','#ffe259','dia',30],
+                  ['raptor',       'Raptor',         'Legendary', 'dragHorn',  'scales',   'fins',     '#1ca8ff','#0c58b8','#041d4d','#69f03a','dia',40],
+                  ['medusa',       'Medusa',         'Legendary', 'snakes',    'scales',   'fins',     '#38c97a','#197845','#07301b','#ffd23f','dia',50],
+                  ['phantom',      'Phantom',        'Legendary', 'hood',      'ghost',    'ghost',    '#4de2f0','#197ea6','#062638','#aef6ff','dia',65],
+                  ['firehorse',    'Fire Horse',     'Legendary', 'horseEars', 'glow',     'flames',   '#ff5e14','#b82404','#380701','#ffe259','dia',80],
+                  ['evil',         'Evil',           'Legendary', 'horns',     'glow',     'flames',   '#b81424','#5c050e','#1c0104','#ff7a18','dia',95],
+                  ['dullahan',     'Dullahan',       'Mythic',    'greenSkull','glow',     'greenFlame','#196e3d','#0b3b20','#03170b','#69ff59','dia',110],
+                  ['waterdrag',    'Water Dragon',   'Mythic',    'dragHorn',  'scales',   'fins',     '#29b6ff','#0e63b8','#04244d','#8cf5ff','dia',125],
+                  ['greendrag',    'Green Dragon',   'Mythic',    'dragHorn',  'scales',   'wings',    '#38e05c','#168c30','#063811','#ffd23f','dia',150]
                 ];
 
                 const SKINS = RAW_SKINS.map(r => ({
@@ -1369,8 +1388,8 @@ jobs:
                 const DEFAULT_PROFILE = {
                   name: 'ApexHunter', avatar: '🐍', level: 1, xp: 0, energy: 65, coins: 2500, diamonds: 50,
                   lang: 'en', onlineMode: true, mode: 'infinity',
-                  skin: 'croco', eye: 'cute', lip: 'smile', expr: 'hi', food: 'mixed', floor: 'clover',
-                  ownedSkins: ['croco', 'corgi', 'watermelon', 'honey'],
+                  skin: 'rose', eye: 'cute', lip: 'smile', expr: 'hi', food: 'mixed', floor: 'clover',
+                  ownedSkins: ['rose', 'pot', 'marshmallow', 'donut'],
                   ownedEyes: ['cute'], ownedLips: ['smile'], ownedExprs: ['hi', 'yum'], ownedFloors: ['clover'],
                   potions: { magnet: 2, x5: 2, speed: 2, zoom: 2, radar: 2 },
                   bestScores: { infinity: 0, time: 0, treasure: 0 },
@@ -1383,7 +1402,7 @@ jobs:
 
                 let profile = (() => {
                   try {
-                    const raw = localStorage.getItem('serpent_wild_v24_wz') || localStorage.getItem('serpent_wild_v23_wz');
+                    const raw = localStorage.getItem('serpent_wild_v25_wz') || localStorage.getItem('serpent_wild_v24_wz');
                     if (!raw) return JSON.parse(JSON.stringify(DEFAULT_PROFILE));
                     const d = JSON.parse(raw);
                     const merged = {
@@ -1393,15 +1412,15 @@ jobs:
                       stats: { ...DEFAULT_PROFILE.stats, ...(d.stats || {}) },
                       settings: { ...DEFAULT_PROFILE.settings, ...(d.settings || {}) }
                     };
-                    ['croco','corgi','watermelon','honey'].forEach(id => { if (!merged.ownedSkins.includes(id)) merged.ownedSkins.push(id); });
-                    if (!SKINS.some(s => s.id === merged.skin)) merged.skin = 'croco';
+                    ['rose','pot','marshmallow','donut'].forEach(id => { if (!merged.ownedSkins.includes(id)) merged.ownedSkins.push(id); });
+                    if (!SKINS.some(s => s.id === merged.skin)) merged.skin = 'rose';
                     return merged;
                   } catch (e) { return JSON.parse(JSON.stringify(DEFAULT_PROFILE)); }
                 })();
 
                 const recordPlayToday = () => { const t = todayIso(); if (!profile.playedDates.includes(t)) profile.playedDates.push(t); };
                 recordPlayToday();
-                const saveProfile = () => { try { localStorage.setItem('serpent_wild_v24_wz', JSON.stringify(profile)); } catch (e) {} };
+                const saveProfile = () => { try { localStorage.setItem('serpent_wild_v25_wz', JSON.stringify(profile)); } catch (e) {} };
                 saveProfile();
 
                 const isWorldChampion = () => (profile.bestScores.infinity || 0) >= WORLD_BOTS.infinity[0].score;
@@ -1420,7 +1439,7 @@ jobs:
                   init() {
                     try {
                       if (window.AndroidAudio) {
-                        window.AndroidAudio.startBgm(!profile.settings.muted && profile.settings.bgm, 0.65);
+                        window.AndroidAudio.startBgm(!profile.settings.muted && profile.settings.bgm, 0.72);
                         window.AndroidAudio.setNotifications(profile.settings.notifs);
                       }
                       if (!this.ctx) {
@@ -1453,7 +1472,7 @@ jobs:
                   },
                   updateVol() {
                     try {
-                      if (window.AndroidAudio) window.AndroidAudio.updateBgm(!profile.settings.muted && profile.settings.bgm, 0.65);
+                      if (window.AndroidAudio) window.AndroidAudio.updateBgm(!profile.settings.muted && profile.settings.bgm, 0.72);
                       if (this.ctx && this.sfxGain) this.sfxGain.gain.setTargetAtTime((profile.settings.muted || !profile.settings.sfx) ? 0 : 0.55, this.ctx.currentTime, 0.03);
                     } catch (e) {}
                   },
@@ -1528,6 +1547,7 @@ jobs:
                   floorPattern = ctx.createPattern(t, 'repeat');
                 }
 
+                // 50-SNAKE CUSTOM HEAD ACCESSORIES (ROSE, POT OF GOLD, GREEN SKULL, BUNNY, BOLTS, ETC.)
                 function drawSkinAccessory(c, skin, hr, layer) {
                   const acc = skin.acc;
                   c.save();
@@ -1541,6 +1561,12 @@ jobs:
                         c.fillStyle = acc === 'catEars' ? '#ff94b8' : skin.accent;
                         c.beginPath(); c.moveTo(-hr * 0.24, s * hr * 0.7); c.lineTo(-hr * 0.68, s * hr * (eLen * 0.82)); c.lineTo(-hr * 0.64, s * hr * 0.45); c.closePath(); c.fill();
                       }
+                    } else if (acc === 'bunnyEars') {
+                      for (const s of [-1, 1]) {
+                        c.fillStyle = skin.base; c.strokeStyle = skin.dark; c.lineWidth = 1.3;
+                        c.beginPath(); c.ellipse(-hr * 0.65, s * hr * 0.68, hr * 0.68, hr * 0.24, s * 0.32, 0, Math.PI * 2); c.fill(); c.stroke();
+                        c.fillStyle = '#ff9ec4'; c.beginPath(); c.ellipse(-hr * 0.65, s * hr * 0.68, hr * 0.46, hr * 0.12, s * 0.32, 0, Math.PI * 2); c.fill();
+                      }
                     } else if (acc === 'bearEars' || acc === 'pandaEars') {
                       for (const s of [-1, 1]) {
                         c.fillStyle = acc === 'pandaEars' ? '#14171a' : skin.mid;
@@ -1548,23 +1574,11 @@ jobs:
                         c.beginPath(); c.arc(-hr * 0.48, s * hr * 0.88, hr * 0.36, 0, Math.PI * 2); c.fill(); c.stroke();
                         if (acc !== 'pandaEars') { c.fillStyle = skin.accent; c.beginPath(); c.arc(-hr * 0.48, s * hr * 0.88, hr * 0.18, 0, Math.PI * 2); c.fill(); }
                       }
-                    } else if (acc === 'elephEars') {
-                      for (const s of [-1, 1]) {
-                        c.fillStyle = skin.mid; c.strokeStyle = skin.dark; c.lineWidth = 1.4;
-                        c.beginPath(); c.ellipse(-hr * 0.32, s * hr * 1.15, hr * 0.56, hr * 0.48, s * 0.25, 0, Math.PI * 2); c.fill(); c.stroke();
-                        c.fillStyle = '#f2b8c6'; c.beginPath(); c.ellipse(-hr * 0.32, s * hr * 1.12, hr * 0.32, hr * 0.26, s * 0.25, 0, Math.PI * 2); c.fill();
-                      }
                     } else if (acc === 'dragHorn' || acc === 'horns') {
                       c.fillStyle = acc === 'dragHorn' ? skin.accent : '#e8dfd0'; c.strokeStyle = skin.dark; c.lineWidth = 1.3;
                       for (const s of [-1, 1]) {
                         c.beginPath(); c.moveTo(-hr * 0.1, s * hr * 0.68); c.quadraticCurveTo(-hr * 0.85, s * hr * 1.4, -hr * 1.52, s * hr * 1.05);
                         c.quadraticCurveTo(-hr * 0.85, s * hr * 0.92, -hr * 0.55, s * hr * 0.45); c.closePath(); c.fill(); c.stroke();
-                      }
-                    } else if (acc === 'antler') {
-                      c.strokeStyle = '#6e3f19'; c.lineWidth = Math.max(2.2, hr * 0.16); c.lineCap = 'round';
-                      for (const s of [-1, 1]) {
-                        c.beginPath(); c.moveTo(-hr * 0.15, s * hr * 0.65); c.lineTo(-hr * 1.15, s * hr * 1.3);
-                        c.moveTo(-hr * 0.62, s * hr * 0.96); c.lineTo(-hr * 0.95, s * hr * 1.52); c.stroke();
                       }
                     } else if (acc === 'fin') {
                       c.fillStyle = skin.mid; c.strokeStyle = skin.dark; c.lineWidth = 1.3;
@@ -1586,25 +1600,43 @@ jobs:
                       c.fillStyle = skin.base;
                       for (let k = 0; k < 8; k++) { const a = (k / 8) * Math.PI * 2; c.beginPath(); c.arc(Math.cos(a) * hr * 0.85, Math.sin(a) * hr * 0.85, hr * 0.38, 0, Math.PI * 2); c.fill(); }
                     } else if (acc === 'hood') {
-                      c.fillStyle = '#141824'; c.strokeStyle = '#4de2f0'; c.lineWidth = 1.5;
+                      c.fillStyle = '#0e2c3d'; c.strokeStyle = '#4de2f0'; c.lineWidth = 1.6;
                       c.beginPath(); c.moveTo(hr * 0.65, -hr * 1.05); c.quadraticCurveTo(-hr * 1.45, -hr * 1.25, -hr * 1.48, 0);
                       c.quadraticCurveTo(-hr * 1.45, hr * 1.25, hr * 0.65, hr * 1.05); c.closePath(); c.fill(); c.stroke();
+                    } else if (acc === 'bolts') {
+                      c.fillStyle = '#b8c7d9'; c.strokeStyle = '#1a1a1a'; c.lineWidth = 1.2;
+                      for (const s of [-1, 1]) {
+                        c.fillRect(-hr * 0.25, s * hr * 0.95, hr * 0.24, s * hr * 0.36);
+                        c.fillRect(-hr * 0.36, s * hr * 1.25, hr * 0.46, s * hr * 0.18);
+                      }
                     }
                   } else {
-                    if (acc === 'tophat') {
+                    if (acc === 'roseHead') {
+                      c.fillStyle = '#ff2442'; c.strokeStyle = '#750818'; c.lineWidth = 1.3;
+                      for (let k = 0; k < 6; k++) {
+                        const a = (k / 6) * Math.PI * 2 + globalTime * 0.5;
+                        c.beginPath(); c.arc(-hr * 0.48 + Math.cos(a) * hr * 0.28, Math.sin(a) * hr * 0.28, hr * 0.26, 0, Math.PI * 2); c.fill(); c.stroke();
+                      }
+                      c.fillStyle = '#ff758f'; c.beginPath(); c.arc(-hr * 0.48, 0, hr * 0.2, 0, Math.PI * 2); c.fill();
+                    } else if (acc === 'goldPot') {
+                      c.fillStyle = '#1f242d'; c.strokeStyle = '#ffe259'; c.lineWidth = 1.6;
+                      c.beginPath(); c.arc(-hr * 0.48, 0, hr * 0.56, 0, Math.PI * 2); c.fill(); c.stroke();
+                      c.fillStyle = '#ffe259';
+                      for (let k = -1; k <= 1; k++) { c.beginPath(); c.arc(-hr * 0.34, k * hr * 0.24, hr * 0.17, 0, Math.PI * 2); c.fill(); }
+                    } else if (acc === 'flower') {
+                      c.fillStyle = '#ffe259';
+                      for (let k = 0; k < 5; k++) {
+                        const a = (k / 5) * Math.PI * 2;
+                        c.beginPath(); c.arc(-hr * 0.45 + Math.cos(a) * hr * 0.32, Math.sin(a) * hr * 0.32, hr * 0.22, 0, Math.PI * 2); c.fill();
+                      }
+                      c.fillStyle = '#ff3847'; c.beginPath(); c.arc(-hr * 0.45, 0, hr * 0.18, 0, Math.PI * 2); c.fill();
+                    } else if (acc === 'choco') {
+                      c.fillStyle = '#d99b52'; c.strokeStyle = '#3b1c08'; c.lineWidth = 1.3;
+                      c.fillRect(-hr * 0.72, -hr * 0.48, hr * 0.56, hr * 0.96); c.strokeRect(-hr * 0.72, -hr * 0.48, hr * 0.56, hr * 0.96);
+                    } else if (acc === 'tophat') {
                       c.fillStyle = '#1a1e26'; c.strokeStyle = '#ffe259'; c.lineWidth = 1.5;
                       c.beginPath(); c.ellipse(-hr * 0.32, 0, hr * 0.44, hr * 0.92, 0, 0, Math.PI * 2); c.fill(); c.stroke();
                       c.fillStyle = '#262c38'; c.beginPath(); c.arc(-hr * 0.38, 0, hr * 0.56, 0, Math.PI * 2); c.fill(); c.stroke();
-                    } else if (acc === 'crown') {
-                      c.fillStyle = '#ffe259'; c.strokeStyle = '#9e5c00'; c.lineWidth = 1.4;
-                      c.beginPath(); c.moveTo(-hr * 0.2, -hr * 0.58); c.lineTo(-hr * 0.95, -hr * 0.72); c.lineTo(-hr * 0.55, -hr * 0.2);
-                      c.lineTo(-hr * 1.15, 0); c.lineTo(-hr * 0.55, hr * 0.2); c.lineTo(-hr * 0.95, hr * 0.72); c.lineTo(-hr * 0.2, hr * 0.58); c.closePath(); c.fill(); c.stroke();
-                      c.fillStyle = '#ff3847'; c.beginPath(); c.arc(-hr * 0.52, 0, hr * 0.16, 0, Math.PI * 2); c.fill();
-                    } else if (acc === 'headset') {
-                      c.strokeStyle = '#00f7ff'; c.lineWidth = Math.max(2.4, hr * 0.18);
-                      c.beginPath(); c.arc(-hr * 0.12, 0, hr * 1.04, Math.PI * 0.52, Math.PI * 1.48); c.stroke();
-                      c.fillStyle = '#141826';
-                      for (const s of [-1, 1]) { c.beginPath(); c.ellipse(-hr * 0.12, s * hr * 1.02, hr * 0.32, hr * 0.2, 0, 0, Math.PI * 2); c.fill(); c.stroke(); }
                     } else if (acc === 'helmet') {
                       c.strokeStyle = skin.accent; c.lineWidth = 2;
                       c.beginPath(); c.arc(0, 0, hr * 1.12, Math.PI * 0.45, Math.PI * 1.55); c.stroke();
@@ -1613,46 +1645,25 @@ jobs:
                       c.fillStyle = '#171a21'; c.strokeStyle = '#ffe259'; c.lineWidth = 1.5;
                       c.beginPath(); c.moveTo(-hr * 0.1, -hr * 1.08); c.quadraticCurveTo(-hr * 1.15, 0, -hr * 0.1, hr * 1.08); c.lineTo(-hr * 0.65, 0); c.closePath(); c.fill(); c.stroke();
                       c.fillStyle = '#ffffff'; c.beginPath(); c.arc(-hr * 0.48, 0, hr * 0.2, 0, Math.PI * 2); c.fill();
-                    } else if (acc === 'wizardHat' || acc === 'witchHat' || acc === 'santaHat' || acc === 'elfHat') {
-                      c.fillStyle = acc === 'santaHat' ? '#e82538' : (acc === 'elfHat' ? '#24b83d' : skin.mid);
-                      c.strokeStyle = skin.accent; c.lineWidth = 1.4;
-                      c.beginPath(); c.moveTo(-hr * 0.15, -hr * 0.85); c.lineTo(-hr * 1.55, 0); c.lineTo(-hr * 0.15, hr * 0.85); c.closePath(); c.fill(); c.stroke();
-                      c.fillStyle = '#ffffff'; c.beginPath(); c.arc(-hr * 1.55, 0, hr * 0.22, 0, Math.PI * 2); c.fill();
-                    } else if (acc === 'clownHat' || acc === 'jesterHat') {
-                      c.fillStyle = '#ff4757'; c.beginPath(); c.arc(hr * 1.05, 0, hr * 0.26, 0, Math.PI * 2); c.fill();
+                    } else if (acc === 'jesterHat') {
                       for (const s of [-1, 1]) {
                         c.fillStyle = s === 1 ? '#ffe259' : '#9b38ff';
                         c.beginPath(); c.moveTo(-hr * 0.2, s * hr * 0.5); c.lineTo(-hr * 1.25, s * hr * 1.18); c.lineTo(-hr * 0.72, s * hr * 0.22); c.closePath(); c.fill();
                         c.fillStyle = '#fff'; c.beginPath(); c.arc(-hr * 1.25, s * hr * 1.18, hr * 0.16, 0, Math.PI * 2); c.fill();
                       }
-                    } else if (acc === 'uniHorn' || acc === 'rhinoHorn') {
-                      c.fillStyle = acc === 'uniHorn' ? '#ffe259' : '#f2ebd9'; c.strokeStyle = '#9e5c00'; c.lineWidth = 1.2;
-                      c.beginPath(); c.moveTo(hr * 0.85, -hr * 0.24); c.lineTo(hr * 1.85, 0); c.lineTo(hr * 0.85, hr * 0.24); c.closePath(); c.fill(); c.stroke();
                     } else if (acc === 'beak') {
                       c.fillStyle = '#ff9f1a'; c.strokeStyle = '#7a3e00'; c.lineWidth = 1.3;
                       c.beginPath(); c.moveTo(hr * 0.88, -hr * 0.36); c.lineTo(hr * 1.62, 0); c.lineTo(hr * 0.88, hr * 0.36); c.closePath(); c.fill(); c.stroke();
-                    } else if (acc === 'croco') {
-                      c.fillStyle = skin.base; c.strokeStyle = skin.dark; c.lineWidth = 1.2;
-                      c.beginPath(); c.ellipse(hr * 1.18, 0, hr * 0.48, hr * 0.44, 0, 0, Math.PI * 2); c.fill(); c.stroke();
-                      c.fillStyle = '#ffffff';
-                      for (const s of [-1, 1]) { c.beginPath(); c.moveTo(hr * 1.1, s * hr * 0.4); c.lineTo(hr * 1.24, s * hr * 0.58); c.lineTo(hr * 1.34, s * hr * 0.36); c.closePath(); c.fill(); }
-                    } else if (acc === 'leaf' || acc === 'pineLeaf' || acc === 'cherry' || acc === 'berry' || acc === 'orangeHat') {
+                    } else if (acc === 'pineLeaf' || acc === 'cherry' || acc === 'berry' || acc === 'orangeHat') {
                       c.fillStyle = acc === 'orangeHat' ? '#ff9f1a' : (acc === 'cherry' ? '#ff2442' : '#4be35d');
                       c.beginPath(); c.arc(-hr * 0.45, 0, hr * 0.34, 0, Math.PI * 2); c.fill();
                       c.fillStyle = '#248a2d'; c.beginPath(); c.ellipse(-hr * 0.82, -hr * 0.22, hr * 0.34, hr * 0.16, -0.4, 0, Math.PI * 2); c.fill();
-                    } else if (acc === 'antenna') {
-                      c.strokeStyle = '#1c1405'; c.lineWidth = 1.8;
-                      for (const s of [-1, 1]) {
-                        c.beginPath(); c.moveTo(hr * 0.5, s * hr * 0.4); c.lineTo(hr * 1.25, s * hr * 0.78); c.stroke();
-                        c.fillStyle = '#ffe259'; c.beginPath(); c.arc(hr * 1.25, s * hr * 0.78, hr * 0.16, 0, Math.PI * 2); c.fill();
-                      }
                     } else if (acc === 'bow') {
                       c.fillStyle = '#ff4d8d';
                       for (const s of [-1, 1]) { c.beginPath(); c.moveTo(-hr * 0.45, 0); c.lineTo(-hr * 0.88, s * hr * 0.52); c.lineTo(-hr * 0.28, s * hr * 0.48); c.closePath(); c.fill(); }
                       c.fillStyle = '#ffe259'; c.beginPath(); c.arc(-hr * 0.48, 0, hr * 0.16, 0, Math.PI * 2); c.fill();
-                    } else if (acc === 'starTop' || acc === 'pumpkin') {
-                      c.fillStyle = acc === 'pumpkin' ? '#ff7a18' : '#ffe259';
-                      c.beginPath(); c.arc(-hr * 0.55, 0, hr * 0.38, 0, Math.PI * 2); c.fill();
+                    } else if (acc === 'starTop') {
+                      c.fillStyle = '#ffe259'; c.beginPath(); c.arc(-hr * 0.55, 0, hr * 0.38, 0, Math.PI * 2); c.fill();
                     } else if (acc === 'camera' || acc === 'block') {
                       c.fillStyle = '#242b33'; c.strokeStyle = '#fff'; c.lineWidth = 1.3;
                       c.fillRect(-hr * 0.75, -hr * 0.45, hr * 0.58, hr * 0.9); c.strokeRect(-hr * 0.75, -hr * 0.45, hr * 0.58, hr * 0.9);
@@ -1663,22 +1674,30 @@ jobs:
 
                 function drawWormHead(c, skin, eyeId, lipId, hr, blinkAmt, mouthOpen, lookAng) {
                   const isRain = skin.pat === 'rainbow';
-                  const headCol = isRain ? `hsl(${(globalTime * 150) % 360}, 95%, 58%)` : skin.base;
-                  const headMid = isRain ? `hsl(${(globalTime * 150 + 40) % 360}, 90%, 44%)` : skin.mid;
+                  const isGreenSkull = skin.acc === 'greenSkull';
+                  const isSkull = skin.acc === 'skull' || isGreenSkull;
+                  const headCol = isGreenSkull ? '#69ff59' : (skin.acc === 'skull' ? '#ffffff' : (isRain ? `hsl(${(globalTime * 150) % 360}, 95%, 58%)` : skin.base));
+                  const headMid = isGreenSkull ? '#1eb834' : (skin.acc === 'skull' ? '#dce4eb' : (isRain ? `hsl(${(globalTime * 150 + 40) % 360}, 90%, 44%)` : skin.mid));
 
                   drawSkinAccessory(c, skin, hr, 'back');
 
+                  if (isGreenSkull) {
+                    c.save(); c.shadowColor = '#69ff59'; c.shadowBlur = 16;
+                    c.fillStyle = 'rgba(105, 255, 89, 0.32)';
+                    c.beginPath(); c.arc(0, 0, hr * 1.42, 0, Math.PI * 2); c.fill(); c.restore();
+                  }
+
                   const hg = c.createRadialGradient(hr * 0.18, -hr * 0.25, hr * 0.1, 0, 0, hr * 1.25);
-                  hg.addColorStop(0, skin.acc === 'skull' ? '#ffffff' : headCol);
-                  hg.addColorStop(0.75, skin.acc === 'skull' ? '#dce4eb' : headMid);
-                  hg.addColorStop(1, skin.dark);
+                  hg.addColorStop(0, headCol); hg.addColorStop(0.75, headMid); hg.addColorStop(1, skin.dark);
                   c.fillStyle = hg; c.strokeStyle = 'rgba(0,0,0,0.36)'; c.lineWidth = 1.3;
                   c.beginPath(); c.ellipse(hr * 0.08, 0, hr * 1.14, hr * 1.04, 0, 0, Math.PI * 2); c.fill(); c.stroke();
 
                   c.fillStyle = 'rgba(255,255,255,0.28)';
                   c.beginPath(); c.ellipse(-hr * 0.12, -hr * 0.42, hr * 0.44, hr * 0.2, -0.2, 0, Math.PI * 2); c.fill();
-                  c.fillStyle = 'rgba(255, 110, 145, 0.34)';
-                  c.beginPath(); c.arc(hr * 0.34, -hr * 0.66, hr * 0.18, 0, Math.PI * 2); c.arc(hr * 0.34, hr * 0.66, hr * 0.18, 0, Math.PI * 2); c.fill();
+                  if (!isSkull) {
+                    c.fillStyle = 'rgba(255, 110, 145, 0.34)';
+                    c.beginPath(); c.arc(hr * 0.34, -hr * 0.66, hr * 0.18, 0, Math.PI * 2); c.arc(hr * 0.34, hr * 0.66, hr * 0.18, 0, Math.PI * 2); c.fill();
+                  }
 
                   const mx = hr * 0.82;
                   if (mouthOpen > 0.08) {
@@ -1718,7 +1737,7 @@ jobs:
                         c.strokeStyle = '#111'; c.lineWidth = Math.max(1.8, hr * 0.12); c.lineCap = 'round';
                         c.beginPath(); c.arc(ex, ey, er * 0.7, -0.9, 0.9); c.stroke(); continue;
                       }
-                      c.fillStyle = skin.acc === 'skull' ? '#14171a' : '#ffffff'; c.strokeStyle = 'rgba(0,0,0,0.4)'; c.lineWidth = 1.2;
+                      c.fillStyle = isSkull ? '#0a140c' : '#ffffff'; c.strokeStyle = 'rgba(0,0,0,0.4)'; c.lineWidth = 1.2;
                       c.beginPath(); c.arc(ex, ey, er, 0, Math.PI * 2); c.fill(); c.stroke();
 
                       if (eyeId === 'heart') {
@@ -1736,7 +1755,7 @@ jobs:
                         c.strokeStyle = '#7b38ff'; c.lineWidth = 1.6;
                         c.beginPath(); c.arc(ex, ey, er * 0.62, globalTime * 6, globalTime * 6 + 4.4); c.stroke();
                       } else {
-                        c.fillStyle = skin.acc === 'skull' ? '#59f4ff' : '#111524';
+                        c.fillStyle = isGreenSkull ? '#ff3b30' : (skin.acc === 'skull' ? '#59f4ff' : '#111524');
                         c.beginPath(); c.arc(ex + px, ey + py, er * 0.54, 0, Math.PI * 2); c.fill();
                         c.fillStyle = '#ffffff'; c.beginPath(); c.arc(ex + px - er * 0.18, ey + py - er * 0.18, er * 0.22, 0, Math.PI * 2); c.fill();
                       }
@@ -1749,26 +1768,107 @@ jobs:
                   drawSkinAccessory(c, skin, hr, 'front');
                 }
 
-                // 8 DISTINCT ANIMATED BODY SHAPES (CUBES, FINS, WINGS, FLAMES, HONEY, SPRINKLES, BONES, SMOOTH)
+                // 16 EXACT VIDEO BODY SHAPES & LIVE ANIMATIONS
                 function drawBodySegment(c, skin, x, y, sr, idx, ang) {
                   const bt = skin.bodyType || 'smooth';
                   const pat = skin.pat;
                   let col = skin.base;
-                  if (pat === 'rainbow') col = `hsl(${(globalTime * 150 + idx * 14) % 360}, 95%, 56%)`;
+                  if (pat === 'rainbow') col = `hsl(${(globalTime * 160 + idx * 14) % 360}, 95%, 56%)`;
                   else if (pat === 'zebra' || pat === 'band' || pat === 'panda') col = (Math.floor(idx / 3) % 2 === 1) ? skin.accent : skin.base;
                   else if (pat === 'checker') col = (idx % 2 === 0) ? skin.base : skin.accent;
                   else if (pat === 'blocks') { const bc = ['#38b6ff','#ff4757','#ffe259','#69f03a','#b84dff']; col = bc[idx % bc.length]; }
-                  else if (pat === 'koi') col = (idx % 7 < 3) ? '#ffffff' : (idx % 7 < 5 ? '#ff6b1a' : '#1f1f1f');
-                  else if (pat === 'melon') col = (idx % 2 === 0) ? '#ff4769' : '#ff6b85';
+                  else if (pat === 'scoops') { const sc = ['#ff94c2','#9cf4ff','#ffe875','#b8ff9e','#d49cff']; col = sc[Math.floor(idx / 2) % sc.length]; }
                   else if (pat === 'stripe' && idx % 3 === 0) col = skin.mid;
 
                   c.save();
                   c.translate(x, y);
                   c.rotate(ang);
 
-                  // 1. FLAPPING WINGS (on front segments for Dragons, Eagles, Unicorn, Vampire)
+                  // 1. VINE (Rose: thorny green stem + green leaves + blooming red roses)
+                  if (bt === 'vine') {
+                    c.fillStyle = skin.base; c.strokeStyle = skin.dark; c.lineWidth = 1.4;
+                    c.beginPath(); c.arc(0, 0, sr * 0.85, 0, Math.PI * 2); c.fill(); c.stroke();
+                    if (idx % 3 === 0) {
+                      const side = idx % 6 === 0 ? 1 : -1;
+                      c.fillStyle = '#4be35d'; c.beginPath(); c.ellipse(0, side * sr * 1.15, sr * 0.45, sr * 0.24, side * 0.5, 0, Math.PI * 2); c.fill();
+                    }
+                    if (idx % 5 === 2) {
+                      c.fillStyle = '#ff2442'; c.beginPath(); c.arc(0, 0, sr * 0.65, 0, Math.PI * 2); c.fill();
+                      c.fillStyle = '#ff859b'; c.beginPath(); c.arc(-sr * 0.12, -sr * 0.12, sr * 0.28, 0, Math.PI * 2); c.fill();
+                    }
+                    c.restore(); return;
+                  }
+
+                  // 2. BEAM (Pot of Gold: pure glowing rainbow beam)
+                  if (bt === 'beam') {
+                    c.fillStyle = col; c.shadowColor = col; c.shadowBlur = 10;
+                    c.beginPath(); c.arc(0, 0, sr * 1.04, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = 'rgba(255,255,255,0.35)'; c.beginPath(); c.arc(-sr * 0.2, -sr * 0.2, sr * 0.35, 0, Math.PI * 2); c.fill();
+                    c.restore(); return;
+                  }
+
+                  // 3. DONUTS (Ring-shaped glazed donuts with hole & sprinkles)
+                  if (bt === 'donuts') {
+                    c.fillStyle = '#e6a86e'; c.strokeStyle = '#6e3a12'; c.lineWidth = 1.5;
+                    c.beginPath(); c.arc(0, 0, sr * 1.05, 0, Math.PI * 2); c.fill(); c.stroke();
+                    c.fillStyle = idx % 2 === 0 ? '#ff73b9' : '#9cf4ff';
+                    c.beginPath(); c.arc(0, 0, sr * 0.88, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = '#1b5e20'; c.beginPath(); c.arc(0, 0, sr * 0.32, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = '#ffe259'; c.fillRect(sr * 0.42, -sr * 0.2, sr * 0.28, sr * 0.14);
+                    c.restore(); return;
+                  }
+
+                  // 4. CHOCO BAR (Segmented chocolate squares with inner bevel)
+                  if (bt === 'chocoBar') {
+                    const sz = sr * 1.88;
+                    c.fillStyle = '#5c2d12'; c.strokeStyle = '#240e03'; c.lineWidth = 1.8;
+                    c.fillRect(-sz / 2, -sz / 2, sz, sz); c.strokeRect(-sz / 2, -sz / 2, sz, sz);
+                    c.strokeStyle = '#9e582b'; c.lineWidth = 1.4;
+                    c.strokeRect(-sz * 0.32, -sz * 0.32, sz * 0.64, sz * 0.64);
+                    c.restore(); return;
+                  }
+
+                  // 5. SPIDER LEGS (8 crawling animated legs!)
+                  if (bt === 'spiderLegs') {
+                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                    if (idx % 2 === 0 && idx <= 12) {
+                      const kick = Math.sin(globalTime * 18 + idx * 1.4) * sr * 0.38;
+                      c.strokeStyle = '#14111a'; c.lineWidth = Math.max(2, sr * 0.18); c.lineCap = 'round';
+                      for (const s of [-1, 1]) {
+                        c.beginPath(); c.moveTo(0, s * sr * 0.7); c.lineTo(kick, s * sr * 1.55); c.lineTo(-sr * 0.35 + kick, s * sr * 1.9); c.stroke();
+                      }
+                    }
+                    c.fillStyle = skin.accent; c.beginPath(); c.arc(0, 0, sr * 0.32, 0, Math.PI * 2); c.fill();
+                    c.restore(); return;
+                  }
+
+                  // 6. CHRISTMAS TREE (Spiky pine needles + twinkling lights)
+                  if (bt === 'pineTree') {
+                    c.fillStyle = skin.base; c.strokeStyle = skin.dark; c.lineWidth = 1.4;
+                    c.beginPath();
+                    for (let k = 0; k < 10; k++) {
+                      const a = (k / 10) * Math.PI * 2, rad = k % 2 === 0 ? sr * 1.25 : sr * 0.78;
+                      k === 0 ? c.moveTo(Math.cos(a) * rad, Math.sin(a) * rad) : c.lineTo(Math.cos(a) * rad, Math.sin(a) * rad);
+                    }
+                    c.closePath(); c.fill(); c.stroke();
+                    if (idx % 2 === 0) {
+                      c.fillStyle = idx % 4 === 0 ? '#ff3b30' : '#ffe259';
+                      c.beginPath(); c.arc(0, 0, sr * 0.3, 0, Math.PI * 2); c.fill();
+                    }
+                    c.restore(); return;
+                  }
+
+                  // 7. GHOST / PHANTOM (Translucent glowing cyan ectoplasm)
+                  if (bt === 'ghost') {
+                    c.globalAlpha = 0.72;
+                    c.fillStyle = skin.base; c.shadowColor = skin.accent; c.shadowBlur = 12;
+                    c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                    c.globalAlpha = 1; c.restore(); return;
+                  }
+
+                  // WINGS / FINS / FLAMES OVERLAYS
                   if (bt === 'wings' && idx === 4) {
-                    const flap = Math.sin(globalTime * 10) * 0.35;
+                    const flap = Math.sin(globalTime * 11) * 0.38;
                     c.fillStyle = skin.accent; c.strokeStyle = skin.dark; c.lineWidth = 1.4;
                     for (const s of [-1, 1]) {
                       c.save(); c.rotate(s * flap);
@@ -1777,8 +1877,6 @@ jobs:
                       c.restore();
                     }
                   }
-
-                  // 2. SPIKY SIDE FINS (Croco, Water Dragon, Shark, Turtle, Koi)
                   if (bt === 'fins' && idx % 3 === 0) {
                     const sw = Math.sin(globalTime * 8 + idx) * sr * 0.16;
                     c.fillStyle = skin.accent; c.strokeStyle = skin.dark; c.lineWidth = 1.1;
@@ -1786,65 +1884,58 @@ jobs:
                       c.beginPath(); c.moveTo(sr * 0.35, s * sr * 0.8); c.lineTo(-sr * 0.25 + sw, s * sr * 1.42); c.lineTo(-sr * 0.55, s * sr * 0.75); c.closePath(); c.fill(); c.stroke();
                     }
                   }
-
-                  // 3. SPECTRAL FLAMES (Dullahan, Red Dragon, Reaper, Wizard, Witch)
-                  if (bt === 'flames' && idx % 2 === 0) {
+                  if ((bt === 'flames' || bt === 'greenFlame') && idx % 2 === 0) {
                     const fl = 0.7 + 0.3 * Math.sin(globalTime * 16 + idx * 1.7);
-                    c.fillStyle = skin.accent; c.globalAlpha = 0.55;
-                    for (const s of [-1, 1]) {
-                      c.beginPath(); c.arc(-sr * 0.2, s * sr * (0.95 + 0.3 * fl), sr * 0.42 * fl, 0, Math.PI * 2); c.fill();
-                    }
+                    c.fillStyle = skin.accent; c.globalAlpha = 0.6;
+                    for (const s of [-1, 1]) { c.beginPath(); c.arc(-sr * 0.2, s * sr * (0.95 + 0.32 * fl), sr * 0.44 * fl, 0, Math.PI * 2); c.fill(); }
                     c.globalAlpha = 1;
                   }
 
-                  // CORE SEGMENT SHAPE: CUBES vs HONEYCOMB vs BONES vs SMOOTH
-                  if (bt === 'cubes') {
+                  // CUBES / MALLOW / POLAROID / BLOCKS / ARMOR
+                  if (bt === 'mallow' || bt === 'polaroid' || bt === 'blocks' || bt === 'armor') {
                     const sz = sr * 1.85;
                     c.fillStyle = col; c.strokeStyle = skin.dark; c.lineWidth = 1.6;
                     c.beginPath(); c.roundRect ? c.roundRect(-sz / 2, -sz / 2, sz, sz, sr * 0.36) : c.rect(-sz / 2, -sz / 2, sz, sz);
                     c.fill(); c.stroke();
-                    if (pat === 'polaroid' && idx % 3 === 0) {
-                      c.fillStyle = skin.accent; c.fillRect(-sz * 0.32, -sz * 0.32, sz * 0.64, sz * 0.52);
-                    }
+                    if (bt === 'polaroid' && idx % 3 === 0) { c.fillStyle = skin.accent; c.fillRect(-sz * 0.32, -sz * 0.32, sz * 0.64, sz * 0.52); }
+                    if (bt === 'armor' && idx % 2 === 0) { c.fillStyle = skin.accent; c.beginPath(); c.arc(0, -sz * 0.3, sr * 0.14, 0, Math.PI * 2); c.arc(0, sz * 0.3, sr * 0.14, 0, Math.PI * 2); c.fill(); }
                   } else if (bt === 'honey') {
                     c.fillStyle = col; c.strokeStyle = '#7a4500'; c.lineWidth = 1.6;
                     c.beginPath();
-                    for (let k = 0; k < 6; k++) {
-                      const a = (Math.PI / 3) * k;
-                      k === 0 ? c.moveTo(Math.cos(a) * sr * 1.06, Math.sin(a) * sr * 1.06) : c.lineTo(Math.cos(a) * sr * 1.06, Math.sin(a) * sr * 1.06);
-                    }
+                    for (let k = 0; k < 6; k++) { const a = (Math.PI / 3) * k; k === 0 ? c.moveTo(Math.cos(a) * sr * 1.06, Math.sin(a) * sr * 1.06) : c.lineTo(Math.cos(a) * sr * 1.06, Math.sin(a) * sr * 1.06); }
                     c.closePath(); c.fill(); c.stroke();
-                    if (idx % 3 === 0) { c.fillStyle = '#ffae00'; c.beginPath(); c.arc(0, sr * 0.95, sr * 0.26, 0, Math.PI * 2); c.fill(); }
                   } else if (bt === 'bones') {
                     c.fillStyle = skin.dark; c.beginPath(); c.arc(0, 0, sr * 0.88, 0, Math.PI * 2); c.fill();
                     c.strokeStyle = skin.accent; c.lineWidth = Math.max(2.2, sr * 0.24); c.lineCap = 'round';
-                    if (idx % 2 === 0) {
-                      c.beginPath(); c.moveTo(0, -sr * 0.92); c.lineTo(0, sr * 0.92); c.stroke();
-                      c.fillStyle = '#ffffff'; c.beginPath(); c.arc(0, 0, sr * 0.3, 0, Math.PI * 2); c.fill();
-                    }
+                    if (idx % 2 === 0) { c.beginPath(); c.moveTo(0, -sr * 0.92); c.lineTo(0, sr * 0.92); c.stroke(); c.fillStyle = '#fff'; c.beginPath(); c.arc(0, 0, sr * 0.3, 0, Math.PI * 2); c.fill(); }
+                  } else if (bt === 'wool') {
+                    c.fillStyle = col;
+                    for (let k = 0; k < 6; k++) { const a = (k / 6) * Math.PI * 2; c.beginPath(); c.arc(Math.cos(a) * sr * 0.45, Math.sin(a) * sr * 0.45, sr * 0.68, 0, Math.PI * 2); c.fill(); }
                   } else {
                     const g = c.createRadialGradient(-sr * 0.28, -sr * 0.28, sr * 0.08, 0, 0, sr);
-                    g.addColorStop(0, col); g.addColorStop(0.82, pat === 'rainbow' ? col : skin.mid); g.addColorStop(1, skin.dark);
+                    g.addColorStop(0, col); g.addColorStop(0.82, pat === 'rainbow' || pat === 'scoops' ? col : skin.mid); g.addColorStop(1, skin.dark);
                     c.fillStyle = g; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
 
-                    if (pat === 'melon') {
-                      c.strokeStyle = '#24a842'; c.lineWidth = Math.max(2, sr * 0.18);
-                      c.beginPath(); c.arc(0, 0, sr * 0.92, 0, Math.PI * 2); c.stroke();
-                      if (idx % 3 === 0) { c.fillStyle = '#141414'; c.beginPath(); c.arc(0, 0, sr * 0.14, 0, Math.PI * 2); c.fill(); }
-                    } else if (bt === 'sprinkles' && idx % 2 === 0) {
-                      const spCols = ['#ffe259','#4de2f0','#ff4757','#69f03a','#ffffff'];
-                      c.fillStyle = spCols[idx % spCols.length];
-                      c.fillRect(-sr * 0.3, -sr * 0.35, sr * 0.38, sr * 0.18);
-                      c.fillStyle = spCols[(idx + 2) % spCols.length];
-                      c.fillRect(sr * 0.08, sr * 0.18, sr * 0.36, sr * 0.18);
-                    } else if (pat === 'dots' && idx % 3 === 0) {
-                      c.fillStyle = skin.accent; c.beginPath(); c.arc(0, 0, sr * 0.34, 0, Math.PI * 2); c.fill();
+                    if (bt === 'pudding' || bt === 'pie') {
+                      c.fillStyle = skin.accent; c.beginPath(); c.arc(0, 0, sr * 0.62, 0, Math.PI * 2); c.fill();
+                    } else if (bt === 'suckers' && idx % 2 === 0) {
+                      c.strokeStyle = skin.accent; c.lineWidth = 1.8; c.beginPath(); c.arc(0, 0, sr * 0.48, 0, Math.PI * 2); c.stroke();
+                    } else if (bt === 'cards' && idx % 3 === 0) {
+                      const suits = ['♠','♥','♦','♣'];
+                      c.fillStyle = idx % 6 === 0 ? '#ff3847' : '#ffffff'; c.font = `900 ${Math.round(sr)}px sans-serif`;
+                      c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(suits[(idx / 3) % 4], 0, 0);
+                    } else if (bt === 'stitches' && idx % 2 === 0) {
+                      c.strokeStyle = '#1a1a1a'; c.lineWidth = 1.8;
+                      c.beginPath(); c.moveTo(-sr * 0.4, 0); c.lineTo(sr * 0.4, 0); c.moveTo(0, -sr * 0.35); c.lineTo(0, sr * 0.35); c.stroke();
+                    } else if (bt === 'feathers' && idx % 2 === 0) {
+                      c.strokeStyle = skin.accent; c.lineWidth = 1.6;
+                      c.beginPath(); c.arc(-sr * 0.15, 0, sr * 0.6, -0.9, 0.9); c.stroke();
                     } else if (pat === 'scales' && idx % 3 === 0) {
                       c.fillStyle = skin.accent; c.globalAlpha = 0.55;
                       c.beginPath(); c.moveTo(sr * 0.42, 0); c.lineTo(0, -sr * 0.42); c.lineTo(-sr * 0.42, 0); c.lineTo(0, sr * 0.42); c.closePath(); c.fill();
                       c.globalAlpha = 1;
-                    } else if (pat === 'tux' && idx % 4 === 0) {
-                      c.fillStyle = '#ffffff'; c.beginPath(); c.arc(0, 0, sr * 0.18, 0, Math.PI * 2); c.fill();
+                    } else if (pat === 'dots' && idx % 3 === 0) {
+                      c.fillStyle = skin.accent; c.beginPath(); c.arc(0, 0, sr * 0.34, 0, Math.PI * 2); c.fill();
                     }
                   }
 
@@ -1882,7 +1973,6 @@ jobs:
                     for (let i = 0; i < cnt; i++) this.segments.push({ x: x - Math.cos(this.angle) * i * 4.5, y: y - Math.sin(this.angle) * i * 4.5 });
                   }
 
-                  // SLEEKER, SMALLER WORMS ZONE PROPORTIONS (EXACTLY LIKE VIDEO 1!)
                   getRadius() { return clamp(9.5 + Math.pow(Math.max(10, this.score), 0.25) * 1.65, 10, 42) * this.scale; }
                   getSegCount() { return clamp(Math.floor(14 + Math.pow(Math.max(10, this.score), 0.43) * 1.35), 14, 210); }
                   say(txt) { this.bubbleText = txt; this.bubbleTimer = 2.6; }
@@ -2559,7 +2649,6 @@ jobs:
                   refreshLobbyUI();
                 }
 
-                // CINEMATIC APP OPEN INTRO ANIMATION
                 function runIntroAnimation() {
                   const sc = document.getElementById('introScreen');
                   const cvs = document.getElementById('introCanvas');
@@ -2572,7 +2661,7 @@ jobs:
                     col: ['#ffe259', '#69f03a', '#4de2f0', '#ff6b81'][Math.floor(Math.random() * 4)]
                   }));
                   let pct = 0, alive = true;
-                  const msgs = ['Awakening 64 Snakes...', 'Loading Arena & Languages...', 'Ready to Battle!'];
+                  const msgs = ['Awakening 50 Custom Snakes...', 'Loading Funky Arcade Audio...', 'Ready to Battle!'];
                   function tickIntro() {
                     if (!alive) return;
                     ic.clearRect(0, 0, cvs.width, cvs.height);
@@ -2587,7 +2676,7 @@ jobs:
                   }
                   tickIntro();
                   const iv = setInterval(() => {
-                    pct = Math.min(100, pct + rand(12, 20));
+                    pct = Math.min(100, pct + rand(14, 22));
                     fill.style.width = `${pct}%`;
                     sub.textContent = pct < 40 ? msgs[0] : (pct < 80 ? msgs[1] : msgs[2]);
                     if (pct >= 100) {
@@ -2598,11 +2687,10 @@ jobs:
                         setTimeout(() => { sc.style.display = 'none'; enterLobby(); }, 420);
                       }, 220);
                     }
-                  }, 150);
+                  }, 140);
                   sc.addEventListener('click', () => { Sound.init(); }, { once: true });
                 }
 
-                // REWARDED AD PLAYER
                 function watchRewardAd(desc, onReward) {
                   const modal = document.getElementById('adModal');
                   const bar = document.getElementById('adProgress');
@@ -2625,7 +2713,6 @@ jobs:
                   }, 100);
                 }
 
-                // DOUBLE REWARD POPUP (GIFT & CHEST LIKE VIDEO 1)
                 let pendingReward = null;
                 function openRewardPopup(icon, title, coins, dias, potionId = null) {
                   pendingReward = { coins, dias, potionId };
@@ -2653,7 +2740,6 @@ jobs:
                   watchRewardAd('Double your Reward (2x)!', () => applyPendingReward(2));
                 });
 
-                // LUCKY SPIN WHEEL (EXTRA BONUS)
                 const SPIN_SLICES = [
                   { lbl: '500 🪙',  col: '#ff4757', coins: 500,  dias: 0 },
                   { lbl: '15 💎',   col: '#4de2f0', coins: 0,    dias: 15 },
@@ -2706,7 +2792,6 @@ jobs:
                   requestAnimationFrame(stepAnim);
                 }
 
-                // DOSSIER PROFILE & ACHIEVEMENTS (EXACT VIDEO 1)
                 let profTab = 'dossier';
                 function renderProfileModal() {
                   document.querySelectorAll('[data-pt]').forEach(b => b.classList.toggle('active', b.dataset.pt === profTab));
@@ -2738,7 +2823,7 @@ jobs:
                       profile.name = e.target.value.trim() || 'ApexHunter'; saveProfile(); refreshLobbyUI();
                     });
                     document.getElementById('btnResetData').addEventListener('click', () => {
-                      if (confirm('Reset all local game data?')) { localStorage.removeItem('serpent_wild_v24_wz'); location.reload(); }
+                      if (confirm('Reset all local game data?')) { localStorage.removeItem('serpent_wild_v25_wz'); location.reload(); }
                     });
                   } else {
                     const grid = document.createElement('div'); grid.className = 'card-grid';
@@ -2759,7 +2844,6 @@ jobs:
                   }
                 }
 
-                // 4-TAB SETTINGS (GENERAL, ARENA, CONTROLS, 18 LANGUAGES)
                 let setTab = 'general';
                 function renderSettingsModal() {
                   document.querySelectorAll('[data-st]').forEach(b => b.classList.toggle('active', b.dataset.st === setTab));
@@ -2805,7 +2889,6 @@ jobs:
                   }
                 }
 
-                // WORKSHOP
                 let wsTab = 'skins', wsSelSkin = profile.skin;
                 function syncWsPreview() {
                   const sk = SKINS.find(s => s.id === wsSelSkin) || SKINS[0];
@@ -2952,7 +3035,6 @@ jobs:
                   }
                 }
 
-                // SHOP (ONLY WATCH AD + EXACT INR PACKS, NO EXCHANGE!)
                 let pendingPack = null;
                 function renderShop() {
                   refreshLobbyUI();
@@ -3023,7 +3105,6 @@ jobs:
                   }).join('');
                 }
 
-                // EVENTS
                 document.getElementById('btnProfileOpen').addEventListener('click', () => { profTab = 'dossier'; renderProfileModal(); document.getElementById('profileModal').classList.add('open'); Sound.play('click'); });
                 document.querySelectorAll('[data-pt]').forEach(b => b.addEventListener('click', () => { profTab = b.dataset.pt; renderProfileModal(); Sound.play('click'); }));
                 document.getElementById('btnLobbySettings').addEventListener('click', () => { setTab = 'general'; renderSettingsModal(); document.getElementById('settingsModal').classList.add('open'); Sound.play('click'); });
@@ -3198,10 +3279,10 @@ jobs:
           SERPENT_KEY_PASS: ${{ secrets.SERPENT_KEY_PASS }}
         run: gradle assembleRelease bundleRelease
 
-      - name: Upload Serpent-Wild v24 Ultimate APK & AAB
+      - name: Upload Serpent-Wild v25 APK & AAB
         uses: actions/upload-artifact@v4
         with:
-          name: Serpent-Wild-v24-Ultimate-APK
+          name: Serpent-Wild-v25-Exact50Snakes-APK
           path: |
             app/build/outputs/apk/release/app-release.apk
             app/build/outputs/bundle/release/app-release.aab
