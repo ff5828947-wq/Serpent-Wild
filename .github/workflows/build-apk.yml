@@ -1,4 +1,4 @@
-name: Build Serpent-Wild v25 Exact-50-Snakes Funky-BGM APK
+name: Build Serpent-Wild v26 Pro-Glow-36Snakes APK
 
 on:
   push:
@@ -36,8 +36,7 @@ jobs:
           import math, wave, struct, random
           sr = 44100
           bpm = 126
-          step = 60.0 / bpm / 4.0  # 16th note groove
-          # 64-step upbeat playful Worms-Zone style funky arcade loop
+          step = 60.0 / bpm / 4.0
           lead = [
               523.25, 0, 659.25, 0, 783.99, 0, 659.25, 587.33,
               523.25, 0, 440.00, 523.25, 587.33, 0, 0, 0,
@@ -70,10 +69,8 @@ jobs:
           buf = [0.0] * n_samples
           rng = random.Random(2026)
 
-          # Bouncy funky bass + staccato chord stabs + brassy synth lead + crisp drums
           for idx in range(n_steps):
               st = int(idx * step * sr)
-              # 1. Punchy Kick on beats 0, 4, 8, 12 + syncopated funk kick
               if idx % 4 == 0 or idx % 16 == 10:
                   k_len = int(sr * 0.11)
                   for j in range(k_len):
@@ -81,7 +78,6 @@ jobs:
                       t = j / sr
                       f = 135.0 * math.exp(-t * 28.0) + 46.0
                       buf[st + j] += math.sin(2.0 * math.pi * f * t) * math.exp(-t * 24.0) * 0.28
-              # 2. Crisp Snare on beats 4, 12
               if idx % 8 == 4:
                   s_len = int(sr * 0.09)
                   for j in range(s_len):
@@ -91,14 +87,12 @@ jobs:
                       noise = (rng.random() * 2.0 - 1.0) * 0.14
                       body = math.sin(2.0 * math.pi * 195.0 * t) * 0.10
                       buf[st + j] += (noise + body) * env
-              # 3. Off-beat Hi-Hat tick
               if idx % 2 == 1:
                   h_len = int(sr * 0.035)
                   for j in range(h_len):
                       if st + j >= n_samples: break
                       t = j / sr
                       buf[st + j] += (rng.random() * 2.0 - 1.0) * math.exp(-t * 85.0) * 0.055
-              # 4. Funky Slap/Synth Bass
               bf = bass[idx]
               if bf > 0:
                   b_len = int(step * 1.4 * sr)
@@ -109,7 +103,6 @@ jobs:
                       env = min(1.0, j / (sr * 0.008)) * ((1.0 - u) ** 1.6)
                       val = math.sin(2.0 * math.pi * bf * t) * 0.19 + math.sin(4.0 * math.pi * bf * t) * 0.07
                       buf[st + j] += val * env
-              # 5. Upbeat Funky Chord Stabs on off-beats
               if idx % 4 == 2:
                   cf = chords[(idx // 8) % 4]
                   c_len = int(step * 1.1 * sr)
@@ -120,7 +113,6 @@ jobs:
                       env = min(1.0, j / (sr * 0.006)) * ((1.0 - u) ** 2.0)
                       s = sum(math.sin(2.0 * math.pi * f * t) for f in cf) * 0.042
                       buf[st + j] += s * env
-              # 6. Cheerful Brassy/Marimba Lead Melody
               lf = lead[idx]
               if lf > 0:
                   l_len = int(step * 1.65 * sr)
@@ -150,7 +142,7 @@ jobs:
               wf.writeframes(data)
           PYEOF
 
-      - name: Generate Serpent-Wild v25 Android Project
+      - name: Generate Serpent-Wild v26 Android Project
         run: |
           mkdir -p app/src/main/java/com/apexwild/serpent app/src/main/assets app/src/main/res/values
 
@@ -197,8 +189,8 @@ jobs:
                   applicationId = "com.apexwild.serpent.royale"
                   minSdk = 26
                   targetSdk = 35
-                  versionCode = 25
-                  versionName = "25.0.0"
+                  versionCode = 26
+                  versionName = "26.0.0"
               }
               signingConfigs {
                   create("release") {
@@ -327,7 +319,7 @@ jobs:
                       val iconRes = context.applicationInfo.icon.takeIf { it != 0 } ?: android.R.drawable.sym_def_app_icon
                       val notif = NotificationCompat.Builder(context, CHANNEL_ID)
                           .setSmallIcon(iconRes)
-                          .setContentTitle("🐍 Serpent Wild: 50 Custom Snakes!")
+                          .setContentTitle("🐍 Serpent Wild: 36 Unique Glow Snakes!")
                           .setContentText("Your Free Chest & Lucky Wheel Spin are ready! Become World #1!")
                           .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                           .setAutoCancel(true)
@@ -377,14 +369,12 @@ jobs:
               private var bgmEnabled = true
               private var bgmVolume = 0.72f
               private var notifEnabled = true
-              private var userStarted = false
               private var lastBackPressMs = 0L
 
               inner class AudioBridge {
                   @JavascriptInterface
                   fun startBgm(enabled: Boolean, vol: Float) {
                       runOnUiThread {
-                          userStarted = true
                           bgmEnabled = enabled
                           bgmVolume = vol.coerceIn(0f, 1f)
                           syncNativeBgm()
@@ -466,7 +456,6 @@ jobs:
               }
 
               private fun syncNativeBgm() {
-                  if (!userStarted) return
                   ensureBgm()
                   bgmPlayer?.let { mp ->
                       val v = if (bgmEnabled) bgmVolume else 0f
@@ -512,6 +501,8 @@ jobs:
 
                   setContentView(webView)
                   webView.loadUrl("file:///android_asset/index.html")
+                  // Start Funky BGM right away for Lobby & Match!
+                  syncNativeBgm()
               }
 
               private fun hideSystemBars() {
@@ -576,7 +567,7 @@ jobs:
           <head>
             <meta charset="UTF-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-            <title>SERPENT WILD: APEX — v25 Exact 50 Snakes</title>
+            <title>SERPENT WILD: APEX — v26 Pro Glow Edition</title>
             <style>
               :root {
                 --bg-grass: #145e1c;
@@ -754,8 +745,8 @@ jobs:
               .ws-ico-tab span { font-size: 7.5px; font-weight: 900; text-transform: uppercase; }
               .ws-ico-tab.active { background: linear-gradient(180deg, #32a8ff, #1258b5); border-color: #fff; color: #fff; }
               .ws-center-preview {
-                width: 225px; flex-shrink: 0; border-radius: 15px; padding: 9px;
-                background: radial-gradient(circle at 50% 44%, #247829 0%, #103d14 78%);
+                width: 230px; flex-shrink: 0; border-radius: 15px; padding: 9px;
+                background: radial-gradient(circle at 50% 44%, #18571d 0%, #09260c 82%);
                 border: 2px solid rgba(155, 245, 118, 0.55);
                 display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 5px;
               }
@@ -772,7 +763,7 @@ jobs:
               .snake-card.t-Legendary { background: linear-gradient(160deg, #c97214, #5e3004); border-color: #ffd24d; }
               .snake-card.t-Mythic    { background: linear-gradient(160deg, #16728c, #381263); border-color: #61f4ff; }
               .snake-card.selected    { outline: 3px solid #fff; transform: scale(1.02); }
-              .snake-thumb { width: 64px; height: 64px; border-radius: 10px; background: rgba(0,0,0,0.22); display: block; }
+              .snake-thumb { width: 64px; height: 64px; border-radius: 10px; background: rgba(0,0,0,0.3); display: block; }
               .sc-name { font-size: 9px; font-weight: 900; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
               .sc-price { font-size: 8.5px; font-weight: 900; padding: 2px 4px; border-radius: 6px; background: rgba(0,0,0,0.52); width: 100%; }
 
@@ -826,11 +817,18 @@ jobs:
               .chip.selected { border-color: var(--gold); background: rgba(255,210,63,0.25); color: #fff; }
               .text-input { width: 100%; padding: 6px 10px; border-radius: 9px; border: 2px solid #6ec6ff; background: rgba(5,16,36,0.9); color: #fff; font-size: 12.5px; font-weight: 900; outline: none; }
 
+              /* IN-GAME HUD — TOP-LEFT CORNER MINI MAP + CLEAN LAYOUT */
               #hud { position: fixed; inset: 0; z-index: 20; display: none; pointer-events: none; }
-              #hudTopLeft { position: absolute; top: 8px; left: max(10px, env(safe-area-inset-left)); display: flex; flex-direction: column; gap: 5px; }
+              #hudTopLeft { position: absolute; top: 8px; left: max(10px, env(safe-area-inset-left)); display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
               .score-pill { padding: 5px 12px; border-radius: 13px; display: flex; align-items: center; gap: 9px; font-size: 11.5px; font-weight: 900; }
               #hudScoreBig { font-size: 19px; font-weight: 900; color: #ffe259; font-variant-numeric: tabular-nums; }
               #hudKillsPill { font-size: 11px; color: #ff8594; }
+              #minimapBox {
+                width: 84px; height: 84px; border-radius: 50%; padding: 3px; pointer-events: none;
+                background: rgba(6, 22, 12, 0.86); border: 2px solid rgba(130, 240, 105, 0.8);
+                box-shadow: 0 4px 14px rgba(0,0,0,0.55);
+              }
+              #minimapCanvas { width: 100%; height: 100%; border-radius: 50%; display: block; }
               #activeBuffRow { display: flex; gap: 4px; flex-wrap: wrap; max-width: 240px; }
               .buff-tag { padding: 2px 7px; border-radius: 999px; font-size: 9px; font-weight: 900; background: rgba(16,42,84,0.9); border: 1.5px solid #59e8ff; color: #aef6ff; }
 
@@ -854,13 +852,6 @@ jobs:
               .alb-row { display: flex; justify-content: space-between; gap: 5px; color: #e2f5dc; }
               .alb-row.me { color: #ffe259; font-weight: 900; background: rgba(255,210,63,0.18); padding: 1px 4px; border-radius: 4px; }
 
-              #minimapBox {
-                position: absolute; bottom: 14px; left: max(12px, env(safe-area-inset-left));
-                width: 78px; height: 78px; border-radius: 50%; padding: 3px; pointer-events: none;
-                background: rgba(8, 24, 14, 0.82); border: 2px solid rgba(145, 235, 118, 0.65);
-              }
-              #minimapCanvas { width: 100%; height: 100%; border-radius: 50%; display: block; }
-
               #quickPotions { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; pointer-events: auto; }
               .qp-btn {
                 width: 42px; height: 42px; border-radius: 50%; border: 2px solid #7ee6ff;
@@ -871,7 +862,7 @@ jobs:
 
               #floatingJoy { position: absolute; width: 104px; height: 104px; margin-left: -52px; margin-top: -52px; border-radius: 50%; background: rgba(255,255,255,0.16); border: 2px solid rgba(255,255,255,0.55); opacity: 0; pointer-events: none; transition: opacity 0.12s; }
               #floatingJoy.visible { opacity: 1; }
-              #floatingJoy.fixed-mode { left: 146px !important; top: calc(100% - 76px) !important; opacity: 0.82 !important; }
+              #floatingJoy.fixed-mode { left: 82px !important; top: calc(100% - 78px) !important; opacity: 0.82 !important; }
               #floatingJoyKnob { position: absolute; top: 50%; left: 50%; width: 40px; height: 40px; border-radius: 50%; transform: translate(-50%,-50%); background: radial-gradient(circle at 35% 30%, #ffffff, #8cff3b 70%, #248a0c); border: 2px solid #fff; }
 
               #btnBoost {
@@ -895,9 +886,9 @@ jobs:
               <canvas id="introCanvas"></canvas>
               <div class="intro-logo-ring">🐍</div>
               <div class="intro-title">SERPENT WILD</div>
-              <div style="position:relative;z-index:2;font-size:11px;font-weight:900;letter-spacing:2.5px;color:#a8ff78;">v25 • 50 EXACT SNAKES • FUNKY BGM</div>
+              <div style="position:relative;z-index:2;font-size:11px;font-weight:900;letter-spacing:2.5px;color:#a8ff78;">v26 • 36 UNIQUE GLOW SNAKES</div>
               <div class="intro-bar"><div id="introFill"></div></div>
-              <div id="introSub" style="position:relative;z-index:2;font-size:10.5px;font-weight:800;color:#e0ffd1;">Loading 50 Custom Animated Snakes...</div>
+              <div id="introSub" style="position:relative;z-index:2;font-size:10.5px;font-weight:800;color:#e0ffd1;">Loading Unique Glow Skins &amp; Funky BGM...</div>
             </div>
 
             <div id="lobbyScreen">
@@ -918,6 +909,7 @@ jobs:
                   <div class="curr-pill wz-panel" id="btnEnergyPill"><span>⚡</span><span id="lbEnergy">65/20</span></div>
                   <div class="curr-pill wz-panel" id="btnTopCoins"><span>🪙</span><span id="lbCoins">2,500</span><span style="color:#69f03a;">+</span></div>
                   <div class="curr-pill wz-panel" id="btnTopGems"><span>💎</span><span id="lbDias">50</span><span style="color:#59f4ff;">+</span></div>
+                  <button class="icon-sq wz-panel" id="btnLobbyAudio" type="button">🔊</button>
                   <button class="icon-sq wz-panel" id="btnLobbySettings" type="button">⚙️</button>
                 </div>
               </div>
@@ -959,7 +951,7 @@ jobs:
             <div class="modal-backdrop" id="workshopModal">
               <div class="modal-box wz-panel">
                 <div class="modal-head">
-                  <div class="modal-title" data-i18n="workshopTitle">🎨 Worm Workshop — 50 Exact Skins</div>
+                  <div class="modal-title" data-i18n="workshopTitle">🎨 Worm Workshop — 36 Unique Skins</div>
                   <div style="display:flex;align-items:center;gap:10px;">
                     <span style="font-size:12px;font-weight:900;color:#ffe259;">🪙 <span id="wsCoins">0</span></span>
                     <span style="font-size:12px;font-weight:900;color:#8cf0ff;">💎 <span id="wsDias">0</span></span>
@@ -976,10 +968,10 @@ jobs:
                     </div>
                     <div class="ws-center-preview">
                       <div style="text-align:center;">
-                        <div id="wsName" style="font-size:13px;font-weight:900;color:#ffe259;">Rose</div>
-                        <div id="wsMeta" style="font-size:9px;font-weight:800;color:#a8ff78;">FREE</div>
+                        <div id="wsName" style="font-size:13px;font-weight:900;color:#ffe259;">Corgi</div>
+                        <div id="wsMeta" style="font-size:8.5px;font-weight:800;color:#a8ff78;">FREE • CLASSIC</div>
                       </div>
-                      <canvas id="wsPreviewCanvas" width="210" height="205"></canvas>
+                      <canvas id="wsPreviewCanvas" width="215" height="205"></canvas>
                       <div id="wsExprPreview" style="font-size:9.5px;color:#d6f5ff;font-weight:800;">Expression: "Hi!"</div>
                       <button class="btn-gold" id="wsActionBtn" type="button" style="width:100%;">EQUIPPED ✅</button>
                     </div>
@@ -1128,6 +1120,7 @@ jobs:
               </div>
             </div>
 
+            <!-- IN-GAME HUD WITH TOP-LEFT CORNER MINI MAP -->
             <div id="hud">
               <div id="hudTopLeft">
                 <div class="score-pill wz-panel">
@@ -1135,6 +1128,7 @@ jobs:
                   <div style="height:22px;width:1px;background:rgba(255,255,255,0.2);"></div>
                   <div><div id="hudKillsPill">💀 0</div><div style="font-size:9px;color:#ffe259;" id="hudCoinsRun">🪙 0</div></div>
                 </div>
+                <div id="minimapBox"><canvas id="minimapCanvas" width="150" height="150"></canvas></div>
                 <div id="activeBuffRow"></div>
               </div>
 
@@ -1149,8 +1143,6 @@ jobs:
                 </div>
                 <div id="arenaLeaderBox"></div>
               </div>
-
-              <div id="minimapBox"><canvas id="minimapCanvas" width="140" height="140"></canvas></div>
 
               <div id="quickPotions">
                 <button class="qp-btn" type="button" data-qp="magnet">🧲<span class="qp-cnt" id="qpc_magnet">2</span></button>
@@ -1289,64 +1281,56 @@ jobs:
                   { id: 'radar',  name: 'Treasure Radar',icon: '📡', col: '#ff9f43', dur: 18, cost: 300, desc: 'Shows giant worms & chests' }
                 ];
 
-                // 50 EXACT SNAKES FROM VIDEO (16 UNIQUE BODY SHAPES & ANIMATIONS!)
-                // [id, name, tier, acc, pat, bodyType, base, mid, dark, accent, curr, price]
+                // 36 COMPLETELY UNIQUE SNAKES — 4 FREE (NO GLOW / NO ANIM) + 32 PAID (EACH HAS UNIQUE BODY + GLOW + LIVE ANIMATION!)
+                // [id, name, tier, acc, bodyType, anim, glow, base, mid, dark, accent, curr, price]
                 const RAW_SKINS = [
-                  ['rose',         'Rose',           'Free',      'roseHead',  'vine',     'vine',     '#2fb83d','#1b7a24','#0a360e','#ff2442','free',0],
-                  ['pot',          'Pot of Gold',    'Free',      'goldPot',   'rainbow',  'beam',     '#ff4757','#ffe259','#1c2640','#59f4ff','free',0],
-                  ['marshmallow',  'Marshmallow',    'Free',      'bow',       'pastel',   'mallow',   '#fff5f8','#ffd4e5','#b5788f','#f2c288','free',0],
-                  ['donut',        'Donut',          'Free',      'sprinkle',  'donut',    'donuts',   '#ff73b9','#e6a86e','#6e3a12','#ffe85c','free',0],
-                  ['icecreamy',    'Ice Creamy',     'Rare',      'cherry',    'scoops',   'scoops',   '#ff94c2','#9cf4ff','#593047','#ffe875','coin',700],
-                  ['chocotobby',   'Choco Tobby',    'Rare',      'choco',     'choco',    'chocoBar', '#6e3a1a','#4d250d','#240e03','#d99b52','coin',800],
-                  ['pudding',      'Pudding',        'Rare',      'berry',     'drizzle',  'pudding',  '#ffe885','#e6b835','#6e480a','#8c4212','coin',900],
-                  ['cherrypie',    'Cherry Pie',     'Rare',      'cherry',    'lattice',  'pie',      '#e8a854','#ba7524','#593208','#d91e36','coin',1000],
-                  ['pineapple',    'Pineapple',      'Rare',      'pineLeaf',  'honey',    'honey',    '#ffd23f','#d9980c','#6e4602','#4be35d','coin',1100],
-                  ['polaroid',     'Polaroid',       'Rare',      'camera',    'polaroid', 'polaroid', '#f2f5f7','#c4d0db','#242b33','#ff4757','coin',1200],
-                  ['blocks',       'Blocks',         'Rare',      'block',     'blocks',   'blocks',   '#38b6ff','#ff4757','#1c2640','#ffe259','coin',1300],
-                  ['dolphin',      'Dolphin',        'Rare',      'fin',       'stripe',   'fins',     '#4dc3ff','#1d7ec4','#0a3459','#e8f7ff','coin',1400],
-                  ['piranha',      'Piranha',        'Rare',      'fin',       'scales',   'fins',     '#ff4254','#b81829','#4a050d','#ffe259','coin',1500],
-                  ['zebra',        'Zebra',          'Rare',      'horseEars', 'zebra',    'smooth',   '#f5f8fa','#dce3ea','#1a1e24','#14171a','coin',1600],
-                  ['panda',        'Panda',          'Rare',      'pandaEars', 'panda',    'smooth',   '#ffffff','#dce4eb','#14171a','#14171a','coin',1700],
-                  ['capybara',     'Capybara',       'Rare',      'orangeHat', 'fur',      'smooth',   '#b88254','#855732','#3d2410','#ff9f1a','coin',1800],
-                  ['hare',         'Hare',           'Rare',      'bunnyEars', 'fur',      'smooth',   '#d9cfc4','#a69a8d','#4a423a','#ffb8c9','coin',1900],
-                  ['hippo',        'Hippo',          'Rare',      'bearEars',  'dots',     'smooth',   '#9880b8','#675285','#2e2142','#d8c8eb','coin',2000],
-                  ['brownbear',    'Brown Bear',     'Rare',      'bearEars',  'fur',      'smooth',   '#9c6134','#693c1b','#2e1606','#e6c29f','coin',2100],
-                  ['duck',         'Duck',           'Rare',      'beak',      'stripe',   'wings',    '#ffe847','#e0b800','#6e5200','#ff7a18','coin',2200],
-                  ['eagle',        'Eagle',          'Rare',      'beak',      'feathers', 'feathers', '#6e4724','#422710','#1a0d04','#ffffff','coin',2300],
-                  ['owl',          'Owl',            'Rare',      'owlEars',   'feathers', 'feathers', '#c79c6e','#8c633b','#3d2712','#ffe85c','coin',2400],
-                  ['sheep',        'Sheep',          'Rare',      'fluff',     'clouds',   'wool',     '#ffffff','#dfe8f0','#47525e','#ffb8c9','coin',2500],
-                  ['poodle',       'Poodle',         'Rare',      'fluff',     'clouds',   'wool',     '#ff9ce0','#d65cb0','#631d4e','#fff0fa','coin',2600],
-                  ['kitty',        'Kitty',          'Rare',      'catEars',   'paws',     'smooth',   '#ffb8d6','#e070a0','#6e2445','#ffffff','coin',2700],
-                  ['luckycat',     'Lucky Cat',      'Rare',      'catEars',   'coins',    'smooth',   '#ffffff','#e0e8f0','#47525e','#ffd23f','coin',2800],
-                  ['octopus',      'Octopus',        'Rare',      'tentacle',  'suckers',  'suckers',  '#b84dff','#7b1cc9','#300859','#ffd23f','coin',2900],
-                  ['smilodon',     'Smilodon',       'Epic',      'catEars',   'zebra',    'smooth',   '#f2a649','#ba6e18','#4a2704','#ffffff','coin',3200],
-                  ['circusrabbit', 'Circus Rabbit',  'Epic',      'tophat',    'checker',  'smooth',   '#ffffff','#ff4757','#2b1238','#ffe259','coin',3400],
-                  ['patricia',     'Patricia',       'Epic',      'bow',       'dots',     'smooth',   '#ff6be6','#b824a0','#47083d','#ffe259','coin',3600],
-                  ['lola',         'Lola',           'Epic',      'flower',    'pastel',   'smooth',   '#ff85a2','#d9486b','#5c1428','#fff082','coin',3800],
-                  ['racer',        'Racer',          'Epic',      'helmet',    'f1',       'smooth',   '#ff3847','#ba1422','#45040a','#00f7ff','coin',4000],
-                  ['pirate',       'Pirate',         'Epic',      'pirateHat', 'coat',     'smooth',   '#b81424','#6e0812','#210205','#ffd23f','coin',4200],
-                  ['gambler',      'Gambler',        'Epic',      'tophat',    'cards',    'cards',    '#1c2436','#0e131f','#05070c','#ff3847','coin',4400],
-                  ['jester',       'Jester',         'Epic',      'jesterHat', 'checker',  'blocks',   '#9b38ff','#ffd23f','#2b0a59','#ff4757','coin',4600],
-                  ['patchvara',    'Patch Vara',     'Epic',      'bolts',     'stitches', 'stitches', '#58b847','#367a2a','#12330d','#1a1a1a','coin',4800],
-                  ['knight',       'Knight',         'Epic',      'helmet',    'armor',    'armor',    '#b8c7d9','#7a8a9e','#2c3440','#ffd23f','coin',5000],
-                  ['spider',       'Spider',         'Epic',      'spider',    'neon',     'spiderLegs','#26212e','#14111a','#060508','#ff3b30','coin',5200],
-                  ['xmastree',     'Christmas Tree', 'Epic',      'starTop',   'pine',     'pineTree', '#24a842','#126925','#062e0f','#ff3b30','coin',5500],
-                  ['skeleton',     'Skeleton',       'Epic',      'skull',     'bones',    'bones',    '#242a33','#14181f','#07090d','#f2f7ff','coin',5800],
-                  ['snake',        'Snake',          'Epic',      'dragHorn',  'scales',   'fins',     '#42d957','#1c8a2c','#07360d','#ffe259','coin',6000],
-                  ['beast',        'Beast',          'Legendary', 'horns',     'fur',      'flames',   '#7a381e','#471d0c','#1a0802','#ffe259','dia',30],
-                  ['raptor',       'Raptor',         'Legendary', 'dragHorn',  'scales',   'fins',     '#1ca8ff','#0c58b8','#041d4d','#69f03a','dia',40],
-                  ['medusa',       'Medusa',         'Legendary', 'snakes',    'scales',   'fins',     '#38c97a','#197845','#07301b','#ffd23f','dia',50],
-                  ['phantom',      'Phantom',        'Legendary', 'hood',      'ghost',    'ghost',    '#4de2f0','#197ea6','#062638','#aef6ff','dia',65],
-                  ['firehorse',    'Fire Horse',     'Legendary', 'horseEars', 'glow',     'flames',   '#ff5e14','#b82404','#380701','#ffe259','dia',80],
-                  ['evil',         'Evil',           'Legendary', 'horns',     'glow',     'flames',   '#b81424','#5c050e','#1c0104','#ff7a18','dia',95],
-                  ['dullahan',     'Dullahan',       'Mythic',    'greenSkull','glow',     'greenFlame','#196e3d','#0b3b20','#03170b','#69ff59','dia',110],
-                  ['waterdrag',    'Water Dragon',   'Mythic',    'dragHorn',  'scales',   'fins',     '#29b6ff','#0e63b8','#04244d','#8cf5ff','dia',125],
-                  ['greendrag',    'Green Dragon',   'Mythic',    'dragHorn',  'scales',   'wings',    '#38e05c','#168c30','#063811','#ffd23f','dia',150]
+                  // 4 FREE CLASSIC SNAKES — ZERO GLOW, ZERO ANIMATION
+                  ['corgi',      'Corgi',          'Free',      'foxEars',   'corgiClassic',  'none',         '',        '#f29c38','#c96c14','#5c2b04','#fff7eb','free',0],
+                  ['rhino',      'Rhino',          'Free',      'rhinoHorn', 'rhinoClassic',  'none',         '',        '#84919e','#545e69','#222830','#e8e1cc','free',0],
+                  ['panda',      'Panda',          'Free',      'pandaEars', 'pandaClassic',  'none',         '',        '#ffffff','#dce4eb','#14171a','#14171a','free',0],
+                  ['watermelon', 'Watermelon',     'Free',      'leaf',      'melonClassic',  'none',         '',        '#ff4769','#38c94b','#12521b','#141414','free',0],
+
+                  // 32 UNIQUE PAID SNAKES — EVERY SINGLE ONE HAS ITS OWN BODY, COLOR, GLOW & LIVE ANIMATION
+                  ['dilopho',    'Dilophosaurus',  'Rare',      'frill',     'frillBody',     'pulseFrill',   '#ff38d4', '#8cff3b','#38a814','#0e3d06','#ff38d4','coin',800],
+                  ['honey',      'Honey',          'Rare',      'antenna',   'honeycomb',     'drip',         '#ffd23f', '#ffd23f','#d98e00','#522d00','#ffae00','coin',900],
+                  ['donut',      'Donut',          'Rare',      'sprinkle',  'donuts',        'orbitSprinkle','#ff73b9', '#ff73b9','#e6a86e','#6e3a12','#ffe85c','coin',1000],
+                  ['goo',        'Goo',            'Rare',      'slimeCap',  'slime',         'bubble',       '#7cff3b', '#7cff3b','#2ec914','#0b4706','#d4ff8a','coin',1100],
+                  ['blocks',     'Blocks',         'Rare',      'block',     'tetris',        'shiftColor',   '#38b6ff', '#38b6ff','#ff4757','#141e33','#ffe259','coin',1200],
+                  ['icecreamy',  'Ice Creamy',     'Rare',      'cherry',    'scoops',        'meltSparkle',  '#ff94c2', '#ff94c2','#9cf4ff','#593047','#ffe875','coin',1300],
+                  ['polaroid',   'Polaroid',       'Rare',      'camera',    'polaroid',      'flash',        '#ffffff', '#f2f5f7','#c4d0db','#242b33','#ff4757','coin',1400],
+                  ['kitty',      'Kitty',          'Rare',      'catEars',   'pawBody',       'heartFloat',   '#ff85c0', '#ffb8d6','#e070a0','#6e2445','#ff2e63','coin',1500],
+                  ['luckycat',   'Lucky Cat',      'Rare',      'catEars',   'coinBody',      'coinSpin',     '#ffe259', '#ffffff','#e0e8f0','#47525e','#ffd23f','coin',1600],
+                  ['poodle',     'Poodle',         'Rare',      'fluff',     'fluffCloud',    'bounceFluff',  '#ff9ce0', '#ff9ce0','#d65cb0','#631d4e','#fff0fa','coin',1700],
+                  ['brownbear',  'Brown Bear',     'Rare',      'bearEars',  'furStitch',     'pawGlow',      '#e09f5a', '#9c6134','#693c1b','#2e1606','#ffe299','coin',1800],
+                  ['hare',       'Hare',           'Rare',      'bunnyEars', 'carrotTrail',   'hopPulse',     '#a8f0ff', '#e0d6cc','#a69a8d','#4a423a','#ff8c24','coin',1900],
+                  ['parrot',     'Parrot',         'Rare',      'beak',      'featherWave',   'flutter',      '#4be35d', '#ff3b30','#24c94b','#0d387a','#ffe259','coin',2000],
+
+                  ['gamer',      'Gamer',          'Epic',      'headset',   'cyberCircuit',  'rgbWave',      '#00f7ff', '#1e2438','#111524','#06080f','#00f7ff','coin',2800],
+                  ['jester',     'Jester',         'Epic',      'jesterHat', 'diamondCheck',  'confetti',     '#b84dff', '#9b38ff','#ffd23f','#2b0a59','#ff4757','coin',3000],
+                  ['panther',    'Panther',        'Epic',      'catEars',   'neonClaw',      'stealthPulse', '#a855ff', '#262436','#14121f','#06050a','#b859ff','coin',3200],
+                  ['smilodon',   'Smilodon',       'Epic',      'saber',     'saberStripe',   'fangSpark',    '#ff9f43', '#f2a649','#ba6e18','#4a2704','#ffffff','coin',3400],
+                  ['vampire',    'Bat Vampire',    'Epic',      'batEars',   'batWings',      'bloodMist',    '#ff2442', '#472459','#241030','#0c0412','#ff2442','coin',3600],
+                  ['spider',     'Spider',         'Epic',      'spider',    'spiderLegs',    'legCrawl',     '#ff3b30', '#26212e','#14111a','#060508','#ff3b30','coin',3800],
+                  ['octopus',    'Octopus',        'Epic',      'tentacle',  'suckerRings',   'inkBubble',    '#d07aff', '#b84dff','#7b1cc9','#300859','#ffd23f','coin',4000],
+                  ['skeleton',   'Skeleton',       'Epic',      'skull',     'ribcage',       'soulSpark',    '#59f4ff', '#242a33','#14181f','#07090d','#f2f7ff','coin',4200],
+                  ['garland',    'Garland',        'Epic',      'starTop',   'wireBulbs',     'bulbTwinkle',  '#ffe259', '#1c782c','#0e4718','#051f0a','#ffe259','coin',4500],
+                  ['xmastree',   'Christmas Tree', 'Epic',      'starTop',   'pineNeedles',   'treeLights',   '#69f03a', '#24a842','#126925','#062e0f','#ff3b30','coin',4800],
+                  ['wizard',     'Wizard',         'Epic',      'wizardHat', 'arcaneRunes',   'starOrbit',    '#ffd23f', '#3848b8','#1b246e','#0a0e36','#ffe259','coin',5200],
+                  ['snake',      'Cobra King',     'Epic',      'cobraHood', 'emeraldScales', 'venomDrip',    '#69ff59', '#32d94e','#148528','#05330e','#b8ff70','coin',5600],
+
+                  ['raptor',     'Raptor',         'Legendary', 'dragHorn',  'dinoSpikes',    'electricArc',  '#00e5ff', '#1ca8ff','#0c58b8','#041d4d','#69f03a','dia',35],
+                  ['beast',      'Beast',          'Legendary', 'horns',     'lavaArmor',     'emberRise',    '#ff6b1a', '#5c2614','#2e1007','#120502','#ff8c24','dia',45],
+                  ['phantom',    'Phantom',        'Legendary', 'hood',      'ghostWisp',     'phaseFade',    '#4de2f0', '#4de2f0','#197ea6','#062638','#aef6ff','dia',60],
+                  ['firehorse',  'Fire Horse',     'Legendary', 'horseEars', 'blazeMane',     'firePlume',    '#ff7a18', '#ff5e14','#b82404','#380701','#ffe259','dia',75],
+                  ['evil',       'Evil',           'Legendary', 'horns',     'hellSpikes',    'darkFlame',    '#ff1e38', '#9e0b1a','#47040b','#170103','#ff4757','dia',90],
+
+                  ['dullahan',   'Dullahan',       'Mythic',    'greenSkull','spectralEmerald','greenInferno','#69ff59', '#196e3d','#0b3b20','#03170b','#69ff59','dia',115],
+                  ['waterdrag',  'Water Dragon',   'Mythic',    'dragHorn',  'aquaFins',      'waterRipple',  '#59f4ff', '#29b6ff','#0e63b8','#04244d','#8cf5ff','dia',140]
                 ];
 
                 const SKINS = RAW_SKINS.map(r => ({
-                  id: r[0], name: r[1], tier: r[2], acc: r[3], pat: r[4], bodyType: r[5],
-                  base: r[6], mid: r[7], dark: r[8], accent: r[9], curr: r[10], price: r[11]
+                  id: r[0], name: r[1], tier: r[2], acc: r[3], bodyType: r[4], anim: r[5], glow: r[6],
+                  base: r[7], mid: r[8], dark: r[9], accent: r[10], curr: r[11], price: r[12]
                 }));
 
                 const WORLD_BOTS = {
@@ -1388,8 +1372,8 @@ jobs:
                 const DEFAULT_PROFILE = {
                   name: 'ApexHunter', avatar: '🐍', level: 1, xp: 0, energy: 65, coins: 2500, diamonds: 50,
                   lang: 'en', onlineMode: true, mode: 'infinity',
-                  skin: 'rose', eye: 'cute', lip: 'smile', expr: 'hi', food: 'mixed', floor: 'clover',
-                  ownedSkins: ['rose', 'pot', 'marshmallow', 'donut'],
+                  skin: 'corgi', eye: 'cute', lip: 'smile', expr: 'hi', food: 'mixed', floor: 'clover',
+                  ownedSkins: ['corgi', 'rhino', 'panda', 'watermelon'],
                   ownedEyes: ['cute'], ownedLips: ['smile'], ownedExprs: ['hi', 'yum'], ownedFloors: ['clover'],
                   potions: { magnet: 2, x5: 2, speed: 2, zoom: 2, radar: 2 },
                   bestScores: { infinity: 0, time: 0, treasure: 0 },
@@ -1402,7 +1386,7 @@ jobs:
 
                 let profile = (() => {
                   try {
-                    const raw = localStorage.getItem('serpent_wild_v25_wz') || localStorage.getItem('serpent_wild_v24_wz');
+                    const raw = localStorage.getItem('serpent_wild_v26_wz') || localStorage.getItem('serpent_wild_v25_wz') || localStorage.getItem('serpent_wild_v24_wz');
                     if (!raw) return JSON.parse(JSON.stringify(DEFAULT_PROFILE));
                     const d = JSON.parse(raw);
                     const merged = {
@@ -1412,15 +1396,15 @@ jobs:
                       stats: { ...DEFAULT_PROFILE.stats, ...(d.stats || {}) },
                       settings: { ...DEFAULT_PROFILE.settings, ...(d.settings || {}) }
                     };
-                    ['rose','pot','marshmallow','donut'].forEach(id => { if (!merged.ownedSkins.includes(id)) merged.ownedSkins.push(id); });
-                    if (!SKINS.some(s => s.id === merged.skin)) merged.skin = 'rose';
+                    ['corgi','rhino','panda','watermelon'].forEach(id => { if (!merged.ownedSkins.includes(id)) merged.ownedSkins.push(id); });
+                    if (!SKINS.some(s => s.id === merged.skin)) merged.skin = 'corgi';
                     return merged;
                   } catch (e) { return JSON.parse(JSON.stringify(DEFAULT_PROFILE)); }
                 })();
 
                 const recordPlayToday = () => { const t = todayIso(); if (!profile.playedDates.includes(t)) profile.playedDates.push(t); };
                 recordPlayToday();
-                const saveProfile = () => { try { localStorage.setItem('serpent_wild_v25_wz', JSON.stringify(profile)); } catch (e) {} };
+                const saveProfile = () => { try { localStorage.setItem('serpent_wild_v26_wz', JSON.stringify(profile)); } catch (e) {} };
                 saveProfile();
 
                 const isWorldChampion = () => (profile.bestScores.infinity || 0) >= WORLD_BOTS.infinity[0].score;
@@ -1547,13 +1531,13 @@ jobs:
                   floorPattern = ctx.createPattern(t, 'repeat');
                 }
 
-                // 50-SNAKE CUSTOM HEAD ACCESSORIES (ROSE, POT OF GOLD, GREEN SKULL, BUNNY, BOLTS, ETC.)
+                // 36-SNAKE UNIQUE HEAD ACCESSORIES
                 function drawSkinAccessory(c, skin, hr, layer) {
                   const acc = skin.acc;
                   c.save();
                   if (layer === 'back') {
-                    if (acc === 'foxEars' || acc === 'catEars' || acc === 'horseEars' || acc === 'owlEars' || acc === 'batEars') {
-                      const eLen = acc === 'batEars' ? 1.55 : (acc === 'foxEars' ? 1.38 : 1.24);
+                    if (acc === 'foxEars' || acc === 'catEars' || acc === 'horseEars' || acc === 'batEars') {
+                      const eLen = acc === 'batEars' ? 1.58 : (acc === 'foxEars' ? 1.38 : 1.26);
                       for (const s of [-1, 1]) {
                         c.fillStyle = acc === 'batEars' ? skin.dark : skin.mid;
                         c.strokeStyle = 'rgba(0,0,0,0.45)'; c.lineWidth = 1.3;
@@ -1561,6 +1545,17 @@ jobs:
                         c.fillStyle = acc === 'catEars' ? '#ff94b8' : skin.accent;
                         c.beginPath(); c.moveTo(-hr * 0.24, s * hr * 0.7); c.lineTo(-hr * 0.68, s * hr * (eLen * 0.82)); c.lineTo(-hr * 0.64, s * hr * 0.45); c.closePath(); c.fill();
                       }
+                    } else if (acc === 'frill') {
+                      const pulse = 1 + 0.14 * Math.sin(globalTime * 10);
+                      for (const s of [-1, 1]) {
+                        c.fillStyle = skin.accent; c.strokeStyle = '#ffe259'; c.lineWidth = 1.4;
+                        c.beginPath(); c.moveTo(-hr * 0.15, s * hr * 0.65);
+                        c.quadraticCurveTo(-hr * 0.65, s * hr * 1.65 * pulse, -hr * 1.25, s * hr * 1.2 * pulse);
+                        c.quadraticCurveTo(-hr * 0.85, s * hr * 0.7, -hr * 0.5, s * hr * 0.4); c.closePath(); c.fill(); c.stroke();
+                      }
+                    } else if (acc === 'cobraHood') {
+                      c.fillStyle = skin.mid; c.strokeStyle = skin.accent; c.lineWidth = 1.6;
+                      c.beginPath(); c.ellipse(-hr * 0.32, 0, hr * 0.75, hr * 1.42, 0, 0, Math.PI * 2); c.fill(); c.stroke();
                     } else if (acc === 'bunnyEars') {
                       for (const s of [-1, 1]) {
                         c.fillStyle = skin.base; c.strokeStyle = skin.dark; c.lineWidth = 1.3;
@@ -1580,13 +1575,8 @@ jobs:
                         c.beginPath(); c.moveTo(-hr * 0.1, s * hr * 0.68); c.quadraticCurveTo(-hr * 0.85, s * hr * 1.4, -hr * 1.52, s * hr * 1.05);
                         c.quadraticCurveTo(-hr * 0.85, s * hr * 0.92, -hr * 0.55, s * hr * 0.45); c.closePath(); c.fill(); c.stroke();
                       }
-                    } else if (acc === 'fin') {
-                      c.fillStyle = skin.mid; c.strokeStyle = skin.dark; c.lineWidth = 1.3;
-                      for (const s of [-1, 1]) {
-                        c.beginPath(); c.moveTo(0, s * hr * 0.78); c.quadraticCurveTo(-hr * 0.45, s * hr * 1.48, -hr * 0.92, s * hr * 0.95); c.closePath(); c.fill(); c.stroke();
-                      }
-                    } else if (acc === 'tentacle' || acc === 'snakes') {
-                      c.strokeStyle = acc === 'snakes' ? '#24a842' : skin.mid; c.lineWidth = Math.max(2.2, hr * 0.22); c.lineCap = 'round';
+                    } else if (acc === 'tentacle') {
+                      c.strokeStyle = skin.mid; c.lineWidth = Math.max(2.2, hr * 0.22); c.lineCap = 'round';
                       for (let k = -2; k <= 2; k++) {
                         const wig = Math.sin(globalTime * 7 + k) * hr * 0.18;
                         c.beginPath(); c.moveTo(-hr * 0.55, k * hr * 0.34); c.quadraticCurveTo(-hr * 1.15, k * hr * 0.55 + wig, -hr * 1.48, k * hr * 0.44 - wig); c.stroke();
@@ -1603,48 +1593,25 @@ jobs:
                       c.fillStyle = '#0e2c3d'; c.strokeStyle = '#4de2f0'; c.lineWidth = 1.6;
                       c.beginPath(); c.moveTo(hr * 0.65, -hr * 1.05); c.quadraticCurveTo(-hr * 1.45, -hr * 1.25, -hr * 1.48, 0);
                       c.quadraticCurveTo(-hr * 1.45, hr * 1.25, hr * 0.65, hr * 1.05); c.closePath(); c.fill(); c.stroke();
-                    } else if (acc === 'bolts') {
-                      c.fillStyle = '#b8c7d9'; c.strokeStyle = '#1a1a1a'; c.lineWidth = 1.2;
-                      for (const s of [-1, 1]) {
-                        c.fillRect(-hr * 0.25, s * hr * 0.95, hr * 0.24, s * hr * 0.36);
-                        c.fillRect(-hr * 0.36, s * hr * 1.25, hr * 0.46, s * hr * 0.18);
-                      }
                     }
                   } else {
-                    if (acc === 'roseHead') {
-                      c.fillStyle = '#ff2442'; c.strokeStyle = '#750818'; c.lineWidth = 1.3;
-                      for (let k = 0; k < 6; k++) {
-                        const a = (k / 6) * Math.PI * 2 + globalTime * 0.5;
-                        c.beginPath(); c.arc(-hr * 0.48 + Math.cos(a) * hr * 0.28, Math.sin(a) * hr * 0.28, hr * 0.26, 0, Math.PI * 2); c.fill(); c.stroke();
+                    if (acc === 'rhinoHorn') {
+                      c.fillStyle = '#f2ebd9'; c.strokeStyle = '#545e69'; c.lineWidth = 1.3;
+                      c.beginPath(); c.moveTo(hr * 0.85, -hr * 0.24); c.lineTo(hr * 1.78, 0); c.lineTo(hr * 0.85, hr * 0.24); c.closePath(); c.fill(); c.stroke();
+                    } else if (acc === 'saber') {
+                      c.fillStyle = '#ffffff'; c.strokeStyle = '#4a2704'; c.lineWidth = 1.2;
+                      for (const s of [-1, 1]) {
+                        c.beginPath(); c.moveTo(hr * 0.82, s * hr * 0.35); c.lineTo(hr * 1.55, s * hr * 0.22); c.lineTo(hr * 0.85, s * hr * 0.14); c.closePath(); c.fill(); c.stroke();
                       }
-                      c.fillStyle = '#ff758f'; c.beginPath(); c.arc(-hr * 0.48, 0, hr * 0.2, 0, Math.PI * 2); c.fill();
-                    } else if (acc === 'goldPot') {
-                      c.fillStyle = '#1f242d'; c.strokeStyle = '#ffe259'; c.lineWidth = 1.6;
-                      c.beginPath(); c.arc(-hr * 0.48, 0, hr * 0.56, 0, Math.PI * 2); c.fill(); c.stroke();
-                      c.fillStyle = '#ffe259';
-                      for (let k = -1; k <= 1; k++) { c.beginPath(); c.arc(-hr * 0.34, k * hr * 0.24, hr * 0.17, 0, Math.PI * 2); c.fill(); }
-                    } else if (acc === 'flower') {
-                      c.fillStyle = '#ffe259';
-                      for (let k = 0; k < 5; k++) {
-                        const a = (k / 5) * Math.PI * 2;
-                        c.beginPath(); c.arc(-hr * 0.45 + Math.cos(a) * hr * 0.32, Math.sin(a) * hr * 0.32, hr * 0.22, 0, Math.PI * 2); c.fill();
-                      }
-                      c.fillStyle = '#ff3847'; c.beginPath(); c.arc(-hr * 0.45, 0, hr * 0.18, 0, Math.PI * 2); c.fill();
-                    } else if (acc === 'choco') {
-                      c.fillStyle = '#d99b52'; c.strokeStyle = '#3b1c08'; c.lineWidth = 1.3;
-                      c.fillRect(-hr * 0.72, -hr * 0.48, hr * 0.56, hr * 0.96); c.strokeRect(-hr * 0.72, -hr * 0.48, hr * 0.56, hr * 0.96);
-                    } else if (acc === 'tophat') {
-                      c.fillStyle = '#1a1e26'; c.strokeStyle = '#ffe259'; c.lineWidth = 1.5;
-                      c.beginPath(); c.ellipse(-hr * 0.32, 0, hr * 0.44, hr * 0.92, 0, 0, Math.PI * 2); c.fill(); c.stroke();
-                      c.fillStyle = '#262c38'; c.beginPath(); c.arc(-hr * 0.38, 0, hr * 0.56, 0, Math.PI * 2); c.fill(); c.stroke();
-                    } else if (acc === 'helmet') {
-                      c.strokeStyle = skin.accent; c.lineWidth = 2;
-                      c.beginPath(); c.arc(0, 0, hr * 1.12, Math.PI * 0.45, Math.PI * 1.55); c.stroke();
-                      c.fillStyle = skin.accent; c.fillRect(-hr * 1.12, -hr * 0.14, hr * 1.15, hr * 0.28);
-                    } else if (acc === 'pirateHat') {
-                      c.fillStyle = '#171a21'; c.strokeStyle = '#ffe259'; c.lineWidth = 1.5;
-                      c.beginPath(); c.moveTo(-hr * 0.1, -hr * 1.08); c.quadraticCurveTo(-hr * 1.15, 0, -hr * 0.1, hr * 1.08); c.lineTo(-hr * 0.65, 0); c.closePath(); c.fill(); c.stroke();
-                      c.fillStyle = '#ffffff'; c.beginPath(); c.arc(-hr * 0.48, 0, hr * 0.2, 0, Math.PI * 2); c.fill();
+                    } else if (acc === 'headset') {
+                      c.strokeStyle = '#00f7ff'; c.lineWidth = Math.max(2.4, hr * 0.18);
+                      c.beginPath(); c.arc(-hr * 0.12, 0, hr * 1.04, Math.PI * 0.52, Math.PI * 1.48); c.stroke();
+                      c.fillStyle = '#141826';
+                      for (const s of [-1, 1]) { c.beginPath(); c.ellipse(-hr * 0.12, s * hr * 1.02, hr * 0.32, hr * 0.2, 0, 0, Math.PI * 2); c.fill(); c.stroke(); }
+                    } else if (acc === 'wizardHat') {
+                      c.fillStyle = skin.mid; c.strokeStyle = skin.accent; c.lineWidth = 1.5;
+                      c.beginPath(); c.moveTo(-hr * 0.15, -hr * 0.88); c.lineTo(-hr * 1.6, 0); c.lineTo(-hr * 0.15, hr * 0.88); c.closePath(); c.fill(); c.stroke();
+                      c.fillStyle = '#ffe259'; c.beginPath(); c.arc(-hr * 1.6, 0, hr * 0.22, 0, Math.PI * 2); c.fill();
                     } else if (acc === 'jesterHat') {
                       for (const s of [-1, 1]) {
                         c.fillStyle = s === 1 ? '#ffe259' : '#9b38ff';
@@ -1654,14 +1621,19 @@ jobs:
                     } else if (acc === 'beak') {
                       c.fillStyle = '#ff9f1a'; c.strokeStyle = '#7a3e00'; c.lineWidth = 1.3;
                       c.beginPath(); c.moveTo(hr * 0.88, -hr * 0.36); c.lineTo(hr * 1.62, 0); c.lineTo(hr * 0.88, hr * 0.36); c.closePath(); c.fill(); c.stroke();
-                    } else if (acc === 'pineLeaf' || acc === 'cherry' || acc === 'berry' || acc === 'orangeHat') {
-                      c.fillStyle = acc === 'orangeHat' ? '#ff9f1a' : (acc === 'cherry' ? '#ff2442' : '#4be35d');
-                      c.beginPath(); c.arc(-hr * 0.45, 0, hr * 0.34, 0, Math.PI * 2); c.fill();
+                    } else if (acc === 'leaf' || acc === 'cherry') {
+                      c.fillStyle = acc === 'cherry' ? '#ff2442' : '#4be35d';
+                      c.beginPath(); c.arc(-hr * 0.45, 0, hr * 0.32, 0, Math.PI * 2); c.fill();
                       c.fillStyle = '#248a2d'; c.beginPath(); c.ellipse(-hr * 0.82, -hr * 0.22, hr * 0.34, hr * 0.16, -0.4, 0, Math.PI * 2); c.fill();
-                    } else if (acc === 'bow') {
-                      c.fillStyle = '#ff4d8d';
-                      for (const s of [-1, 1]) { c.beginPath(); c.moveTo(-hr * 0.45, 0); c.lineTo(-hr * 0.88, s * hr * 0.52); c.lineTo(-hr * 0.28, s * hr * 0.48); c.closePath(); c.fill(); }
-                      c.fillStyle = '#ffe259'; c.beginPath(); c.arc(-hr * 0.48, 0, hr * 0.16, 0, Math.PI * 2); c.fill();
+                    } else if (acc === 'antenna') {
+                      c.strokeStyle = '#3b2200'; c.lineWidth = 1.8;
+                      for (const s of [-1, 1]) {
+                        c.beginPath(); c.moveTo(hr * 0.5, s * hr * 0.4); c.lineTo(hr * 1.25, s * hr * 0.78); c.stroke();
+                        c.fillStyle = '#ffe259'; c.beginPath(); c.arc(hr * 1.25, s * hr * 0.78, hr * 0.16, 0, Math.PI * 2); c.fill();
+                      }
+                    } else if (acc === 'slimeCap') {
+                      c.fillStyle = 'rgba(212,255,138,0.85)';
+                      c.beginPath(); c.arc(-hr * 0.3, -hr * 0.35, hr * 0.22, 0, Math.PI * 2); c.arc(-hr * 0.55, hr * 0.25, hr * 0.16, 0, Math.PI * 2); c.fill();
                     } else if (acc === 'starTop') {
                       c.fillStyle = '#ffe259'; c.beginPath(); c.arc(-hr * 0.55, 0, hr * 0.38, 0, Math.PI * 2); c.fill();
                     } else if (acc === 'camera' || acc === 'block') {
@@ -1673,18 +1645,20 @@ jobs:
                 }
 
                 function drawWormHead(c, skin, eyeId, lipId, hr, blinkAmt, mouthOpen, lookAng) {
-                  const isRain = skin.pat === 'rainbow';
                   const isGreenSkull = skin.acc === 'greenSkull';
                   const isSkull = skin.acc === 'skull' || isGreenSkull;
-                  const headCol = isGreenSkull ? '#69ff59' : (skin.acc === 'skull' ? '#ffffff' : (isRain ? `hsl(${(globalTime * 150) % 360}, 95%, 58%)` : skin.base));
-                  const headMid = isGreenSkull ? '#1eb834' : (skin.acc === 'skull' ? '#dce4eb' : (isRain ? `hsl(${(globalTime * 150 + 40) % 360}, 90%, 44%)` : skin.mid));
+                  const headCol = isGreenSkull ? '#69ff59' : (skin.acc === 'skull' ? '#ffffff' : skin.base);
+                  const headMid = isGreenSkull ? '#1eb834' : (skin.acc === 'skull' ? '#dce4eb' : skin.mid);
 
                   drawSkinAccessory(c, skin, hr, 'back');
 
-                  if (isGreenSkull) {
-                    c.save(); c.shadowColor = '#69ff59'; c.shadowBlur = 16;
-                    c.fillStyle = 'rgba(105, 255, 89, 0.32)';
-                    c.beginPath(); c.arc(0, 0, hr * 1.42, 0, Math.PI * 2); c.fill(); c.restore();
+                  // GLOW AURA ONLY FOR PAID SKINS (FREE SKINS HAVE skin.glow === '')
+                  if (skin.glow) {
+                    c.save();
+                    c.fillStyle = skin.glow;
+                    c.globalAlpha = 0.24 + 0.1 * Math.sin(globalTime * 7);
+                    c.beginPath(); c.arc(0, 0, hr * 1.48, 0, Math.PI * 2); c.fill();
+                    c.restore();
                   }
 
                   const hg = c.createRadialGradient(hr * 0.18, -hr * 0.25, hr * 0.1, 0, 0, hr * 1.25);
@@ -1768,181 +1742,240 @@ jobs:
                   drawSkinAccessory(c, skin, hr, 'front');
                 }
 
-                // 16 EXACT VIDEO BODY SHAPES & LIVE ANIMATIONS
+                // 36 COMPLETELY DISTINCT BODIES, COLORS, GLOWS & ANIMATIONS (FREE = ZERO GLOW / ZERO ANIM!)
                 function drawBodySegment(c, skin, x, y, sr, idx, ang) {
-                  const bt = skin.bodyType || 'smooth';
-                  const pat = skin.pat;
-                  let col = skin.base;
-                  if (pat === 'rainbow') col = `hsl(${(globalTime * 160 + idx * 14) % 360}, 95%, 56%)`;
-                  else if (pat === 'zebra' || pat === 'band' || pat === 'panda') col = (Math.floor(idx / 3) % 2 === 1) ? skin.accent : skin.base;
-                  else if (pat === 'checker') col = (idx % 2 === 0) ? skin.base : skin.accent;
-                  else if (pat === 'blocks') { const bc = ['#38b6ff','#ff4757','#ffe259','#69f03a','#b84dff']; col = bc[idx % bc.length]; }
-                  else if (pat === 'scoops') { const sc = ['#ff94c2','#9cf4ff','#ffe875','#b8ff9e','#d49cff']; col = sc[Math.floor(idx / 2) % sc.length]; }
-                  else if (pat === 'stripe' && idx % 3 === 0) col = skin.mid;
+                  const bt = skin.bodyType;
+                  const anim = skin.anim;
+                  const t = globalTime;
 
                   c.save();
                   c.translate(x, y);
                   c.rotate(ang);
 
-                  // 1. VINE (Rose: thorny green stem + green leaves + blooming red roses)
-                  if (bt === 'vine') {
-                    c.fillStyle = skin.base; c.strokeStyle = skin.dark; c.lineWidth = 1.4;
-                    c.beginPath(); c.arc(0, 0, sr * 0.85, 0, Math.PI * 2); c.fill(); c.stroke();
-                    if (idx % 3 === 0) {
-                      const side = idx % 6 === 0 ? 1 : -1;
-                      c.fillStyle = '#4be35d'; c.beginPath(); c.ellipse(0, side * sr * 1.15, sr * 0.45, sr * 0.24, side * 0.5, 0, Math.PI * 2); c.fill();
-                    }
-                    if (idx % 5 === 2) {
-                      c.fillStyle = '#ff2442'; c.beginPath(); c.arc(0, 0, sr * 0.65, 0, Math.PI * 2); c.fill();
-                      c.fillStyle = '#ff859b'; c.beginPath(); c.arc(-sr * 0.12, -sr * 0.12, sr * 0.28, 0, Math.PI * 2); c.fill();
-                    }
+                  // === 4 FREE CLASSIC BODIES (NO GLOW, NO ANIMATION) ===
+                  if (bt === 'corgiClassic') {
+                    const col = (Math.floor(idx / 3) % 2 === 1) ? skin.accent : skin.base;
+                    c.fillStyle = col; c.strokeStyle = skin.dark; c.lineWidth = 1.2;
+                    c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill(); c.stroke();
+                    c.restore(); return;
+                  }
+                  if (bt === 'rhinoClassic') {
+                    c.fillStyle = idx % 3 === 0 ? skin.mid : skin.base; c.strokeStyle = skin.dark; c.lineWidth = 1.4;
+                    c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill(); c.stroke();
+                    if (idx % 3 === 0) { c.strokeStyle = skin.dark; c.beginPath(); c.moveTo(0, -sr * 0.75); c.lineTo(0, sr * 0.75); c.stroke(); }
+                    c.restore(); return;
+                  }
+                  if (bt === 'pandaClassic') {
+                    const col = (Math.floor(idx / 3) % 2 === 1) ? '#1a1e24' : '#ffffff';
+                    c.fillStyle = col; c.strokeStyle = '#14171a'; c.lineWidth = 1.2;
+                    c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill(); c.stroke();
+                    c.restore(); return;
+                  }
+                  if (bt === 'melonClassic') {
+                    c.fillStyle = '#ff4769'; c.beginPath(); c.arc(0, 0, sr * 0.92, 0, Math.PI * 2); c.fill();
+                    c.strokeStyle = '#24a842'; c.lineWidth = Math.max(2, sr * 0.22);
+                    c.beginPath(); c.arc(0, 0, sr * 0.92, 0, Math.PI * 2); c.stroke();
+                    if (idx % 2 === 0) { c.fillStyle = '#141414'; c.beginPath(); c.arc(0, sr * 0.28, sr * 0.12, 0, Math.PI * 2); c.arc(0, -sr * 0.28, sr * 0.12, 0, Math.PI * 2); c.fill(); }
                     c.restore(); return;
                   }
 
-                  // 2. BEAM (Pot of Gold: pure glowing rainbow beam)
-                  if (bt === 'beam') {
-                    c.fillStyle = col; c.shadowColor = col; c.shadowBlur = 10;
-                    c.beginPath(); c.arc(0, 0, sr * 1.04, 0, Math.PI * 2); c.fill();
-                    c.fillStyle = 'rgba(255,255,255,0.35)'; c.beginPath(); c.arc(-sr * 0.2, -sr * 0.2, sr * 0.35, 0, Math.PI * 2); c.fill();
-                    c.restore(); return;
-                  }
-
-                  // 3. DONUTS (Ring-shaped glazed donuts with hole & sprinkles)
-                  if (bt === 'donuts') {
-                    c.fillStyle = '#e6a86e'; c.strokeStyle = '#6e3a12'; c.lineWidth = 1.5;
-                    c.beginPath(); c.arc(0, 0, sr * 1.05, 0, Math.PI * 2); c.fill(); c.stroke();
-                    c.fillStyle = idx % 2 === 0 ? '#ff73b9' : '#9cf4ff';
-                    c.beginPath(); c.arc(0, 0, sr * 0.88, 0, Math.PI * 2); c.fill();
-                    c.fillStyle = '#1b5e20'; c.beginPath(); c.arc(0, 0, sr * 0.32, 0, Math.PI * 2); c.fill();
-                    c.fillStyle = '#ffe259'; c.fillRect(sr * 0.42, -sr * 0.2, sr * 0.28, sr * 0.14);
-                    c.restore(); return;
-                  }
-
-                  // 4. CHOCO BAR (Segmented chocolate squares with inner bevel)
-                  if (bt === 'chocoBar') {
-                    const sz = sr * 1.88;
-                    c.fillStyle = '#5c2d12'; c.strokeStyle = '#240e03'; c.lineWidth = 1.8;
-                    c.fillRect(-sz / 2, -sz / 2, sz, sz); c.strokeRect(-sz / 2, -sz / 2, sz, sz);
-                    c.strokeStyle = '#9e582b'; c.lineWidth = 1.4;
-                    c.strokeRect(-sz * 0.32, -sz * 0.32, sz * 0.64, sz * 0.64);
-                    c.restore(); return;
-                  }
-
-                  // 5. SPIDER LEGS (8 crawling animated legs!)
-                  if (bt === 'spiderLegs') {
-                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
-                    if (idx % 2 === 0 && idx <= 12) {
-                      const kick = Math.sin(globalTime * 18 + idx * 1.4) * sr * 0.38;
-                      c.strokeStyle = '#14111a'; c.lineWidth = Math.max(2, sr * 0.18); c.lineCap = 'round';
-                      for (const s of [-1, 1]) {
-                        c.beginPath(); c.moveTo(0, s * sr * 0.7); c.lineTo(kick, s * sr * 1.55); c.lineTo(-sr * 0.35 + kick, s * sr * 1.9); c.stroke();
-                      }
-                    }
-                    c.fillStyle = skin.accent; c.beginPath(); c.arc(0, 0, sr * 0.32, 0, Math.PI * 2); c.fill();
-                    c.restore(); return;
-                  }
-
-                  // 6. CHRISTMAS TREE (Spiky pine needles + twinkling lights)
-                  if (bt === 'pineTree') {
-                    c.fillStyle = skin.base; c.strokeStyle = skin.dark; c.lineWidth = 1.4;
-                    c.beginPath();
-                    for (let k = 0; k < 10; k++) {
-                      const a = (k / 10) * Math.PI * 2, rad = k % 2 === 0 ? sr * 1.25 : sr * 0.78;
-                      k === 0 ? c.moveTo(Math.cos(a) * rad, Math.sin(a) * rad) : c.lineTo(Math.cos(a) * rad, Math.sin(a) * rad);
-                    }
-                    c.closePath(); c.fill(); c.stroke();
-                    if (idx % 2 === 0) {
-                      c.fillStyle = idx % 4 === 0 ? '#ff3b30' : '#ffe259';
-                      c.beginPath(); c.arc(0, 0, sr * 0.3, 0, Math.PI * 2); c.fill();
-                    }
-                    c.restore(); return;
-                  }
-
-                  // 7. GHOST / PHANTOM (Translucent glowing cyan ectoplasm)
-                  if (bt === 'ghost') {
-                    c.globalAlpha = 0.72;
-                    c.fillStyle = skin.base; c.shadowColor = skin.accent; c.shadowBlur = 12;
-                    c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
-                    c.globalAlpha = 1; c.restore(); return;
-                  }
-
-                  // WINGS / FINS / FLAMES OVERLAYS
-                  if (bt === 'wings' && idx === 4) {
-                    const flap = Math.sin(globalTime * 11) * 0.38;
-                    c.fillStyle = skin.accent; c.strokeStyle = skin.dark; c.lineWidth = 1.4;
-                    for (const s of [-1, 1]) {
-                      c.save(); c.rotate(s * flap);
-                      c.beginPath(); c.moveTo(0, s * sr * 0.7); c.quadraticCurveTo(-sr * 0.6, s * sr * 2.4, -sr * 1.6, s * sr * 1.9);
-                      c.quadraticCurveTo(-sr * 1.0, s * sr * 1.1, -sr * 0.5, s * sr * 0.5); c.closePath(); c.fill(); c.stroke();
-                      c.restore();
-                    }
-                  }
-                  if (bt === 'fins' && idx % 3 === 0) {
-                    const sw = Math.sin(globalTime * 8 + idx) * sr * 0.16;
-                    c.fillStyle = skin.accent; c.strokeStyle = skin.dark; c.lineWidth = 1.1;
-                    for (const s of [-1, 1]) {
-                      c.beginPath(); c.moveTo(sr * 0.35, s * sr * 0.8); c.lineTo(-sr * 0.25 + sw, s * sr * 1.42); c.lineTo(-sr * 0.55, s * sr * 0.75); c.closePath(); c.fill(); c.stroke();
-                    }
-                  }
-                  if ((bt === 'flames' || bt === 'greenFlame') && idx % 2 === 0) {
-                    const fl = 0.7 + 0.3 * Math.sin(globalTime * 16 + idx * 1.7);
-                    c.fillStyle = skin.accent; c.globalAlpha = 0.6;
-                    for (const s of [-1, 1]) { c.beginPath(); c.arc(-sr * 0.2, s * sr * (0.95 + 0.32 * fl), sr * 0.44 * fl, 0, Math.PI * 2); c.fill(); }
+                  // === PAID SKINS ONLY: PER-SKIN UNIQUE GLOW AURA ===
+                  if (skin.glow && idx % 2 === 0) {
+                    const pulse = 0.16 + 0.08 * Math.sin(t * 6 + idx * 0.5);
+                    c.fillStyle = skin.glow; c.globalAlpha = pulse;
+                    c.beginPath(); c.arc(0, 0, sr * 1.38, 0, Math.PI * 2); c.fill();
                     c.globalAlpha = 1;
                   }
 
-                  // CUBES / MALLOW / POLAROID / BLOCKS / ARMOR
-                  if (bt === 'mallow' || bt === 'polaroid' || bt === 'blocks' || bt === 'armor') {
-                    const sz = sr * 1.85;
-                    c.fillStyle = col; c.strokeStyle = skin.dark; c.lineWidth = 1.6;
-                    c.beginPath(); c.roundRect ? c.roundRect(-sz / 2, -sz / 2, sz, sz, sr * 0.36) : c.rect(-sz / 2, -sz / 2, sz, sz);
-                    c.fill(); c.stroke();
-                    if (bt === 'polaroid' && idx % 3 === 0) { c.fillStyle = skin.accent; c.fillRect(-sz * 0.32, -sz * 0.32, sz * 0.64, sz * 0.52); }
-                    if (bt === 'armor' && idx % 2 === 0) { c.fillStyle = skin.accent; c.beginPath(); c.arc(0, -sz * 0.3, sr * 0.14, 0, Math.PI * 2); c.arc(0, sz * 0.3, sr * 0.14, 0, Math.PI * 2); c.fill(); }
-                  } else if (bt === 'honey') {
-                    c.fillStyle = col; c.strokeStyle = '#7a4500'; c.lineWidth = 1.6;
-                    c.beginPath();
-                    for (let k = 0; k < 6; k++) { const a = (Math.PI / 3) * k; k === 0 ? c.moveTo(Math.cos(a) * sr * 1.06, Math.sin(a) * sr * 1.06) : c.lineTo(Math.cos(a) * sr * 1.06, Math.sin(a) * sr * 1.06); }
-                    c.closePath(); c.fill(); c.stroke();
-                  } else if (bt === 'bones') {
-                    c.fillStyle = skin.dark; c.beginPath(); c.arc(0, 0, sr * 0.88, 0, Math.PI * 2); c.fill();
-                    c.strokeStyle = skin.accent; c.lineWidth = Math.max(2.2, sr * 0.24); c.lineCap = 'round';
-                    if (idx % 2 === 0) { c.beginPath(); c.moveTo(0, -sr * 0.92); c.lineTo(0, sr * 0.92); c.stroke(); c.fillStyle = '#fff'; c.beginPath(); c.arc(0, 0, sr * 0.3, 0, Math.PI * 2); c.fill(); }
-                  } else if (bt === 'wool') {
-                    c.fillStyle = col;
-                    for (let k = 0; k < 6; k++) { const a = (k / 6) * Math.PI * 2; c.beginPath(); c.arc(Math.cos(a) * sr * 0.45, Math.sin(a) * sr * 0.45, sr * 0.68, 0, Math.PI * 2); c.fill(); }
-                  } else {
-                    const g = c.createRadialGradient(-sr * 0.28, -sr * 0.28, sr * 0.08, 0, 0, sr);
-                    g.addColorStop(0, col); g.addColorStop(0.82, pat === 'rainbow' || pat === 'scoops' ? col : skin.mid); g.addColorStop(1, skin.dark);
-                    c.fillStyle = g; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
-
-                    if (bt === 'pudding' || bt === 'pie') {
-                      c.fillStyle = skin.accent; c.beginPath(); c.arc(0, 0, sr * 0.62, 0, Math.PI * 2); c.fill();
-                    } else if (bt === 'suckers' && idx % 2 === 0) {
-                      c.strokeStyle = skin.accent; c.lineWidth = 1.8; c.beginPath(); c.arc(0, 0, sr * 0.48, 0, Math.PI * 2); c.stroke();
-                    } else if (bt === 'cards' && idx % 3 === 0) {
-                      const suits = ['♠','♥','♦','♣'];
-                      c.fillStyle = idx % 6 === 0 ? '#ff3847' : '#ffffff'; c.font = `900 ${Math.round(sr)}px sans-serif`;
-                      c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(suits[(idx / 3) % 4], 0, 0);
-                    } else if (bt === 'stitches' && idx % 2 === 0) {
-                      c.strokeStyle = '#1a1a1a'; c.lineWidth = 1.8;
-                      c.beginPath(); c.moveTo(-sr * 0.4, 0); c.lineTo(sr * 0.4, 0); c.moveTo(0, -sr * 0.35); c.lineTo(0, sr * 0.35); c.stroke();
-                    } else if (bt === 'feathers' && idx % 2 === 0) {
-                      c.strokeStyle = skin.accent; c.lineWidth = 1.6;
-                      c.beginPath(); c.arc(-sr * 0.15, 0, sr * 0.6, -0.9, 0.9); c.stroke();
-                    } else if (pat === 'scales' && idx % 3 === 0) {
-                      c.fillStyle = skin.accent; c.globalAlpha = 0.55;
-                      c.beginPath(); c.moveTo(sr * 0.42, 0); c.lineTo(0, -sr * 0.42); c.lineTo(-sr * 0.42, 0); c.lineTo(0, sr * 0.42); c.closePath(); c.fill();
-                      c.globalAlpha = 1;
-                    } else if (pat === 'dots' && idx % 3 === 0) {
-                      c.fillStyle = skin.accent; c.beginPath(); c.arc(0, 0, sr * 0.34, 0, Math.PI * 2); c.fill();
+                  // === 32 UNIQUE PAID BODY SHAPES & ANIMATIONS ===
+                  if (bt === 'frillBody') {
+                    const wv = Math.sin(t * 10 + idx) * sr * 0.22;
+                    if (idx % 2 === 0) {
+                      c.fillStyle = skin.accent;
+                      for (const s of [-1, 1]) { c.beginPath(); c.moveTo(sr * 0.3, s * sr * 0.8); c.lineTo(wv, s * sr * 1.48); c.lineTo(-sr * 0.4, s * sr * 0.78); c.closePath(); c.fill(); }
                     }
+                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = skin.accent; c.beginPath(); c.arc(0, 0, sr * 0.42, 0, Math.PI * 2); c.fill();
+                  } else if (bt === 'honeycomb') {
+                    c.fillStyle = skin.base; c.strokeStyle = '#7a4500'; c.lineWidth = 1.6;
+                    c.beginPath();
+                    for (let k = 0; k < 6; k++) { const a = (Math.PI / 3) * k; k === 0 ? c.moveTo(Math.cos(a) * sr * 1.08, Math.sin(a) * sr * 1.08) : c.lineTo(Math.cos(a) * sr * 1.08, Math.sin(a) * sr * 1.08); }
+                    c.closePath(); c.fill(); c.stroke();
+                    if (idx % 3 === 0) {
+                      const dr = ((t * 2 + idx) % 1) * sr * 0.6;
+                      c.fillStyle = '#ffae00'; c.beginPath(); c.arc(0, sr * 0.9 + dr, sr * 0.24, 0, Math.PI * 2); c.fill();
+                    }
+                  } else if (bt === 'donuts') {
+                    c.fillStyle = '#e6a86e'; c.strokeStyle = '#6e3a12'; c.lineWidth = 1.4;
+                    c.beginPath(); c.arc(0, 0, sr * 1.06, 0, Math.PI * 2); c.fill(); c.stroke();
+                    c.fillStyle = idx % 2 === 0 ? '#ff73b9' : '#9cf4ff';
+                    c.beginPath(); c.arc(0, 0, sr * 0.86, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = '#1b5e20'; c.beginPath(); c.arc(0, 0, sr * 0.3, 0, Math.PI * 2); c.fill();
+                    const oa = t * 4 + idx;
+                    c.fillStyle = '#ffe259'; c.beginPath(); c.arc(Math.cos(oa) * sr * 0.62, Math.sin(oa) * sr * 0.62, sr * 0.14, 0, Math.PI * 2); c.fill();
+                  } else if (bt === 'slime') {
+                    const sq = 1 + 0.12 * Math.sin(t * 7 + idx * 0.8);
+                    c.fillStyle = skin.base; c.globalAlpha = 0.88;
+                    c.beginPath(); c.ellipse(0, 0, sr * sq, sr / sq, 0, 0, Math.PI * 2); c.fill();
+                    c.globalAlpha = 1;
+                    if (idx % 2 === 0) {
+                      const br = ((t * 1.5 + idx * 0.3) % 1) * sr * 0.45;
+                      c.strokeStyle = skin.accent; c.lineWidth = 1.4;
+                      c.beginPath(); c.arc(sr * 0.2, -sr * 0.15, br, 0, Math.PI * 2); c.stroke();
+                    }
+                  } else if (bt === 'tetris') {
+                    const tc = ['#38b6ff','#ff4757','#ffe259','#69f03a','#b84dff'];
+                    const sz = sr * 1.82;
+                    c.fillStyle = tc[(idx + Math.floor(t * 3)) % tc.length]; c.strokeStyle = '#141e33'; c.lineWidth = 1.6;
+                    c.fillRect(-sz / 2, -sz / 2, sz, sz); c.strokeRect(-sz / 2, -sz / 2, sz, sz);
+                    c.fillStyle = 'rgba(255,255,255,0.28)'; c.fillRect(-sz * 0.35, -sz * 0.35, sz * 0.7, sz * 0.25);
+                  } else if (bt === 'scoops') {
+                    const sc = ['#ff94c2','#9cf4ff','#ffe875','#b8ff9e','#d49cff'];
+                    c.fillStyle = sc[Math.floor(idx / 2) % sc.length];
+                    c.beginPath(); c.arc(0, 0, sr * 1.05, 0, Math.PI * 2); c.fill();
+                    if (idx % 3 === 0) { c.fillStyle = '#ffffff'; c.beginPath(); c.arc(Math.sin(t * 6 + idx) * sr * 0.4, Math.cos(t * 6 + idx) * sr * 0.4, sr * 0.16, 0, Math.PI * 2); c.fill(); }
+                  } else if (bt === 'polaroid') {
+                    const sz = sr * 1.9;
+                    c.fillStyle = '#ffffff'; c.strokeStyle = '#242b33'; c.lineWidth = 1.4;
+                    c.fillRect(-sz / 2, -sz / 2, sz, sz); c.strokeRect(-sz / 2, -sz / 2, sz, sz);
+                    const fl = (Math.sin(t * 9 + idx * 1.4) > 0.88) ? '#ffffff' : (idx % 2 === 0 ? '#ff4757' : '#38b6ff');
+                    c.fillStyle = fl; c.fillRect(-sz * 0.36, -sz * 0.38, sz * 0.72, sz * 0.56);
+                  } else if (bt === 'pawBody') {
+                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                    if (idx % 3 === 0) {
+                      const fy = Math.sin(t * 6 + idx) * sr * 0.22;
+                      c.fillStyle = skin.accent; c.beginPath(); c.arc(0, fy, sr * 0.34, 0, Math.PI * 2); c.fill();
+                    }
+                  } else if (bt === 'coinBody') {
+                    c.fillStyle = skin.base; c.strokeStyle = skin.dark; c.lineWidth = 1.2;
+                    c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill(); c.stroke();
+                    if (idx % 2 === 0) {
+                      const sp = Math.abs(Math.cos(t * 5 + idx));
+                      c.fillStyle = '#ffd23f'; c.beginPath(); c.ellipse(0, 0, sr * 0.5 * sp + 1, sr * 0.5, 0, 0, Math.PI * 2); c.fill();
+                    }
+                  } else if (bt === 'fluffCloud') {
+                    const bnc = 1 + 0.08 * Math.sin(t * 8 + idx);
+                    c.fillStyle = skin.base;
+                    for (let k = 0; k < 6; k++) { const a = (k / 6) * Math.PI * 2; c.beginPath(); c.arc(Math.cos(a) * sr * 0.44 * bnc, Math.sin(a) * sr * 0.44 * bnc, sr * 0.66, 0, Math.PI * 2); c.fill(); }
+                  } else if (bt === 'furStitch') {
+                    c.fillStyle = idx % 2 === 0 ? skin.base : skin.mid; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                    if (idx % 3 === 0) { c.fillStyle = skin.accent; c.beginPath(); c.arc(0, 0, sr * (0.28 + 0.08 * Math.sin(t * 7 + idx)), 0, Math.PI * 2); c.fill(); }
+                  } else if (bt === 'carrotTrail') {
+                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr * (1 + 0.09 * Math.sin(t * 9 + idx)), 0, Math.PI * 2); c.fill();
+                    if (idx % 3 === 0) { c.fillStyle = '#ff8c24'; c.beginPath(); c.moveTo(sr * 0.45, 0); c.lineTo(-sr * 0.35, -sr * 0.28); c.lineTo(-sr * 0.35, sr * 0.28); c.closePath(); c.fill(); }
+                  } else if (bt === 'featherWave') {
+                    const flt = Math.sin(t * 11 + idx) * sr * 0.2;
+                    const fc = ['#ff3b30','#24c94b','#ffe259','#1c8cff'];
+                    c.fillStyle = fc[idx % fc.length];
+                    c.beginPath(); c.ellipse(0, flt * 0.3, sr * 1.05, sr * 0.92, 0, 0, Math.PI * 2); c.fill();
+                    c.strokeStyle = '#ffffff'; c.lineWidth = 1.3; c.beginPath(); c.arc(-sr * 0.15, 0, sr * 0.55, -0.8, 0.8); c.stroke();
+                  } else if (bt === 'cyberCircuit') {
+                    const sz = sr * 1.8;
+                    c.fillStyle = '#111524'; c.strokeStyle = `hsl(${(t * 180 + idx * 18) % 360}, 100%, 58%)`; c.lineWidth = 2;
+                    c.fillRect(-sz / 2, -sz / 2, sz, sz); c.strokeRect(-sz / 2, -sz / 2, sz, sz);
+                    c.fillStyle = c.strokeStyle; c.beginPath(); c.arc(0, 0, sr * 0.26, 0, Math.PI * 2); c.fill();
+                  } else if (bt === 'diamondCheck') {
+                    c.fillStyle = idx % 2 === 0 ? skin.base : skin.mid;
+                    c.beginPath(); c.moveTo(sr * 1.15, 0); c.lineTo(0, -sr * 1.15); c.lineTo(-sr * 1.15, 0); c.lineTo(0, sr * 1.15); c.closePath(); c.fill();
+                    if (idx % 3 === 0) { c.fillStyle = '#ff4757'; c.beginPath(); c.arc(Math.cos(t * 5 + idx) * sr * 0.8, Math.sin(t * 5 + idx) * sr * 0.8, sr * 0.18, 0, Math.PI * 2); c.fill(); }
+                  } else if (bt === 'neonClaw') {
+                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                    c.strokeStyle = skin.accent; c.lineWidth = 2; c.globalAlpha = 0.5 + 0.5 * Math.sin(t * 8 + idx);
+                    c.beginPath(); c.moveTo(-sr * 0.4, -sr * 0.45); c.lineTo(sr * 0.4, sr * 0.45); c.moveTo(-sr * 0.4, sr * 0.45); c.lineTo(sr * 0.4, -sr * 0.45); c.stroke();
+                    c.globalAlpha = 1;
+                  } else if (bt === 'saberStripe') {
+                    c.fillStyle = (Math.floor(idx / 2) % 2 === 0) ? skin.base : '#4a2704';
+                    c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                    if (idx % 3 === 0) { c.fillStyle = '#ffffff'; c.beginPath(); c.arc(0, Math.sin(t * 9 + idx) * sr * 0.6, sr * 0.16, 0, Math.PI * 2); c.fill(); }
+                  } else if (bt === 'batWings') {
+                    if (idx === 4) {
+                      const fl = Math.sin(t * 12) * 0.42;
+                      c.fillStyle = '#241030'; c.strokeStyle = '#ff2442'; c.lineWidth = 1.5;
+                      for (const s of [-1, 1]) {
+                        c.save(); c.rotate(s * fl);
+                        c.beginPath(); c.moveTo(0, s * sr * 0.7); c.lineTo(-sr * 0.4, s * sr * 2.5); c.lineTo(-sr * 1.5, s * sr * 1.7); c.lineTo(-sr * 0.8, s * sr * 0.9); c.closePath(); c.fill(); c.stroke();
+                        c.restore();
+                      }
+                    }
+                    c.fillStyle = idx % 2 === 0 ? skin.base : skin.mid; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                    if (idx % 3 === 0) { c.fillStyle = 'rgba(255,36,66,0.55)'; c.beginPath(); c.arc(0, Math.sin(t * 6 + idx) * sr, sr * 0.25, 0, Math.PI * 2); c.fill(); }
+                  } else if (bt === 'spiderLegs') {
+                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                    if (idx % 2 === 0 && idx <= 12) {
+                      const kick = Math.sin(t * 18 + idx * 1.4) * sr * 0.38;
+                      c.strokeStyle = '#14111a'; c.lineWidth = Math.max(2, sr * 0.18); c.lineCap = 'round';
+                      for (const s of [-1, 1]) { c.beginPath(); c.moveTo(0, s * sr * 0.7); c.lineTo(kick, s * sr * 1.55); c.lineTo(-sr * 0.35 + kick, s * sr * 1.9); c.stroke(); }
+                    }
+                    c.fillStyle = skin.accent; c.beginPath(); c.arc(0, 0, sr * 0.32, 0, Math.PI * 2); c.fill();
+                  } else if (bt === 'suckerRings') {
+                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                    if (idx % 2 === 0) {
+                      const rr = sr * (0.42 + 0.12 * Math.sin(t * 8 + idx));
+                      c.strokeStyle = skin.accent; c.lineWidth = 2; c.beginPath(); c.arc(0, 0, rr, 0, Math.PI * 2); c.stroke();
+                    }
+                  } else if (bt === 'ribcage') {
+                    c.fillStyle = skin.dark; c.beginPath(); c.arc(0, 0, sr * 0.88, 0, Math.PI * 2); c.fill();
+                    c.strokeStyle = '#f2f7ff'; c.lineWidth = Math.max(2.2, sr * 0.22); c.lineCap = 'round';
+                    if (idx % 2 === 0) { c.beginPath(); c.moveTo(0, -sr * 0.94); c.lineTo(0, sr * 0.94); c.stroke(); c.fillStyle = '#59f4ff'; c.beginPath(); c.arc(0, 0, sr * 0.28, 0, Math.PI * 2); c.fill(); }
+                  } else if (bt === 'wireBulbs') {
+                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr * 0.78, 0, Math.PI * 2); c.fill();
+                    const bc = ['#ff3b30','#ffe259','#4de2f0','#ff59d6'];
+                    const on = Math.sin(t * 10 + idx * 1.2) > -0.2;
+                    c.fillStyle = bc[idx % bc.length]; c.globalAlpha = on ? 1 : 0.35;
+                    c.beginPath(); c.arc(0, (idx % 2 === 0 ? 1 : -1) * sr * 0.82, sr * 0.36, 0, Math.PI * 2); c.fill();
+                    c.globalAlpha = 1;
+                  } else if (bt === 'pineNeedles') {
+                    c.fillStyle = skin.base; c.strokeStyle = skin.dark; c.lineWidth = 1.3;
+                    c.beginPath();
+                    for (let k = 0; k < 10; k++) { const a = (k / 10) * Math.PI * 2, rad = k % 2 === 0 ? sr * 1.25 : sr * 0.76; k === 0 ? c.moveTo(Math.cos(a) * rad, Math.sin(a) * rad) : c.lineTo(Math.cos(a) * rad, Math.sin(a) * rad); }
+                    c.closePath(); c.fill(); c.stroke();
+                    if (idx % 2 === 0) { c.fillStyle = (Math.floor(t * 4 + idx) % 2 === 0) ? '#ff3b30' : '#ffe259'; c.beginPath(); c.arc(0, 0, sr * 0.3, 0, Math.PI * 2); c.fill(); }
+                  } else if (bt === 'arcaneRunes') {
+                    c.fillStyle = skin.base; c.strokeStyle = skin.accent; c.lineWidth = 1.6;
+                    c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill(); c.stroke();
+                    if (idx % 3 === 0) {
+                      const oa = t * 5 + idx;
+                      c.fillStyle = '#ffe259'; c.beginPath(); c.arc(Math.cos(oa) * sr * 1.15, Math.sin(oa) * sr * 1.15, sr * 0.24, 0, Math.PI * 2); c.fill();
+                    }
+                  } else if (bt === 'emeraldScales') {
+                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = skin.accent; c.beginPath(); c.moveTo(sr * 0.48, 0); c.lineTo(0, -sr * 0.48); c.lineTo(-sr * 0.48, 0); c.lineTo(0, sr * 0.48); c.closePath(); c.fill();
+                  } else if (bt === 'dinoSpikes') {
+                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                    if (idx % 2 === 0) {
+                      c.fillStyle = '#69f03a';
+                      for (const s of [-1, 1]) { c.beginPath(); c.moveTo(sr * 0.3, s * sr * 0.8); c.lineTo(0, s * sr * 1.5); c.lineTo(-sr * 0.4, s * sr * 0.8); c.closePath(); c.fill(); }
+                    }
+                  } else if (bt === 'lavaArmor') {
+                    const sz = sr * 1.82;
+                    c.fillStyle = '#2e1007'; c.strokeStyle = '#ff6b1a'; c.lineWidth = 2;
+                    c.beginPath(); c.roundRect ? c.roundRect(-sz / 2, -sz / 2, sz, sz, sr * 0.32) : c.rect(-sz / 2, -sz / 2, sz, sz); c.fill(); c.stroke();
+                    c.fillStyle = '#ffe259'; c.globalAlpha = 0.5 + 0.5 * Math.sin(t * 10 + idx);
+                    c.beginPath(); c.arc(0, 0, sr * 0.32, 0, Math.PI * 2); c.fill(); c.globalAlpha = 1;
+                  } else if (bt === 'ghostWisp') {
+                    c.globalAlpha = 0.55 + 0.28 * Math.sin(t * 7 + idx * 0.6);
+                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr * 1.05, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = '#ffffff'; c.beginPath(); c.arc(0, 0, sr * 0.42, 0, Math.PI * 2); c.fill();
+                    c.globalAlpha = 1;
+                  } else if (bt === 'blazeMane' || bt === 'hellSpikes' || bt === 'spectralEmerald') {
+                    const fl = 0.72 + 0.32 * Math.sin(t * 16 + idx * 1.7);
+                    c.fillStyle = skin.accent; c.globalAlpha = 0.65;
+                    for (const s of [-1, 1]) { c.beginPath(); c.arc(-sr * 0.2, s * sr * (0.95 + 0.35 * fl), sr * 0.46 * fl, 0, Math.PI * 2); c.fill(); }
+                    c.globalAlpha = 1;
+                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = skin.accent; c.beginPath(); c.arc(0, 0, sr * 0.38 * fl, 0, Math.PI * 2); c.fill();
+                  } else if (bt === 'aquaFins') {
+                    const sw = Math.sin(t * 9 + idx) * sr * 0.2;
+                    if (idx % 2 === 0) {
+                      c.fillStyle = '#8cf5ff';
+                      for (const s of [-1, 1]) { c.beginPath(); c.moveTo(sr * 0.4, s * sr * 0.8); c.quadraticCurveTo(sw, s * sr * 1.65, -sr * 0.7, s * sr * 1.0); c.closePath(); c.fill(); }
+                    }
+                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                    c.strokeStyle = 'rgba(255,255,255,0.65)'; c.lineWidth = 1.5; c.beginPath(); c.arc(0, 0, sr * 0.55, 0, Math.PI * 2); c.stroke();
+                  } else {
+                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
                   }
 
-                  if (idx % 2 === 0 && bt !== 'bones') {
-                    c.fillStyle = 'rgba(255,255,255,0.2)';
-                    c.beginPath(); c.arc(-sr * 0.24, -sr * 0.24, sr * 0.26, 0, Math.PI * 2); c.fill();
-                  }
                   c.restore();
                 }
 
@@ -2072,11 +2105,10 @@ jobs:
                       c.beginPath(); c.arc(seg.x + 3, seg.y + 5, r * taper, 0, Math.PI * 2); c.fill();
                     }
 
-                    if (this.skin.pat === 'glow' || this.skin.pat === 'rainbow' || this.boosting) {
-                      c.fillStyle = this.skin.pat === 'rainbow' ? `hsl(${(globalTime * 150) % 360},100%,60%)` : (this.boosting ? '#ffe259' : this.skin.accent);
-                      c.globalAlpha = 0.22;
+                    if (this.boosting) {
+                      c.fillStyle = '#ffe259'; c.globalAlpha = 0.2;
                       for (let i = len - 1; i >= 0; i -= 3) {
-                        c.beginPath(); c.arc(this.segments[i].x, this.segments[i].y, r * 1.26, 0, Math.PI * 2); c.fill();
+                        c.beginPath(); c.arc(this.segments[i].x, this.segments[i].y, r * 1.25, 0, Math.PI * 2); c.fill();
                       }
                       c.globalAlpha = 1;
                     }
@@ -2328,7 +2360,7 @@ jobs:
                     const hitW = rW * 0.48;
                     for (const o of worms) {
                       if (o === w || !o.alive || o.spawnShield > 0) continue;
-                      if (distSq(noseX, noseY, o.x, o.y) > 950 * 950) continue;
+                      if (distSq(noseX, noseY, o.x, o.y) > 1600 * 1600) continue;
                       const hitO = o.getRadius() * 0.64;
                       const hitSq = (hitW + hitO) * (hitW + hitO);
                       let hit = false;
@@ -2409,7 +2441,7 @@ jobs:
 
                   hudTick -= dt;
                   if (hudTick <= 0 && player) {
-                    hudTick = 0.14;
+                    hudTick = 0.12;
                     document.getElementById('hudScoreBig').textContent = Math.floor(player.score).toLocaleString();
                     document.getElementById('hudKillsPill').textContent = `💀 ${matchKills}`;
                     document.getElementById('hudCoinsRun').textContent = `🪙 ${matchCoins}`;
@@ -2432,29 +2464,49 @@ jobs:
                   }
                 }
 
+                // CRISP TOP-LEFT CORNER MINI MAP (ARENA RING + ALL ENEMIES + BOSSES + CHESTS + PLAYER)
                 function drawMinimap() {
                   const w = miniCanvas.width, h = miniCanvas.height, cx = w / 2, cy = h / 2;
                   const sc = (w * 0.45) / ARENA_RADIUS;
                   miniCtx.clearRect(0, 0, w, h);
-                  miniCtx.fillStyle = '#0c2b12'; miniCtx.fillRect(0, 0, w, h);
-                  miniCtx.strokeStyle = 'rgba(255,80,80,0.65)'; miniCtx.lineWidth = 2;
+                  miniCtx.fillStyle = '#09240f'; miniCtx.fillRect(0, 0, w, h);
+
+                  // Crosshair grid for map size awareness
+                  miniCtx.strokeStyle = 'rgba(130,240,105,0.16)'; miniCtx.lineWidth = 1;
+                  miniCtx.beginPath(); miniCtx.moveTo(cx, 6); miniCtx.lineTo(cx, h - 6); miniCtx.moveTo(6, cy); miniCtx.lineTo(w - 6, cy); miniCtx.stroke();
+
+                  miniCtx.strokeStyle = 'rgba(255,80,80,0.75)'; miniCtx.lineWidth = 2.4;
                   miniCtx.beginPath(); miniCtx.arc(cx, cy, ARENA_RADIUS * sc, 0, Math.PI * 2); miniCtx.stroke();
 
                   const radarOn = (buffs.radar || 0) > 0;
                   miniCtx.fillStyle = '#ffe259';
                   for (const ch of chests) {
-                    miniCtx.beginPath(); miniCtx.arc(cx + (ch.x - WORLD_CENTER) * sc, cy + (ch.y - WORLD_CENTER) * sc, radarOn ? 4 : 2.5, 0, Math.PI * 2); miniCtx.fill();
+                    miniCtx.beginPath(); miniCtx.arc(cx + (ch.x - WORLD_CENTER) * sc, cy + (ch.y - WORLD_CENTER) * sc, radarOn ? 4.2 : 2.8, 0, Math.PI * 2); miniCtx.fill();
                   }
                   for (const wm of worms) {
                     if (!wm.alive || wm.isPlayer) continue;
-                    miniCtx.fillStyle = (radarOn && wm.score > 5000) ? '#ff4757' : 'rgba(255,140,140,0.65)';
-                    miniCtx.beginPath(); miniCtx.arc(cx + (wm.x - WORLD_CENTER) * sc, cy + (wm.y - WORLD_CENTER) * sc, (radarOn && wm.score > 5000) ? 3.2 : 1.6, 0, Math.PI * 2); miniCtx.fill();
+                    const isBoss = wm.score > 5000;
+                    miniCtx.fillStyle = isBoss ? '#ff3b30' : 'rgba(255,140,140,0.78)';
+                    miniCtx.beginPath(); miniCtx.arc(cx + (wm.x - WORLD_CENTER) * sc, cy + (wm.y - WORLD_CENTER) * sc, isBoss ? (radarOn ? 4.2 : 3.2) : 2.0, 0, Math.PI * 2); miniCtx.fill();
                   }
                   if (player && player.alive) {
+                    const px = cx + (player.x - WORLD_CENTER) * sc, py = cy + (player.y - WORLD_CENTER) * sc;
                     miniCtx.fillStyle = '#69f03a';
-                    miniCtx.beginPath(); miniCtx.arc(cx + (player.x - WORLD_CENTER) * sc, cy + (player.y - WORLD_CENTER) * sc, 4, 0, Math.PI * 2); miniCtx.fill();
-                    miniCtx.strokeStyle = '#fff'; miniCtx.lineWidth = 1.5; miniCtx.stroke();
+                    miniCtx.beginPath(); miniCtx.arc(px, py, 4.4, 0, Math.PI * 2); miniCtx.fill();
+                    miniCtx.strokeStyle = '#ffffff'; miniCtx.lineWidth = 1.6; miniCtx.stroke();
                   }
+                }
+
+                // FIX FOR DISAPPEARING SNAKE BUG: CHECK EVERY SEGMENT SO SNAKE NEVER VANISHES MID-SCREEN!
+                function isWormVisible(w, vx, vy) {
+                  if (w.isPlayer) return true;
+                  const segs = w.segments;
+                  const step = Math.max(1, Math.floor(segs.length / 18));
+                  for (let i = 0; i < segs.length; i += step) {
+                    if (Math.abs(segs[i].x - camera.x) < vx && Math.abs(segs[i].y - camera.y) < vy) return true;
+                  }
+                  const tl = segs[segs.length - 1];
+                  return Math.abs(tl.x - camera.x) < vx && Math.abs(tl.y - camera.y) < vy;
                 }
 
                 function renderGame(dt) {
@@ -2511,7 +2563,7 @@ jobs:
                   ctx.strokeStyle = '#ff4757'; ctx.lineWidth = 24;
                   ctx.beginPath(); ctx.arc(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 0, Math.PI * 2); ctx.stroke();
 
-                  const vx = (appW / camera.zoom) * 0.62 + 120, vy = (appH / camera.zoom) * 0.62 + 120;
+                  const vx = (appW / camera.zoom) * 0.65 + 160, vy = (appH / camera.zoom) * 0.65 + 160;
                   const near = (x, y) => Math.abs(x - camera.x) < vx && Math.abs(y - camera.y) < vy;
 
                   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -2553,9 +2605,7 @@ jobs:
 
                   for (const w of worms) {
                     if (!w.alive) continue;
-                    if (w.isPlayer || near(w.x, w.y) || near(w.segments[w.segments.length - 1].x, w.segments[w.segments.length - 1].y)) {
-                      w.draw(ctx, true);
-                    }
+                    if (isWormVisible(w, vx, vy)) w.draw(ctx, true);
                   }
 
                   for (const ft of floatTexts) {
@@ -2619,6 +2669,8 @@ jobs:
                   document.getElementById('btnModeCycle').innerHTML = `<span>${mo.icon}</span><span id="modeLabel">${mo.label}</span><span>▾</span>`;
 
                   const muteIcon = profile.settings.muted ? '🔇' : '🔊';
+                  const lbAudio = document.getElementById('btnLobbyAudio');
+                  if (lbAudio) lbAudio.textContent = muteIcon;
                   document.getElementById('hudAudioBtn').textContent = muteIcon;
                   document.getElementById('floatingJoy').classList.toggle('fixed-mode', profile.settings.joy === 'fixed');
                   const jSz = profile.settings.joySize === 'large' ? 124 : (profile.settings.joySize === 'small' ? 86 : 104);
@@ -2647,6 +2699,7 @@ jobs:
                   buildFloorPattern(profile.floor);
                   spawnLobbyWorm();
                   refreshLobbyUI();
+                  Sound.init();
                 }
 
                 function runIntroAnimation() {
@@ -2661,7 +2714,7 @@ jobs:
                     col: ['#ffe259', '#69f03a', '#4de2f0', '#ff6b81'][Math.floor(Math.random() * 4)]
                   }));
                   let pct = 0, alive = true;
-                  const msgs = ['Awakening 50 Custom Snakes...', 'Loading Funky Arcade Audio...', 'Ready to Battle!'];
+                  const msgs = ['Awakening 36 Unique Glow Snakes...', 'Starting Funky Arcade BGM...', 'Ready to Battle!'];
                   function tickIntro() {
                     if (!alive) return;
                     ic.clearRect(0, 0, cvs.width, cvs.height);
@@ -2675,6 +2728,7 @@ jobs:
                     requestAnimationFrame(tickIntro);
                   }
                   tickIntro();
+                  Sound.init();
                   const iv = setInterval(() => {
                     pct = Math.min(100, pct + rand(14, 22));
                     fill.style.width = `${pct}%`;
@@ -2690,6 +2744,9 @@ jobs:
                   }, 140);
                   sc.addEventListener('click', () => { Sound.init(); }, { once: true });
                 }
+
+                // Ensure Lobby BGM & SFX unlock immediately on first tap anywhere
+                window.addEventListener('pointerdown', () => Sound.init(), { once: true });
 
                 function watchRewardAd(desc, onReward) {
                   const modal = document.getElementById('adModal');
@@ -2823,7 +2880,7 @@ jobs:
                       profile.name = e.target.value.trim() || 'ApexHunter'; saveProfile(); refreshLobbyUI();
                     });
                     document.getElementById('btnResetData').addEventListener('click', () => {
-                      if (confirm('Reset all local game data?')) { localStorage.removeItem('serpent_wild_v25_wz'); location.reload(); }
+                      if (confirm('Reset all local game data?')) { localStorage.removeItem('serpent_wild_v26_wz'); location.reload(); }
                     });
                   } else {
                     const grid = document.createElement('div'); grid.className = 'card-grid';
@@ -2898,7 +2955,7 @@ jobs:
                   const eq = profile.skin === sk.id;
                   const ex = EXPRESSIONS.find(e => e.id === profile.expr) || EXPRESSIONS[0];
                   document.getElementById('wsName').textContent = sk.name;
-                  document.getElementById('wsMeta').textContent = `${sk.tier} • ${sk.bodyType.toUpperCase()} • ${sk.curr === 'free' ? 'FREE' : sk.price.toLocaleString() + (sk.curr === 'dia' ? ' 💎' : ' 🪙')}`;
+                  document.getElementById('wsMeta').textContent = `${sk.tier} • ${sk.glow ? 'GLOW + ANIM' : 'CLASSIC'} • ${sk.curr === 'free' ? 'FREE' : sk.price.toLocaleString() + (sk.curr === 'dia' ? ' 💎' : ' 🪙')}`;
                   document.getElementById('wsExprPreview').textContent = `Expression: "${ex.text}"`;
                   wsPreviewWorm.say(ex.text);
 
@@ -3105,6 +3162,10 @@ jobs:
                   }).join('');
                 }
 
+                const toggleMute = () => { profile.settings.muted = !profile.settings.muted; saveProfile(); Sound.updateVol(); refreshLobbyUI(); Sound.play('click'); };
+                document.getElementById('btnLobbyAudio').addEventListener('click', toggleMute);
+                document.getElementById('hudAudioBtn').addEventListener('click', toggleMute);
+
                 document.getElementById('btnProfileOpen').addEventListener('click', () => { profTab = 'dossier'; renderProfileModal(); document.getElementById('profileModal').classList.add('open'); Sound.play('click'); });
                 document.querySelectorAll('[data-pt]').forEach(b => b.addEventListener('click', () => { profTab = b.dataset.pt; renderProfileModal(); Sound.play('click'); }));
                 document.getElementById('btnLobbySettings').addEventListener('click', () => { setTab = 'general'; renderSettingsModal(); document.getElementById('settingsModal').classList.add('open'); Sound.play('click'); });
@@ -3161,7 +3222,6 @@ jobs:
                 document.querySelectorAll('[data-wlm]').forEach(b => b.addEventListener('click', () => { wlMode = b.dataset.wlm; renderWorldLeaderboard(); Sound.play('click'); }));
                 document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => { document.getElementById(b.dataset.close).classList.remove('open'); Sound.play('click'); }));
 
-                document.getElementById('hudAudioBtn').addEventListener('click', () => { profile.settings.muted = !profile.settings.muted; saveProfile(); Sound.updateVol(); refreshLobbyUI(); Sound.play('click'); });
                 document.getElementById('hudExitBtn').addEventListener('click', () => { Sound.play('click'); enterLobby(); });
                 document.getElementById('hudExprBtn').addEventListener('click', () => { if (!player || !player.alive) return; const ex = EXPRESSIONS.find(e => e.id === profile.expr) || EXPRESSIONS[0]; player.say(ex.text); Sound.play('click'); });
 
@@ -3191,7 +3251,7 @@ jobs:
                   for (const t of e.changedTouches) {
                     if (ctrl.joyTouchId === null) {
                       ctrl.joyTouchId = t.identifier; ctrl.joyActive = true;
-                      if (profile.settings.joy === 'fixed') { ctrl.joyOx = 146; ctrl.joyOy = appH - 76; }
+                      if (profile.settings.joy === 'fixed') { ctrl.joyOx = 82; ctrl.joyOy = appH - 78; }
                       else { ctrl.joyOx = t.clientX; ctrl.joyOy = t.clientY; joyEl.style.left = `${t.clientX}px`; joyEl.style.top = `${t.clientY}px`; }
                       joyEl.classList.add('visible'); updateJoy(t.clientX, t.clientY);
                     }
@@ -3279,10 +3339,10 @@ jobs:
           SERPENT_KEY_PASS: ${{ secrets.SERPENT_KEY_PASS }}
         run: gradle assembleRelease bundleRelease
 
-      - name: Upload Serpent-Wild v25 APK & AAB
+      - name: Upload Serpent-Wild v26 APK & AAB
         uses: actions/upload-artifact@v4
         with:
-          name: Serpent-Wild-v25-Exact50Snakes-APK
+          name: Serpent-Wild-v26-ProGlow-APK
           path: |
             app/build/outputs/apk/release/app-release.apk
             app/build/outputs/bundle/release/app-release.aab
