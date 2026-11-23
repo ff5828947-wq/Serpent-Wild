@@ -1,17 +1,532 @@
+name: Build Serpent-Wild v23 64-Snakes Worms-Zone APK
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Accept Android SDK Licenses
+        run: |
+          if [ -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
+            yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null 2>&1 || true
+          fi
+
+      - name: Generate Crystal-Clear Native BGM WAV
+        run: |
+          mkdir -p app/src/main/res/raw
+          python3 - << 'PYEOF'
+          import math, wave, struct
+          sr = 44100
+          bpm = 110
+          step = 60.0 / bpm / 2.0
+          melody = [
+              329.63, 0, 392.00, 440.00, 523.25, 0, 440.00, 392.00,
+              329.63, 0, 293.66, 329.63, 392.00, 0, 329.63, 0,
+              349.23, 0, 440.00, 523.25, 587.33, 0, 523.25, 440.00,
+              392.00, 0, 349.23, 329.63, 293.66, 0, 0, 0
+          ]
+          chords = [
+              (130.81, 196.00, 261.63),
+              (146.83, 220.00, 293.66),
+              (174.61, 220.00, 261.63),
+              (196.00, 246.94, 293.66)
+          ]
+          total_sec = step * len(melody)
+          n_samples = int(sr * total_sec)
+          buf = [0.0] * n_samples
+          pad_ph = [0.0, 0.0, 0.0]
+          for i in range(n_samples):
+              t = i / sr
+              c_idx = min(3, int(t / (total_sec / 4.0)))
+              cf = chords[c_idx]
+              c_local = (t % (total_sec / 4.0)) / (total_sec / 4.0)
+              c_env = math.sin(math.pi * c_local) ** 0.5
+              s = 0.0
+              for k in range(3):
+                  pad_ph[k] += 2.0 * math.pi * cf[k] / sr
+                  s += math.sin(pad_ph[k]) * (0.065 if k == 0 else 0.04)
+              buf[i] += s * c_env
+          for idx, freq in enumerate(melody):
+              if freq <= 0:
+                  continue
+              start = int(idx * step * sr)
+              dur_s = int(step * 1.45 * sr)
+              for j in range(dur_s):
+                  if start + j >= n_samples:
+                      break
+                  u = j / dur_s
+                  env = min(1.0, j / (sr * 0.015)) * ((1.0 - u) ** 2.2)
+                  val = math.sin(2.0 * math.pi * freq * j / sr) * 0.16 + math.sin(4.0 * math.pi * freq * j / sr) * 0.03
+                  buf[start + j] += val * env
+          fade = int(sr * 0.08)
+          for i in range(fade):
+              buf[i] *= (i / fade)
+              buf[n_samples - 1 - i] *= (i / fade)
+          with wave.open("app/src/main/res/raw/bgm.wav", "w") as wf:
+              wf.setnchannels(1)
+              wf.setsampwidth(2)
+              wf.setframerate(sr)
+              data = bytearray()
+              for sample in buf:
+                  clamped = max(-0.85, min(0.85, sample))
+                  data += struct.pack("<h", int(clamped * 32767))
+              wf.writeframes(data)
+          PYEOF
+
+      - name: Generate Serpent-Wild v23 Android Project
+        run: |
+          mkdir -p app/src/main/java/com/apexwild/serpent app/src/main/assets app/src/main/res/values
+
+          cat << 'EOF' > gradle.properties
+          org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+          android.useAndroidX=true
+          EOF
+
+          cat << 'EOF' > settings.gradle.kts
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          rootProject.name = "SerpentWild"
+          include(":app")
+          EOF
+
+          cat << 'EOF' > build.gradle.kts
+          plugins {
+              id("com.android.application") version "8.9.1" apply false
+              id("org.jetbrains.kotlin.android") version "2.0.21" apply false
+          }
+          EOF
+
+          cat << 'EOF' > app/build.gradle.kts
+          plugins {
+              id("com.android.application")
+              id("org.jetbrains.kotlin.android")
+          }
+          android {
+              namespace = "com.apexwild.serpent"
+              compileSdk = 35
+              defaultConfig {
+                  applicationId = "com.apexwild.serpent.royale"
+                  minSdk = 26
+                  targetSdk = 35
+                  versionCode = 23
+                  versionName = "23.0.0"
+              }
+              signingConfigs {
+                  create("release") {
+                      storeFile = file("serpent-release.jks")
+                      storePassword = System.getenv("SERPENT_STORE_PASS").orEmpty().ifBlank { "Serpent@2026" }
+                      keyAlias = System.getenv("SERPENT_KEY_ALIAS").orEmpty().ifBlank { "serpentkey" }
+                      keyPassword = System.getenv("SERPENT_KEY_PASS").orEmpty().ifBlank { "Serpent@2026" }
+                  }
+              }
+              lint {
+                  checkReleaseBuilds = false
+                  abortOnError = false
+              }
+              buildTypes {
+                  getByName("release") {
+                      signingConfig = signingConfigs.getByName("release")
+                      isMinifyEnabled = false
+                      isShrinkResources = false
+                  }
+              }
+              compileOptions {
+                  sourceCompatibility = JavaVersion.VERSION_17
+                  targetCompatibility = JavaVersion.VERSION_17
+              }
+              kotlinOptions {
+                  jvmTarget = "17"
+              }
+          }
+          dependencies {
+              implementation("androidx.core:core-ktx:1.15.0")
+              implementation("androidx.appcompat:appcompat:1.7.0")
+          }
+          EOF
+
+          cat << 'EOF' > app/src/main/res/values/styles.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <style name="Theme.SerpentWild" parent="Theme.AppCompat.NoActionBar">
+                  <item name="android:windowBackground">#0d4a14</item>
+                  <item name="android:colorBackground">#0d4a14</item>
+                  <item name="android:statusBarColor">#0d4a14</item>
+                  <item name="android:navigationBarColor">#0d4a14</item>
+                  <item name="android:windowFullscreen">true</item>
+                  <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+              </style>
+          </resources>
+          EOF
+
+          cat << 'EOF' > app/src/main/AndroidManifest.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <uses-permission android:name="android.permission.INTERNET" />
+              <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+              <uses-permission android:name="android.permission.VIBRATE" />
+              <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+              <application
+                  android:allowBackup="true"
+                  android:hardwareAccelerated="true"
+                  android:label="Serpent Wild: Apex"
+                  android:theme="@style/Theme.SerpentWild"
+                  android:usesCleartextTraffic="true">
+
+                  <receiver android:name=".ReminderReceiver" android:exported="false" />
+
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:hardwareAccelerated="true"
+                      android:screenOrientation="sensorLandscape"
+                      android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+
+          LOGO_FILE=$(find . -maxdepth 1 \( -iname "wild.png" -o -iname "logo.png" -o -iname "*.png" -o -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.webp" \) | head -n 1)
+          if [ -n "$LOGO_FILE" ]; then
+            mkdir -p app/src/main/res/mipmap-xxxhdpi
+            if command -v convert >/dev/null 2>&1; then
+              convert "$LOGO_FILE" -resize 512x512^ -gravity center -extent 512x512 PNG32:app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+            else
+              cp "$LOGO_FILE" app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+            fi
+            sed -i 's/android:label="Serpent Wild: Apex"/android:label="Serpent Wild: Apex" android:icon="@mipmap\/ic_launcher" android:roundIcon="@mipmap\/ic_launcher"/' app/src/main/AndroidManifest.xml
+          fi
+
+          cat << 'EOF' > app/src/main/java/com/apexwild/serpent/ReminderReceiver.kt
+          package com.apexwild.serpent
+
+          import android.app.NotificationChannel
+          import android.app.NotificationManager
+          import android.app.PendingIntent
+          import android.content.BroadcastReceiver
+          import android.content.Context
+          import android.content.Intent
+          import android.os.Build
+          import androidx.core.app.NotificationCompat
+
+          class ReminderReceiver : BroadcastReceiver() {
+              override fun onReceive(context: Context, intent: Intent) {
+                  showNotification(context)
+              }
+
+              companion object {
+                  const val CHANNEL_ID = "serpent_wild_reminders"
+
+                  fun showNotification(context: Context) {
+                      val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                          val ch = NotificationChannel(CHANNEL_ID, "Serpent Wild Reminders", NotificationManager.IMPORTANCE_DEFAULT)
+                          ch.description = "Daily arena battle & calendar streak reminders"
+                          nm.createNotificationChannel(ch)
+                      }
+                      val openIntent = Intent(context, MainActivity::class.java).apply {
+                          flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                      }
+                      val pi = PendingIntent.getActivity(
+                          context, 1001, openIntent,
+                          PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                      )
+                      val iconRes = context.applicationInfo.icon.takeIf { it != 0 } ?: android.R.drawable.sym_def_app_icon
+                      val notif = NotificationCompat.Builder(context, CHANNEL_ID)
+                          .setSmallIcon(iconRes)
+                          .setContentTitle("🐍 Serpent Wild: 64 Unique Snakes!")
+                          .setContentText("Keep your Calendar streak alive! Claim your Free Chest & climb to World #1!")
+                          .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                          .setAutoCancel(true)
+                          .setContentIntent(pi)
+                          .build()
+                      nm.notify(2026, notif)
+                  }
+              }
+          }
+          EOF
+
+          cat << 'EOF' > app/src/main/java/com/apexwild/serpent/MainActivity.kt
+          package com.apexwild.serpent
+
+          import android.Manifest
+          import android.annotation.SuppressLint
+          import android.app.AlarmManager
+          import android.app.PendingIntent
+          import android.content.Context
+          import android.content.Intent
+          import android.content.pm.ActivityInfo
+          import android.content.pm.PackageManager
+          import android.graphics.Color
+          import android.media.MediaPlayer
+          import android.net.ConnectivityManager
+          import android.net.NetworkCapabilities
+          import android.os.Build
+          import android.os.Bundle
+          import android.view.View
+          import android.view.WindowManager
+          import android.webkit.JavascriptInterface
+          import android.webkit.WebChromeClient
+          import android.webkit.WebSettings
+          import android.webkit.WebView
+          import android.webkit.WebViewClient
+          import android.widget.Toast
+          import androidx.appcompat.app.AppCompatActivity
+          import androidx.core.app.ActivityCompat
+          import androidx.core.content.ContextCompat
+          import androidx.core.view.WindowCompat
+          import androidx.core.view.WindowInsetsCompat
+          import androidx.core.view.WindowInsetsControllerCompat
+
+          class MainActivity : AppCompatActivity() {
+              private lateinit var webView: WebView
+              private var bgmPlayer: MediaPlayer? = null
+              private var bgmEnabled = true
+              private var bgmVolume = 0.65f
+              private var notifEnabled = true
+              private var userStarted = false
+              private var lastBackPressMs = 0L
+
+              inner class AudioBridge {
+                  @JavascriptInterface
+                  fun startBgm(enabled: Boolean, vol: Float) {
+                      runOnUiThread {
+                          userStarted = true
+                          bgmEnabled = enabled
+                          bgmVolume = vol.coerceIn(0f, 1f)
+                          syncNativeBgm()
+                      }
+                  }
+
+                  @JavascriptInterface
+                  fun updateBgm(enabled: Boolean, vol: Float) {
+                      runOnUiThread {
+                          bgmEnabled = enabled
+                          bgmVolume = vol.coerceIn(0f, 1f)
+                          syncNativeBgm()
+                      }
+                  }
+
+                  @JavascriptInterface
+                  fun setNotifications(enabled: Boolean) {
+                      runOnUiThread {
+                          notifEnabled = enabled
+                          if (enabled) {
+                              requestNotifPermission()
+                              scheduleReminder(6L * 60L * 60L * 1000L)
+                          } else {
+                              cancelReminder()
+                          }
+                      }
+                  }
+
+                  @JavascriptInterface
+                  fun isOnline(): Boolean {
+                      return try {
+                          val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                          val net = cm.activeNetwork ?: return false
+                          val caps = cm.getNetworkCapabilities(net) ?: return false
+                          caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                      } catch (_: Exception) { false }
+                  }
+              }
+
+              private fun requestNotifPermission() {
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                      if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                          ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 101)
+                      }
+                  }
+              }
+
+              private fun scheduleReminder(delayMs: Long) {
+                  val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                  val intent = Intent(this, ReminderReceiver::class.java)
+                  val pi = PendingIntent.getBroadcast(
+                      this, 3001, intent,
+                      PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                  )
+                  am.setInexactRepeating(
+                      AlarmManager.RTC_WAKEUP,
+                      System.currentTimeMillis() + delayMs,
+                      AlarmManager.INTERVAL_HALF_DAY,
+                      pi
+                  )
+              }
+
+              private fun cancelReminder() {
+                  val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                  val intent = Intent(this, ReminderReceiver::class.java)
+                  val pi = PendingIntent.getBroadcast(
+                      this, 3001, intent,
+                      PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                  )
+                  am.cancel(pi)
+              }
+
+              private fun ensureBgm() {
+                  if (bgmPlayer == null) {
+                      bgmPlayer = MediaPlayer.create(this, R.raw.bgm)?.apply {
+                          isLooping = true
+                      }
+                  }
+              }
+
+              private fun syncNativeBgm() {
+                  if (!userStarted) return
+                  ensureBgm()
+                  bgmPlayer?.let { mp ->
+                      val v = if (bgmEnabled) bgmVolume else 0f
+                      mp.setVolume(v, v)
+                      if (bgmEnabled && v > 0.01f) {
+                          if (!mp.isPlaying) mp.start()
+                      } else {
+                          if (mp.isPlaying) mp.pause()
+                      }
+                  }
+              }
+
+              @SuppressLint("SetJavaScriptEnabled")
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+                  window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                  hideSystemBars()
+                  requestNotifPermission()
+                  scheduleReminder(6L * 60L * 60L * 1000L)
+
+                  webView = WebView(this).apply {
+                      setBackgroundColor(Color.parseColor("#0d4a14"))
+                      overScrollMode = View.OVER_SCROLL_NEVER
+                      isHorizontalScrollBarEnabled = false
+                      isVerticalScrollBarEnabled = false
+                      settings.apply {
+                          javaScriptEnabled = true
+                          domStorageEnabled = true
+                          databaseEnabled = true
+                          allowFileAccess = true
+                          allowContentAccess = true
+                          mediaPlaybackRequiresUserGesture = false
+                          cacheMode = WebSettings.LOAD_DEFAULT
+                          useWideViewPort = true
+                          loadWithOverviewMode = true
+                          mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                      }
+                      addJavascriptInterface(AudioBridge(), "AndroidAudio")
+                      webViewClient = WebViewClient()
+                      webChromeClient = WebChromeClient()
+                  }
+
+                  setContentView(webView)
+                  webView.loadUrl("file:///android_asset/index.html")
+              }
+
+              private fun hideSystemBars() {
+                  WindowCompat.setDecorFitsSystemWindows(window, false)
+                  val controller = WindowInsetsControllerCompat(window, window.decorView)
+                  controller.hide(WindowInsetsCompat.Type.systemBars())
+                  controller.systemBarsBehavior =
+                      WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+              }
+
+              override fun onWindowFocusChanged(hasFocus: Boolean) {
+                  super.onWindowFocusChanged(hasFocus)
+                  if (hasFocus) hideSystemBars()
+              }
+
+              override fun onPause() {
+                  super.onPause()
+                  bgmPlayer?.let { if (it.isPlaying) it.pause() }
+                  webView.evaluateJavascript("window.pauseGameAudio && window.pauseGameAudio();", null)
+                  webView.onPause()
+                  webView.pauseTimers()
+              }
+
+              override fun onStop() {
+                  super.onStop()
+                  bgmPlayer?.let { if (it.isPlaying) it.pause() }
+              }
+
+              override fun onResume() {
+                  super.onResume()
+                  hideSystemBars()
+                  webView.resumeTimers()
+                  webView.onResume()
+                  syncNativeBgm()
+                  webView.evaluateJavascript("window.resumeGameAudio && window.resumeGameAudio();", null)
+              }
+
+              override fun onDestroy() {
+                  bgmPlayer?.stop()
+                  bgmPlayer?.release()
+                  bgmPlayer = null
+                  webView.destroy()
+                  super.onDestroy()
+              }
+
+              @Deprecated("Deprecated in Java")
+              override fun onBackPressed() {
+                  val now = System.currentTimeMillis()
+                  if (now - lastBackPressMs < 2000L) {
+                      bgmPlayer?.stop()
+                      super.onBackPressed()
+                  } else {
+                      lastBackPressMs = now
+                      Toast.makeText(this, "Press back again to exit Serpent Wild", Toast.LENGTH_SHORT).show()
+                  }
+              }
+          }
+          EOF
           cat << 'GAMEHTML' > app/src/main/assets/index.html
           <!DOCTYPE html>
           <html lang="en">
           <head>
             <meta charset="UTF-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-            <title>SERPENT WILD: APEX — v23 Worms Zone Pro</title>
+            <title>SERPENT WILD: APEX — v23 64-Snakes Worms Zone</title>
             <style>
               :root {
-                --bg-grass: #1a7322;
+                --bg-grass: #145e1c;
+                --panel-blue: rgba(14, 34, 68, 0.94);
                 --panel-border: rgba(118, 206, 255, 0.48);
                 --gold: #ffd23f;
                 --green: #69f03a;
                 --cyan: #4de2f0;
+                --danger: #ff4757;
                 --text-main: #ffffff;
                 --text-muted: #b8d8f8;
               }
@@ -21,41 +536,41 @@
               button, input { touch-action: manipulation; font-family: inherit; }
 
               .wz-panel {
-                background: linear-gradient(165deg, rgba(24, 58, 114, 0.96), rgba(10, 26, 58, 0.98));
+                background: linear-gradient(165deg, rgba(22, 52, 102, 0.95), rgba(10, 24, 52, 0.97));
                 border: 2px solid var(--panel-border);
                 box-shadow: 0 8px 24px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.22);
               }
               .btn-battle {
-                border: 3px solid #d4ff8a; border-radius: 18px; padding: 12px 28px;
+                border: 3px solid #d4ff8a; border-radius: 18px; padding: 11px 28px;
                 background: linear-gradient(180deg, #8cff3b 0%, #3ec918 55%, #1d8a09 100%);
                 color: #ffffff; font-size: 18px; font-weight: 900; letter-spacing: 1px;
                 text-shadow: 0 2px 3px rgba(0,0,0,0.55);
                 box-shadow: 0 6px 0 #145c06, 0 10px 22px rgba(0,0,0,0.5);
-                cursor: pointer;
+                cursor: pointer; transition: transform 0.08s;
               }
               .btn-battle:active { transform: translateY(3px); box-shadow: 0 3px 0 #145c06; }
               .btn-gold {
-                border: 2px solid #fff3a1; border-radius: 13px; padding: 8px 15px;
+                border: 2px solid #fff3a1; border-radius: 12px; padding: 7px 14px;
                 background: linear-gradient(180deg, #ffe259 0%, #f5a623 65%, #c77208 100%);
-                color: #241300; font-size: 12px; font-weight: 900; text-transform: uppercase;
+                color: #241300; font-size: 11.5px; font-weight: 900; text-transform: uppercase;
                 box-shadow: 0 4px 0 #8a4b00; cursor: pointer;
               }
               .btn-gold:active { transform: translateY(2px); }
               .btn-blue {
-                border: 2px solid #9cf0ff; border-radius: 13px; padding: 8px 14px;
+                border: 2px solid #9cf0ff; border-radius: 12px; padding: 7px 13px;
                 background: linear-gradient(180deg, #42c6ff 0%, #1678d4 65%, #0c4894 100%);
-                color: #ffffff; font-size: 11.5px; font-weight: 900; text-transform: uppercase;
+                color: #ffffff; font-size: 11px; font-weight: 900; text-transform: uppercase;
                 box-shadow: 0 4px 0 #082e63; cursor: pointer;
               }
               .btn-ad {
-                border: 2px solid #ffe875; border-radius: 14px; padding: 7px 12px;
+                border: 2px solid #ffe875; border-radius: 13px; padding: 7px 11px;
                 background: linear-gradient(180deg, #ff7a18 0%, #e03e12 70%, #a32005 100%);
-                color: #fff; font-size: 11px; font-weight: 900; text-transform: uppercase;
+                color: #fff; font-size: 10.5px; font-weight: 900; text-transform: uppercase;
                 box-shadow: 0 4px 0 #6e1202; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
               }
               .btn-ghost {
-                border: 1.5px solid rgba(255,255,255,0.28); border-radius: 12px; padding: 8px 14px;
-                background: rgba(255,255,255,0.1); color: #eef7ff; font-size: 11.5px; font-weight: 800; cursor: pointer;
+                border: 1.5px solid rgba(255,255,255,0.28); border-radius: 11px; padding: 7px 13px;
+                background: rgba(255,255,255,0.1); color: #eef7ff; font-size: 11px; font-weight: 800; cursor: pointer;
               }
 
               @keyframes champShine {
@@ -64,7 +579,7 @@
                 100% { background-position: 0% 50%; transform: scale(1); }
               }
               .world-champ-title {
-                display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 9px; font-weight: 900;
+                display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 8.5px; font-weight: 900;
                 letter-spacing: 0.7px; text-transform: uppercase; color: #1b0e00;
                 background: linear-gradient(90deg, #ffe259, #ff6b81, #59f4ff, #8cff3b, #ffe259);
                 background-size: 300% 300%; animation: champShine 2.4s linear infinite;
@@ -74,7 +589,7 @@
               #splashScreen {
                 position: fixed; inset: 0; z-index: 140; display: flex; flex-direction: column;
                 align-items: center; justify-content: space-between; padding: 18px 24px 26px;
-                background: radial-gradient(circle at 50% 42%, #2da32d 0%, #13541b 65%, #07260b 100%);
+                background: radial-gradient(circle at 50% 42%, #2b942b 0%, #114d18 65%, #07260b 100%);
                 transition: opacity 0.35s ease;
               }
               #splashScreen.fade-out { opacity: 0; pointer-events: none; }
@@ -90,18 +605,30 @@
 
               #lobbyScreen { position: fixed; inset: 0; z-index: 30; display: none; pointer-events: none; }
               #lobbyTopBar {
-                position: absolute; top: 10px; left: max(12px, env(safe-area-inset-left)); right: max(12px, env(safe-area-inset-right));
+                position: absolute; top: 8px; left: max(12px, env(safe-area-inset-left)); right: max(12px, env(safe-area-inset-right));
                 display: flex; justify-content: space-between; align-items: center; gap: 8px;
               }
-              .top-left-grp, .top-right-grp { pointer-events: auto; display: flex; align-items: center; gap: 7px; }
-              .pill-box { display: flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 13px; font-size: 12px; font-weight: 900; cursor: pointer; }
-              .net-pill { padding: 5px 10px; border-radius: 999px; font-size: 10px; font-weight: 900; cursor: pointer; border: 2px solid #7cff3b; background: rgba(15, 74, 24, 0.92); color: #a8ff78; }
+              .top-left-grp, .top-right-grp { pointer-events: auto; display: flex; align-items: center; gap: 6px; }
+              .pill-box { display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 13px; font-size: 12px; font-weight: 900; cursor: pointer; }
+              .net-pill {
+                padding: 5px 10px; border-radius: 999px; font-size: 10px; font-weight: 900;
+                cursor: pointer; border: 2px solid #7cff3b; background: rgba(15, 74, 24, 0.92); color: #a8ff78;
+              }
               .net-pill.offline { border-color: #ff9f43; background: rgba(74, 38, 12, 0.92); color: #ffd280; }
-              .icon-sq { width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 17px; cursor: pointer; color: #fff; }
+              .icon-sq { width: 36px; height: 36px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; color: #fff; }
 
-              #lobbyLeftRail { position: absolute; left: max(12px, env(safe-area-inset-left)); top: 52%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; pointer-events: auto; }
-              #lobbyRightRail { position: absolute; right: max(12px, env(safe-area-inset-right)); top: 52%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 8px; pointer-events: auto; align-items: flex-end; }
-              .wz-tile-btn { display: flex; align-items: center; gap: 8px; padding: 8px 13px; border-radius: 14px; font-size: 11px; font-weight: 900; text-transform: uppercase; color: #fff; cursor: pointer; min-width: 126px; }
+              #lobbyLeftRail {
+                position: absolute; left: max(12px, env(safe-area-inset-left)); top: 52%; transform: translateY(-50%);
+                display: flex; flex-direction: column; gap: 7px; pointer-events: auto;
+              }
+              #lobbyRightRail {
+                position: absolute; right: max(12px, env(safe-area-inset-right)); top: 52%; transform: translateY(-50%);
+                display: flex; flex-direction: column; gap: 7px; pointer-events: auto; align-items: flex-end;
+              }
+              .wz-tile-btn {
+                display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 13px;
+                font-size: 10.5px; font-weight: 900; text-transform: uppercase; color: #fff; cursor: pointer; min-width: 120px;
+              }
               .wz-tile-btn:active { transform: scale(0.95); }
               .wz-tile-btn.gift { background: linear-gradient(135deg, #d9387a, #7d1546); border: 2px solid #ff9ec4; }
               .wz-tile-btn.chest { background: linear-gradient(135deg, #c97b12, #6b3804); border: 2px solid #ffe07d; }
@@ -110,96 +637,167 @@
               .wz-tile-btn.workshop { background: linear-gradient(135deg, #1b78d4, #0c3d7a); border: 2px solid #80dcff; }
               .wz-tile-btn.shop { background: linear-gradient(135deg, #e07b10, #8a3d04); border: 2px solid #ffd25c; }
 
-              #lobbyBottomBar { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; pointer-events: auto; }
-              .mode-chip { padding: 9px 14px; border-radius: 14px; font-size: 11.5px; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+              #lobbyBottomBar {
+                position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+                display: flex; align-items: center; gap: 10px; pointer-events: auto;
+              }
+              .mode-chip { padding: 8px 13px; border-radius: 13px; font-size: 11px; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
 
-              .modal-backdrop { position: fixed; inset: 0; z-index: 90; display: none; align-items: center; justify-content: center; padding: 8px; background: rgba(4, 14, 24, 0.84); backdrop-filter: blur(7px); }
+              .modal-backdrop {
+                position: fixed; inset: 0; z-index: 90; display: none; align-items: center; justify-content: center;
+                padding: 8px; background: rgba(4, 14, 24, 0.86); backdrop-filter: blur(7px);
+              }
               .modal-backdrop.open { display: flex; }
-              .modal-box { width: 100%; max-width: 920px; height: 92vh; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; }
-              .modal-head { flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 9px 15px; background: rgba(7, 18, 40, 0.96); border-bottom: 2px solid rgba(118,206,255,0.28); }
-              .modal-title { font-size: 14px; font-weight: 900; letter-spacing: 1px; color: var(--gold); text-transform: uppercase; }
-              .close-btn { width: 32px; height: 32px; border-radius: 10px; border: 2px solid #ff7b8a; background: linear-gradient(180deg, #ff5e6c, #c41d31); color: #fff; font-size: 15px; font-weight: 900; cursor: pointer; }
-              .modal-body { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 10px 12px; }
+              .modal-box { width: 100%; max-width: 910px; height: 92vh; border-radius: 18px; display: flex; flex-direction: column; overflow: hidden; }
+              .modal-head {
+                flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+                padding: 7px 14px; background: rgba(7, 18, 40, 0.96); border-bottom: 2px solid rgba(118,206,255,0.28);
+              }
+              .modal-title { font-size: 13.5px; font-weight: 900; letter-spacing: 0.9px; color: var(--gold); text-transform: uppercase; }
+              .close-btn {
+                width: 30px; height: 30px; border-radius: 9px; border: 2px solid #ff7b8a;
+                background: linear-gradient(180deg, #ff5e6c, #c41d31); color: #fff; font-size: 14px; font-weight: 900; cursor: pointer;
+              }
+              .modal-body { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 9px 11px; }
 
-              .ws-layout { display: flex; gap: 10px; height: 100%; min-height: 0; }
-              .ws-left-tabs { display: flex; flex-direction: column; gap: 7px; width: 64px; flex-shrink: 0; }
-              .ws-ico-tab { height: 54px; border-radius: 14px; border: 2px solid rgba(120,200,255,0.3); background: rgba(8, 22, 46, 0.9); color: #a8d2ff; font-size: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: pointer; }
-              .ws-ico-tab span { font-size: 8px; font-weight: 900; text-transform: uppercase; }
+              /* WORKSHOP */
+              .ws-layout { display: flex; gap: 9px; height: 100%; min-height: 0; }
+              .ws-left-tabs { display: flex; flex-direction: column; gap: 6px; width: 60px; flex-shrink: 0; }
+              .ws-ico-tab {
+                height: 52px; border-radius: 13px; border: 2px solid rgba(120,200,255,0.3);
+                background: rgba(8, 22, 46, 0.9); color: #a8d2ff; font-size: 19px;
+                display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: pointer;
+              }
+              .ws-ico-tab span { font-size: 7.5px; font-weight: 900; text-transform: uppercase; }
               .ws-ico-tab.active { background: linear-gradient(180deg, #32a8ff, #1258b5); border-color: #fff; color: #fff; }
               .ws-center-preview {
-                width: 225px; flex-shrink: 0; border-radius: 16px; padding: 10px;
-                background: radial-gradient(circle at 50% 44%, #ff6b81 0%, #6b1d57 52%, #1d1245 100%);
-                border: 2px solid rgba(255, 210, 63, 0.65);
-                display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 6px;
+                width: 220px; flex-shrink: 0; border-radius: 15px; padding: 9px;
+                background: radial-gradient(circle at 50% 44%, #247829 0%, #103d14 78%);
+                border: 2px solid rgba(155, 245, 118, 0.55);
+                display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 5px;
               }
-              #wsPreviewCanvas { width: 100%; flex: 1; min-height: 130px; border-radius: 12px; display: block; }
+              #wsPreviewCanvas { width: 100%; flex: 1; min-height: 125px; border-radius: 11px; display: block; }
               .ws-right-content { flex: 1; min-width: 0; overflow-y: auto; padding-right: 2px; }
-              .ws-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(106px, 1fr)); gap: 8px; }
-              .snake-card { padding: 7px 5px; border-radius: 14px; border: 2px solid rgba(255,255,255,0.28); display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; text-align: center; }
-              .snake-card.t-Free      { background: linear-gradient(160deg, #28a645, #125924); border-color: #7cff4d; }
-              .snake-card.t-Rare      { background: linear-gradient(160deg, #2478d9, #0f3b7a); border-color: #69c9ff; }
-              .snake-card.t-Epic      { background: linear-gradient(160deg, #8b32d4, #3d126b); border-color: #da8cff; }
-              .snake-card.t-Legendary { background: linear-gradient(160deg, #de7e16, #6e3604); border-color: #ffd859; }
-              .snake-card.t-Mythical  { background: linear-gradient(160deg, #e02868, #5c105e); border-color: #ff85c0; }
-              .snake-card.selected    { outline: 3px solid #ffe259; transform: scale(1.03); }
-              .snake-thumb { width: 68px; height: 68px; border-radius: 10px; background: rgba(0,0,0,0.18); display: block; }
-              .sc-name { font-size: 9.5px; font-weight: 900; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-              .sc-price { font-size: 9px; font-weight: 900; padding: 2px 5px; border-radius: 7px; background: rgba(0,0,0,0.48); width: 100%; }
+              .ws-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 7px; }
+              .snake-card {
+                padding: 6px 4px; border-radius: 13px; border: 2px solid rgba(255,255,255,0.22);
+                display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; text-align: center;
+              }
+              .snake-card.t-Free      { background: linear-gradient(160deg, #21853b, #0f451e); border-color: #69f03a; }
+              .snake-card.t-Rare      { background: linear-gradient(160deg, #1d64b8, #0e3263); border-color: #59c0ff; }
+              .snake-card.t-Epic      { background: linear-gradient(160deg, #742bb3, #351059); border-color: #d07aff; }
+              .snake-card.t-Legendary { background: linear-gradient(160deg, #c97214, #5e3004); border-color: #ffd24d; }
+              .snake-card.t-Mythic    { background: linear-gradient(160deg, #16728c, #381263); border-color: #61f4ff; }
+              .snake-card.selected    { outline: 3px solid #fff; transform: scale(1.02); }
+              .snake-thumb { width: 64px; height: 64px; border-radius: 10px; background: rgba(0,0,0,0.22); display: block; }
+              .sc-name { font-size: 9px; font-weight: 900; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+              .sc-price { font-size: 8.5px; font-weight: 900; padding: 2px 4px; border-radius: 6px; background: rgba(0,0,0,0.52); width: 100%; }
 
-              .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(156px, 1fr)); gap: 9px; }
-              .item-card { padding: 10px; border-radius: 14px; background: rgba(255,255,255,0.08); border: 2px solid rgba(130,205,255,0.28); display: flex; flex-direction: column; gap: 6px; cursor: pointer; }
+              .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+              .item-card {
+                padding: 9px; border-radius: 13px; background: rgba(255,255,255,0.08);
+                border: 2px solid rgba(130,205,255,0.28); display: flex; flex-direction: column; gap: 5px; cursor: pointer;
+              }
               .item-card.selected { border-color: var(--gold); background: rgba(255, 210, 63, 0.16); }
-              .sec-lbl { font-size: 10.5px; font-weight: 900; color: var(--gold); text-transform: uppercase; letter-spacing: 0.9px; margin: 8px 0 6px; }
+              .sec-lbl { font-size: 10px; font-weight: 900; color: var(--gold); text-transform: uppercase; letter-spacing: 0.8px; margin: 7px 0 5px; }
 
-              .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 8px; }
-              .cal-hdr { text-align: center; font-size: 10px; font-weight: 900; color: #8cd4ff; padding-bottom: 4px; }
-              .cal-day { border-radius: 11px; padding: 7px 4px; text-align: center; font-size: 11px; font-weight: 900; background: rgba(255,255,255,0.07); border: 1.5px solid rgba(255,255,255,0.14); display: flex; flex-direction: column; align-items: center; gap: 2px; }
-              .cal-day.played { background: rgba(62, 201, 24, 0.25); border-color: #69f03a; color: #d6ffbf; }
+              /* FIXED COMPACT PLAY CALENDAR — FITS FULL MONTH ON ONE SCREEN WITHOUT CUT-OFF! */
+              .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 4px; }
+              .cal-hdr { text-align: center; font-size: 9.5px; font-weight: 900; color: #8cd4ff; padding-bottom: 2px; }
+              .cal-day {
+                border-radius: 8px; padding: 3px 2px; text-align: center; font-size: 10px; font-weight: 900;
+                background: rgba(255,255,255,0.07); border: 1.5px solid rgba(255,255,255,0.14);
+                display: flex; align-items: center; justify-content: center; gap: 3px; min-height: 28px;
+              }
+              .cal-day.played { background: rgba(62, 201, 24, 0.28); border-color: #69f03a; color: #d6ffbf; }
               .cal-day.missed { background: rgba(255, 71, 87, 0.16); border-color: rgba(255, 71, 87, 0.45); color: #ffb8bf; }
-              .cal-day.today  { outline: 2.5px solid #ffd23f; }
+              .cal-day.today  { outline: 2px solid #ffd23f; }
 
-              .wl-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 12px; border-radius: 13px; margin-bottom: 6px; background: rgba(255,255,255,0.07); border: 1.5px solid rgba(130,205,255,0.2); }
-              .wl-row.top1 { background: linear-gradient(135deg, rgba(255, 196, 0, 0.28), rgba(140, 48, 255, 0.28)); border: 2px solid #ffd23f; box-shadow: 0 0 18px rgba(255, 210, 63, 0.35); }
+              .wl-row {
+                display: flex; align-items: center; justify-content: space-between; gap: 10px;
+                padding: 8px 11px; border-radius: 12px; margin-bottom: 5px;
+                background: rgba(255,255,255,0.07); border: 1.5px solid rgba(130,205,255,0.2);
+              }
+              .wl-row.top1 { background: linear-gradient(135deg, rgba(255,196,0,0.28), rgba(140,48,255,0.28)); border: 2px solid #ffd23f; }
               .wl-row.me { border-color: #69f03a; background: rgba(105, 240, 58, 0.18); }
 
-              .setting-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; border-radius: 12px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.14); margin-bottom: 7px; gap: 10px; }
-              .chip { padding: 5px 11px; border-radius: 9px; border: 1.5px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #e6f4ff; font-size: 11px; font-weight: 800; cursor: pointer; }
+              .setting-row {
+                display: flex; align-items: center; justify-content: space-between; padding: 8px 11px;
+                border-radius: 11px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.14); margin-bottom: 6px; gap: 10px;
+              }
+              .chip { padding: 5px 10px; border-radius: 8px; border: 1.5px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #e6f4ff; font-size: 10.5px; font-weight: 800; cursor: pointer; }
               .chip.selected { border-color: var(--gold); background: rgba(255,210,63,0.25); color: #fff; }
-              .text-input { width: 100%; padding: 7px 11px; border-radius: 10px; border: 2px solid #6ec6ff; background: rgba(5,16,36,0.9); color: #fff; font-size: 13px; font-weight: 900; outline: none; }
+              .text-input { width: 100%; padding: 6px 10px; border-radius: 9px; border: 2px solid #6ec6ff; background: rgba(5,16,36,0.9); color: #fff; font-size: 12.5px; font-weight: 900; outline: none; }
 
+              /* CLEAN ZERO-OVERLAP HUD */
               #hud { position: fixed; inset: 0; z-index: 20; display: none; pointer-events: none; }
               #hudTopLeft { position: absolute; top: 8px; left: max(10px, env(safe-area-inset-left)); display: flex; flex-direction: column; gap: 5px; }
-              .score-pill { padding: 6px 13px; border-radius: 14px; display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 900; }
-              #hudScoreBig { font-size: 20px; font-weight: 900; color: #ffe259; font-variant-numeric: tabular-nums; }
-              #hudKillsPill { font-size: 11.5px; color: #ff8594; }
-              #activeBuffRow { display: flex; gap: 5px; flex-wrap: wrap; }
-              .buff-tag { padding: 3px 8px; border-radius: 999px; font-size: 9.5px; font-weight: 900; background: rgba(16, 42, 84, 0.9); border: 1.5px solid #59e8ff; color: #aef6ff; }
+              .score-pill { padding: 5px 12px; border-radius: 13px; display: flex; align-items: center; gap: 9px; font-size: 11.5px; font-weight: 900; }
+              #hudScoreBig { font-size: 19px; font-weight: 900; color: #ffe259; font-variant-numeric: tabular-nums; }
+              #hudKillsPill { font-size: 11px; color: #ff8594; }
+              #activeBuffRow { display: flex; gap: 4px; flex-wrap: wrap; max-width: 240px; }
+              .buff-tag { padding: 2px 7px; border-radius: 999px; font-size: 9px; font-weight: 900; background: rgba(16,42,84,0.9); border: 1.5px solid #59e8ff; color: #aef6ff; }
 
-              #defeatBanner { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); display: none; padding: 7px 18px; border-radius: 999px; background: linear-gradient(135deg, #ff512f, #f09819); color: #fff; font-size: 13px; font-weight: 900; border: 2px solid #fff3a1; }
-              #modeTimerPill { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); display: none; padding: 4px 13px; border-radius: 999px; font-size: 11px; font-weight: 900; color: #ffe259; }
+              #defeatBanner {
+                position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+                display: none; padding: 6px 16px; border-radius: 999px;
+                background: linear-gradient(135deg, #ff512f, #f09819); color: #fff;
+                font-size: 12px; font-weight: 900; border: 2px solid #fff3a1; white-space: nowrap;
+              }
+              #modeTimerPill {
+                position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+                display: none; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 900; color: #ffe259;
+              }
 
-              #hudTopRight { position: absolute; top: 8px; right: max(10px, env(safe-area-inset-right)); display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+              /* TOP-RIGHT LEADERBOARD ONLY (NO OVERLAP WITH BOOST!) */
+              #hudTopRight { position: absolute; top: 8px; right: max(10px, env(safe-area-inset-right)); display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
               .hud-tools { display: flex; gap: 5px; pointer-events: auto; }
-              #arenaLeaderBox { width: 176px; padding: 6px 9px; border-radius: 12px; background: rgba(8, 22, 16, 0.72); border: 1.5px solid rgba(145, 235, 118, 0.45); font-size: 9.5px; font-weight: 800; display: flex; flex-direction: column; gap: 2px; }
-              .alb-row { display: flex; justify-content: space-between; gap: 6px; color: #e2f5dc; }
-              .alb-row.me { color: #ffe259; font-weight: 900; background: rgba(255,210,63,0.18); padding: 1px 4px; border-radius: 5px; }
-              #minimapBox { width: 82px; height: 82px; border-radius: 50%; padding: 3px; pointer-events: auto; background: rgba(8, 24, 14, 0.82); border: 2px solid rgba(145, 235, 118, 0.65); }
+              #arenaLeaderBox {
+                width: 162px; padding: 5px 8px; border-radius: 11px;
+                background: rgba(8, 22, 16, 0.72); border: 1.5px solid rgba(145, 235, 118, 0.45);
+                font-size: 8.8px; font-weight: 800; display: flex; flex-direction: column; gap: 1.5px;
+              }
+              .alb-row { display: flex; justify-content: space-between; gap: 5px; color: #e2f5dc; }
+              .alb-row.me { color: #ffe259; font-weight: 900; background: rgba(255,210,63,0.18); padding: 1px 4px; border-radius: 4px; }
+
+              /* MINIMAP MOVED TO BOTTOM-LEFT (ZERO OVERLAP!) */
+              #minimapBox {
+                position: absolute; bottom: 14px; left: max(12px, env(safe-area-inset-left));
+                width: 78px; height: 78px; border-radius: 50%; padding: 3px; pointer-events: none;
+                background: rgba(8, 24, 14, 0.82); border: 2px solid rgba(145, 235, 118, 0.65);
+              }
               #minimapCanvas { width: 100%; height: 100%; border-radius: 50%; display: block; }
 
-              #quickPotions { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 7px; pointer-events: auto; }
-              .qp-btn { width: 44px; height: 44px; border-radius: 50%; border: 2px solid #7ee6ff; background: rgba(12, 32, 68, 0.9); color: #fff; font-size: 17px; cursor: pointer; position: relative; display: flex; align-items: center; justify-content: center; }
-              .qp-cnt { position: absolute; bottom: -3px; right: -3px; background: var(--gold); color: #1f1100; font-size: 9px; font-weight: 900; padding: 1px 5px; border-radius: 8px; }
+              #quickPotions {
+                position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+                display: flex; gap: 6px; pointer-events: auto;
+              }
+              .qp-btn {
+                width: 42px; height: 42px; border-radius: 50%; border: 2px solid #7ee6ff;
+                background: rgba(12, 32, 68, 0.9); color: #fff; font-size: 16px; cursor: pointer;
+                position: relative; display: flex; align-items: center; justify-content: center;
+              }
+              .qp-cnt {
+                position: absolute; bottom: -3px; right: -3px; background: var(--gold); color: #1f1100;
+                font-size: 8.5px; font-weight: 900; padding: 1px 4px; border-radius: 7px;
+              }
 
-              #floatingJoy { position: absolute; width: 108px; height: 108px; margin-left: -54px; margin-top: -54px; border-radius: 50%; background: rgba(255,255,255,0.16); border: 2px solid rgba(255,255,255,0.55); opacity: 0; pointer-events: none; transition: opacity 0.12s; }
+              #floatingJoy { position: absolute; width: 104px; height: 104px; margin-left: -52px; margin-top: -52px; border-radius: 50%; background: rgba(255,255,255,0.16); border: 2px solid rgba(255,255,255,0.55); opacity: 0; pointer-events: none; transition: opacity 0.12s; }
               #floatingJoy.visible { opacity: 1; }
-              #floatingJoy.fixed-mode { left: 82px !important; top: calc(100% - 82px) !important; opacity: 0.85 !important; }
-              #floatingJoyKnob { position: absolute; top: 50%; left: 50%; width: 42px; height: 42px; border-radius: 50%; transform: translate(-50%,-50%); background: radial-gradient(circle at 35% 30%, #ffffff, #8cff3b 70%, #248a0c); border: 2px solid #fff; }
+              #floatingJoy.fixed-mode { left: 146px !important; top: calc(100% - 76px) !important; opacity: 0.82 !important; }
+              #floatingJoyKnob { position: absolute; top: 50%; left: 50%; width: 40px; height: 40px; border-radius: 50%; transform: translate(-50%,-50%); background: radial-gradient(circle at 35% 30%, #ffffff, #8cff3b 70%, #248a0c); border: 2px solid #fff; }
 
-              #btnBoost { pointer-events: auto; position: absolute; bottom: 18px; right: max(18px, env(safe-area-inset-right)); width: 78px; height: 78px; border-radius: 50%; border: 3px solid #fff3a1; background: radial-gradient(circle at 30% 25%, #ffe259, #ff7a18 70%, #b52b04); color: #fff; font-size: 24px; font-weight: 900; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.55); }
+              #btnBoost {
+                pointer-events: auto; position: absolute; bottom: 16px; right: max(18px, env(safe-area-inset-right));
+                width: 74px; height: 74px; border-radius: 50%; border: 3px solid #fff3a1;
+                background: radial-gradient(circle at 30% 25%, #ffe259, #ff7a18 70%, #b52b04);
+                color: #fff; font-size: 22px; font-weight: 900; display: flex; flex-direction: column;
+                align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 7px 18px rgba(0,0,0,0.55);
+              }
               #btnBoost.active { transform: scale(0.9); }
 
-              .popup-card { width: 92%; max-width: 420px; padding: 20px; border-radius: 20px; text-align: center; }
-              .ad-bar { width: 100%; height: 10px; border-radius: 999px; background: rgba(255,255,255,0.15); overflow: hidden; margin: 12px 0; }
+              .popup-card { width: 92%; max-width: 420px; padding: 18px; border-radius: 18px; text-align: center; }
+              .ad-bar { width: 100%; height: 10px; border-radius: 999px; background: rgba(255,255,255,0.15); overflow: hidden; margin: 11px 0; }
               #adProgress { width: 0%; height: 100%; background: linear-gradient(90deg, #ff7a18, #ffe259); }
             </style>
           </head>
@@ -209,16 +807,17 @@
             <div id="splashScreen">
               <div style="font-size:11px;font-weight:900;letter-spacing:4px;color:#c8ff9e;">APEX WILD STUDIOS</div>
               <div style="text-align:center;margin:auto 0;">
-                <div style="font-size:52px;margin-bottom:4px;">🐍</div>
+                <div style="font-size:50px;margin-bottom:4px;">🐍</div>
                 <div class="splash-title">SERPENT WILD</div>
-                <div style="font-size:11.5px;font-weight:900;letter-spacing:2.5px;color:#a8ff78;margin-top:4px;">v23 • 45+ COSTUMED SNAKES • WORMS ZONE PRO</div>
+                <div style="font-size:11px;font-weight:900;letter-spacing:2.2px;color:#a8ff78;margin-top:4px;">v23 • 64 UNIQUE SNAKES • WORMS ZONE EDITION</div>
               </div>
               <div id="tapEnterWrap" style="width:100%;max-width:300px;text-align:center;">
                 <button class="btn-battle" id="btnTapEnter" type="button" style="width:100%;">PLAY NOW!</button>
               </div>
               <div id="loaderWrap">
                 <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:900;color:#e8ffdb;">
-                  <span>Loading 45+ Costumed Snakes &amp; Arena...</span><span id="loaderPct">0%</span>
+                  <span id="loaderStatus">Loading 64 Custom Snakes &amp; Arena...</span>
+                  <span id="loaderPct">0%</span>
                 </div>
                 <div class="loader-bar"><div id="loaderFill"></div></div>
               </div>
@@ -228,16 +827,16 @@
               <div id="lobbyTopBar">
                 <div class="top-left-grp">
                   <div class="pill-box wz-panel" id="btnProfileOpen">
-                    <span id="lbAvatar" style="font-size:18px;">🐍</span>
+                    <span id="lbAvatar" style="font-size:17px;">🐍</span>
                     <div>
-                      <div style="font-size:12px;color:#fff;" id="lbName">ApexHunter</div>
-                      <div style="font-size:9px;color:#ffe259;" id="lbChampWrap">LV.1 • Best: 0</div>
+                      <div style="font-size:11.5px;color:#fff;" id="lbName">ApexHunter</div>
+                      <div style="font-size:9px;color:#ffe259;" id="lbChampWrap">LV.<span id="lbLvl">1</span> • Best: <span id="lbBest">0</span></div>
                     </div>
                   </div>
                   <button class="net-pill" id="btnNetToggle" type="button">🟢 ONLINE</button>
                 </div>
                 <div class="top-right-grp">
-                  <div class="pill-box wz-panel" id="btnTopCoins"><span>🪙</span><span id="lbCoins">2,500</span><span style="color:#69f03a;font-size:14px;">+</span></div>
+                  <div class="pill-box wz-panel" id="btnTopCoins"><span>🪙</span><span id="lbCoins">2,500</span><span style="color:#69f03a;font-size:13px;">+</span></div>
                   <div class="pill-box wz-panel" id="btnTopGems"><span>💎</span><span id="lbDias">50</span></div>
                   <button class="icon-sq wz-panel" id="btnLobbyAudio" type="button">🔊</button>
                   <button class="icon-sq wz-panel" id="btnLobbySettings" type="button">⚙️</button>
@@ -252,7 +851,7 @@
               </div>
 
               <div id="lobbyRightRail">
-                <button class="wz-tile-btn workshop" id="btnOpenWorkshop" type="button"><span>🎨</span><span>Workshop</span></button>
+                <button class="wz-tile-btn workshop" id="btnOpenWorkshop" type="button"><span>🎨</span><span>Workshop (64)</span></button>
                 <button class="wz-tile-btn shop" id="btnOpenShop" type="button"><span>🛒</span><span>Shop</span></button>
                 <button class="btn-ad" id="btnAdGold" type="button"><span>🎬</span><span>+300 🪙 AD</span></button>
                 <button class="btn-ad" id="btnAd10k" type="button" style="background:linear-gradient(180deg,#9b38ff,#5810a8);border-color:#e2b8ff;box-shadow:0 4px 0 #310663;"><span>🎬</span><span>10K START AD</span></button>
@@ -267,14 +866,14 @@
             <div class="modal-backdrop" id="workshopModal">
               <div class="modal-box wz-panel">
                 <div class="modal-head">
-                  <div class="modal-title">🎨 Worm Workshop (45+ Costumes)</div>
+                  <div class="modal-title">🎨 Worm Workshop — 64 Unique Skins</div>
                   <div style="display:flex;align-items:center;gap:10px;">
                     <span style="font-size:12px;font-weight:900;color:#ffe259;">🪙 <span id="wsCoins">0</span></span>
                     <span style="font-size:12px;font-weight:900;color:#8cf0ff;">💎 <span id="wsDias">0</span></span>
                     <button class="close-btn" type="button" data-close="workshopModal">✕</button>
                   </div>
                 </div>
-                <div class="modal-body" style="padding:10px;">
+                <div class="modal-body" style="padding:9px;">
                   <div class="ws-layout">
                     <div class="ws-left-tabs">
                       <button class="ws-ico-tab active" type="button" data-wst="skins">🐍<span>Skins</span></button>
@@ -284,11 +883,11 @@
                     </div>
                     <div class="ws-center-preview">
                       <div style="text-align:center;">
-                        <div id="wsName" style="font-size:13px;font-weight:900;color:#ffe259;">Water Dragon</div>
-                        <div id="wsMeta" style="font-size:9.5px;font-weight:800;color:#a8ff78;">FREE</div>
+                        <div id="wsName" style="font-size:13px;font-weight:900;color:#ffe259;">Croco</div>
+                        <div id="wsMeta" style="font-size:9px;font-weight:800;color:#a8ff78;">FREE</div>
                       </div>
-                      <canvas id="wsPreviewCanvas" width="210" height="210"></canvas>
-                      <div id="wsExprPreview" style="font-size:10px;color:#fff;font-weight:800;">Expression: "Hi!"</div>
+                      <canvas id="wsPreviewCanvas" width="210" height="205"></canvas>
+                      <div id="wsExprPreview" style="font-size:9.5px;color:#d6f5ff;font-weight:800;">Expression: "Hi!"</div>
                       <button class="btn-gold" id="wsActionBtn" type="button" style="width:100%;">EQUIPPED ✅</button>
                     </div>
                     <div class="ws-right-content" id="wsRightPane"></div>
@@ -308,10 +907,10 @@
                   </div>
                 </div>
                 <div class="modal-body">
-                  <div class="item-card" style="background:linear-gradient(135deg,rgba(255,122,24,0.34),rgba(140,30,10,0.48));border-color:#ffe259;margin-bottom:10px;flex-direction:row;align-items:center;justify-content:space-between;flex-wrap:wrap;">
+                  <div class="item-card" style="background:linear-gradient(135deg,rgba(255,122,24,0.32),rgba(140,30,10,0.45));border-color:#ffe259;margin-bottom:10px;flex-direction:row;align-items:center;justify-content:space-between;">
                     <div>
                       <div style="font-size:13px;font-weight:900;color:#ffe259;">🎬 WATCH AD TO EARN FREE GOLD!</div>
-                      <div style="font-size:10px;color:#fff0c2;">Instant +300 Gold Coins every time</div>
+                      <div style="font-size:10px;color:#fff0c2;">Instant +300 Gold Coins every time you watch a short ad</div>
                     </div>
                     <button class="btn-ad" id="btnShopWatchAd" type="button">🎬 WATCH (+300 🪙)</button>
                   </div>
@@ -324,17 +923,17 @@
             </div>
 
             <div class="modal-backdrop" id="calendarModal">
-              <div class="modal-box wz-panel" style="max-width:560px;height:auto;max-height:90vh;">
+              <div class="modal-box wz-panel" style="max-width:560px;height:auto;max-height:94vh;">
                 <div class="modal-head">
                   <div class="modal-title">📅 Play Activity Calendar</div>
                   <button class="close-btn" type="button" data-close="calendarModal">✕</button>
                 </div>
-                <div class="modal-body">
-                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                    <div id="calMonthLbl" style="font-size:14px;font-weight:900;color:#fff;">November 2026</div>
-                    <div id="calStreakLbl" style="font-size:11.5px;font-weight:900;color:#69f03a;">🔥 Streak: 1 Day</div>
+                <div class="modal-body" style="padding:8px 12px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div id="calMonthLbl" style="font-size:13px;font-weight:900;color:#fff;">November 2026</div>
+                    <div id="calStreakLbl" style="font-size:11px;font-weight:900;color:#69f03a;">🔥 Streak: 1 Day</div>
                   </div>
-                  <div style="font-size:10px;color:#b8d8f8;margin-bottom:8px;">✅ Played Day &nbsp;•&nbsp; ❌ Missed Day &nbsp;•&nbsp; Yellow Border = Today</div>
+                  <div style="font-size:9.5px;color:#b8d8f8;margin:3px 0 5px;">✅ Played Day &nbsp;•&nbsp; ❌ Missed Day &nbsp;•&nbsp; Yellow = Today</div>
                   <div class="cal-grid" id="calGrid"></div>
                 </div>
               </div>
@@ -347,13 +946,13 @@
                   <button class="close-btn" type="button" data-close="worldModal">✕</button>
                 </div>
                 <div class="modal-body">
-                  <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+                  <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
                     <button class="chip selected" type="button" data-wlm="infinity">♾️ Infinity</button>
                     <button class="chip" type="button" data-wlm="time">⏱️ Time Mode</button>
                     <button class="chip" type="button" data-wlm="treasure">💰 Treasure Hunter</button>
                   </div>
-                  <div style="font-size:10.5px;color:#ffe259;font-weight:800;margin-bottom:8px;">
-                    👑 World #1 Highest Score unlocks the animated <span class="world-champ-title">WORLD CHAMPION</span> title!
+                  <div style="font-size:10px;color:#ffe259;font-weight:800;margin-bottom:8px;">
+                    👑 World #1 Highest Score unlocks the exclusive animated <span class="world-champ-title">WORLD CHAMPION</span> title!
                   </div>
                   <div id="worldList"></div>
                 </div>
@@ -361,19 +960,22 @@
             </div>
 
             <div class="modal-backdrop" id="settingsModal">
-              <div class="modal-box wz-panel" style="max-width:540px;height:auto;max-height:90vh;">
+              <div class="modal-box wz-panel" style="max-width:540px;height:auto;max-height:92vh;">
                 <div class="modal-head">
                   <div class="modal-title">⚙️ Game Settings &amp; Profile</div>
                   <button class="close-btn" type="button" data-close="settingsModal">✕</button>
                 </div>
                 <div class="modal-body">
-                  <div class="setting-row"><div style="flex:1;"><div style="font-size:11.5px;font-weight:900;">Player Name</div><input id="inName" class="text-input" maxlength="15" /></div></div>
-                  <div class="setting-row"><div><div style="font-size:12px;font-weight:800;">Play Mode (Online / Offline)</div></div><button class="chip selected" id="setNetBtn" type="button">ONLINE</button></div>
-                  <div class="setting-row"><div><div style="font-size:12px;font-weight:800;">Background Music</div></div><button class="chip selected" id="setBgmBtn" type="button">ON</button></div>
-                  <div class="setting-row"><div><div style="font-size:12px;font-weight:800;">Sound FX</div></div><button class="chip selected" id="setSfxBtn" type="button">ON</button></div>
-                  <div class="setting-row"><div><div style="font-size:12px;font-weight:800;">Joystick Type</div></div><div style="display:flex;gap:5px;"><button class="chip selected" id="setJoyFloat" type="button">FLOATING</button><button class="chip" id="setJoyFixed" type="button">FIXED</button></div></div>
-                  <div class="setting-row"><div><div style="font-size:12px;font-weight:800;">Vibration (Haptics)</div></div><button class="chip selected" id="setVibBtn" type="button">ON</button></div>
-                  <div class="setting-row"><div><div style="font-size:12px;font-weight:800;">Daily Reminder Notifications</div></div><button class="chip selected" id="setNotifBtn" type="button">ON</button></div>
+                  <div class="setting-row"><div style="flex:1;"><div style="font-size:11px;font-weight:900;">Player Name</div><input id="inName" class="text-input" maxlength="15" /></div></div>
+                  <div class="setting-row"><div><div style="font-size:11.5px;font-weight:800;">Play Mode (Online / Offline)</div></div><button class="chip selected" id="setNetBtn" type="button">ONLINE</button></div>
+                  <div class="setting-row"><div><div style="font-size:11.5px;font-weight:800;">Background Music</div></div><button class="chip selected" id="setBgmBtn" type="button">ON</button></div>
+                  <div class="setting-row"><div><div style="font-size:11.5px;font-weight:800;">Sound FX</div></div><button class="chip selected" id="setSfxBtn" type="button">ON</button></div>
+                  <div class="setting-row">
+                    <div><div style="font-size:11.5px;font-weight:800;">Joystick Type</div></div>
+                    <div style="display:flex;gap:5px;"><button class="chip selected" id="setJoyFloat" type="button">FLOATING</button><button class="chip" id="setJoyFixed" type="button">FIXED</button></div>
+                  </div>
+                  <div class="setting-row"><div><div style="font-size:11.5px;font-weight:800;">Vibration (Haptics)</div></div><button class="chip selected" id="setVibBtn" type="button">ON</button></div>
+                  <div class="setting-row"><div><div style="font-size:11.5px;font-weight:800;">Daily Reminder Notifications</div></div><button class="chip selected" id="setNotifBtn" type="button">ON</button></div>
                 </div>
               </div>
             </div>
@@ -381,7 +983,7 @@
             <div class="modal-backdrop" id="adModal" style="z-index:130;">
               <div class="popup-card wz-panel">
                 <div style="font-size:15px;font-weight:900;color:#ffe259;">🎬 WATCHING REWARDED AD...</div>
-                <div style="font-size:11.5px;color:#d6ecff;margin-top:6px;" id="adDesc">Reward in 3s</div>
+                <div style="font-size:11.5px;color:#d6ecff;margin-top:6px;" id="adDesc">Reward credited in 3s</div>
                 <div class="ad-bar"><div id="adProgress"></div></div>
                 <div style="font-size:11px;font-weight:900;color:#69f03a;" id="adTimerTxt">3s remaining</div>
               </div>
@@ -391,10 +993,10 @@
               <div class="popup-card wz-panel">
                 <div style="font-size:20px;font-weight:900;color:#ffe259;">⚡ LAST CHANCE!</div>
                 <div style="font-size:12px;color:#d6ecff;margin:6px 0;">Keep your <b id="revScoreTxt" style="color:#69f03a;">0</b> score &amp; continue!</div>
-                <div style="font-size:32px;font-weight:900;color:#ff6b81;margin:6px 0;" id="revCountTxt">5</div>
+                <div style="font-size:30px;font-weight:900;color:#ff6b81;margin:5px 0;" id="revCountTxt">5</div>
                 <div style="display:flex;gap:8px;justify-content:center;margin-top:10px;">
                   <button class="btn-ghost" id="btnRevSkip" type="button">No Thanks</button>
-                  <button class="btn-ad" id="btnRevWatch" type="button" style="padding:10px 18px;font-size:12.5px;">🎬 REVIVE (AD)</button>
+                  <button class="btn-ad" id="btnRevWatch" type="button" style="padding:10px 16px;font-size:12px;">🎬 REVIVE (AD)</button>
                 </div>
               </div>
             </div>
@@ -402,9 +1004,9 @@
             <div id="hud">
               <div id="hudTopLeft">
                 <div class="score-pill wz-panel">
-                  <div><div style="font-size:8.5px;color:#9cd6ff;">SCORE</div><div id="hudScoreBig">100</div></div>
-                  <div style="height:24px;width:1px;background:rgba(255,255,255,0.2);"></div>
-                  <div><div id="hudKillsPill">💀 0</div><div style="font-size:9.5px;color:#ffe259;" id="hudCoinsRun">🪙 0</div></div>
+                  <div><div style="font-size:8px;color:#9cd6ff;">SCORE</div><div id="hudScoreBig">100</div></div>
+                  <div style="height:22px;width:1px;background:rgba(255,255,255,0.2);"></div>
+                  <div><div id="hudKillsPill">💀 0</div><div style="font-size:9px;color:#ffe259;" id="hudCoinsRun">🪙 0</div></div>
                 </div>
                 <div id="activeBuffRow"></div>
               </div>
@@ -414,13 +1016,14 @@
 
               <div id="hudTopRight">
                 <div class="hud-tools">
-                  <button class="icon-sq wz-panel" id="hudExprBtn" type="button" style="width:32px;height:32px;font-size:14px;">💬</button>
-                  <button class="icon-sq wz-panel" id="hudAudioBtn" type="button" style="width:32px;height:32px;font-size:13px;">🔊</button>
-                  <button class="icon-sq wz-panel" id="hudExitBtn" type="button" style="width:32px;height:32px;font-size:13px;">✕</button>
+                  <button class="icon-sq wz-panel" id="hudExprBtn" type="button" style="width:30px;height:30px;font-size:13px;">💬</button>
+                  <button class="icon-sq wz-panel" id="hudAudioBtn" type="button" style="width:30px;height:30px;font-size:12px;">🔊</button>
+                  <button class="icon-sq wz-panel" id="hudExitBtn" type="button" style="width:30px;height:30px;font-size:12px;">✕</button>
                 </div>
                 <div id="arenaLeaderBox"></div>
-                <div id="minimapBox"><canvas id="minimapCanvas" width="140" height="140"></canvas></div>
               </div>
+
+              <div id="minimapBox"><canvas id="minimapCanvas" width="140" height="140"></canvas></div>
 
               <div id="quickPotions">
                 <button class="qp-btn" type="button" data-qp="magnet">🧲<span class="qp-cnt" id="qpc_magnet">2</span></button>
@@ -431,19 +1034,19 @@
               </div>
 
               <div id="floatingJoy"><div id="floatingJoyKnob"></div></div>
-              <button id="btnBoost" type="button"><span>⚡</span><span style="font-size:8.5px;">BOOST</span></button>
+              <button id="btnBoost" type="button"><span>⚡</span><span style="font-size:8px;">BOOST</span></button>
             </div>
 
             <div class="modal-backdrop" id="resultsModal" style="z-index:115;">
               <div class="popup-card wz-panel">
-                <div style="font-size:22px;font-weight:900;color:#ffe259;" id="resTitle">GAME OVER!</div>
-                <div style="font-size:11.5px;color:#b8d8f8;margin:4px 0 12px;" id="resSub">Great Battle!</div>
-                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;">
-                  <div class="item-card" style="text-align:center;"><div style="font-size:17px;font-weight:900;color:#ffe259;" id="resScore">0</div><div style="font-size:9px;color:#b8d8f8;">SCORE</div></div>
-                  <div class="item-card" style="text-align:center;"><div style="font-size:17px;font-weight:900;color:#ff8594;" id="resKills">0</div><div style="font-size:9px;color:#b8d8f8;">KILLS</div></div>
-                  <div class="item-card" style="text-align:center;"><div style="font-size:17px;font-weight:900;color:#69f03a;" id="resGold">+0 🪙</div><div style="font-size:9px;color:#b8d8f8;">EARNED</div></div>
+                <div style="font-size:21px;font-weight:900;color:#ffe259;" id="resTitle">GAME OVER!</div>
+                <div style="font-size:11px;color:#b8d8f8;margin:4px 0 11px;" id="resSub">Great Battle!</div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:11px;">
+                  <div class="item-card" style="text-align:center;"><div style="font-size:16px;font-weight:900;color:#ffe259;" id="resScore">0</div><div style="font-size:8.5px;color:#b8d8f8;">SCORE</div></div>
+                  <div class="item-card" style="text-align:center;"><div style="font-size:16px;font-weight:900;color:#ff8594;" id="resKills">0</div><div style="font-size:8.5px;color:#b8d8f8;">KILLS</div></div>
+                  <div class="item-card" style="text-align:center;"><div style="font-size:16px;font-weight:900;color:#69f03a;" id="resGold">+0 🪙</div><div style="font-size:8.5px;color:#b8d8f8;">EARNED</div></div>
                 </div>
-                <div id="resChampNotice" style="display:none;margin-bottom:10px;font-size:11px;font-weight:900;color:#ffe259;">
+                <div id="resChampNotice" style="display:none;margin-bottom:9px;font-size:10.5px;font-weight:900;color:#ffe259;">
                   🎉 NEW WORLD #1! <span class="world-champ-title">WORLD CHAMPION</span> UNLOCKED!
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
@@ -452,6 +1055,7 @@
                 </div>
               </div>
             </div>
+
             <script>
               (() => {
                 'use strict';
@@ -487,12 +1091,12 @@
                 ];
 
                 const EXPRESSIONS = [
-                  { id: 'hi',    text: 'Hi! 👋',       cost: 0 },
-                  { id: 'yum',   text: 'Yummy! 😋',    cost: 0 },
-                  { id: 'haha',  text: 'Hahaha! 😂',   cost: 300 },
-                  { id: 'king',  text: 'I am #1! 👑',  cost: 500 },
+                  { id: 'hi',    text: 'Hi! 👋',      cost: 0 },
+                  { id: 'yum',   text: 'Yummy! 😋',   cost: 0 },
+                  { id: 'haha',  text: 'Hahaha! 😂',  cost: 300 },
+                  { id: 'king',  text: 'I am #1! 👑', cost: 500 },
                   { id: 'run',   text: 'Catch me! ⚡', cost: 400 },
-                  { id: 'oops',  text: 'Oops! 😈',     cost: 600 }
+                  { id: 'oops',  text: 'Oops! 😈',    cost: 600 }
                 ];
 
                 const FOOD_VARIETIES = [
@@ -505,81 +1109,100 @@
                 ];
 
                 const ARENA_FLOORS = [
-                  { id: 'clover', name: 'Clover Grass',  bg: '#1c7a26', hex: '#259130', line: 'rgba(155,255,115,0.18)', cost: 0 },
-                  { id: 'dark',   name: 'Midnight Hex',  bg: '#162038', hex: '#1e2c4d', line: 'rgba(95,185,255,0.18)',  cost: 500 },
-                  { id: 'honey',  name: 'Golden Honey',  bg: '#69450e', hex: '#855812', line: 'rgba(255,220,95,0.2)',   cost: 800 },
-                  { id: 'ice',    name: 'Arctic Ice',    bg: '#1d5b7a', hex: '#267399', line: 'rgba(200,248,255,0.22)', cost: 900 },
-                  { id: 'sakura', name: 'Sakura Park',   bg: '#59264a', hex: '#753461', line: 'rgba(255,180,228,0.2)',  cost: 1100 }
+                  { id: 'clover', name: 'Clover Grass',  bg: '#166b1e', hex: '#1e8227', line: 'rgba(130,235,95,0.16)',  cost: 0 },
+                  { id: 'dark',   name: 'Midnight Hex',  bg: '#141b2d', hex: '#1c2640', line: 'rgba(90,175,255,0.16)',  cost: 500 },
+                  { id: 'honey',  name: 'Golden Honey',  bg: '#593b0c', hex: '#734d10', line: 'rgba(255,215,90,0.18)',  cost: 800 },
+                  { id: 'ice',    name: 'Arctic Ice',    bg: '#1b506b', hex: '#236687', line: 'rgba(195,245,255,0.2)',  cost: 900 },
+                  { id: 'sakura', name: 'Sakura Park',   bg: '#4a213d', hex: '#632c52', line: 'rgba(255,170,220,0.18)', cost: 1100 }
                 ];
 
                 const POTIONS = [
-                  { id: 'magnet', name: 'Magnet',         icon: '🧲', col: '#ff59d6', dur: 14, cost: 250, desc: 'Pulls all nearby food fast' },
-                  { id: 'x5',     name: 'x5 Multiplier',  icon: '✖️', col: '#ffe259', dur: 14, cost: 350, desc: '5x Score & XP on every food!' },
-                  { id: 'speed',  name: 'Super Speed',    icon: '⚡', col: '#4de2f0', dur: 12, cost: 300, desc: 'Turbo speed without mass loss' },
-                  { id: 'zoom',   name: 'Eagle Zoom',     icon: '🔍', col: '#8cff3b', dur: 15, cost: 250, desc: 'Wide camera view of arena' },
-                  { id: 'radar',  name: 'Treasure Radar', icon: '📡', col: '#ff9f43', dur: 18, cost: 300, desc: 'Shows giant worms & chests' }
+                  { id: 'magnet', name: 'Magnet',        icon: '🧲', col: '#ff59d6', dur: 14, cost: 250, desc: 'Pulls all nearby food fast' },
+                  { id: 'x5',     name: 'x5 Multiplier', icon: '✖️', col: '#ffe259', dur: 14, cost: 350, desc: '5x Score & XP on every food!' },
+                  { id: 'speed',  name: 'Super Speed',   icon: '⚡', col: '#4de2f0', dur: 12, cost: 300, desc: 'Turbo speed without mass loss' },
+                  { id: 'zoom',   name: 'Eagle Zoom',    icon: '🔍', col: '#8cff3b', dur: 15, cost: 250, desc: 'Wide camera view of arena' },
+                  { id: 'radar',  name: 'Treasure Radar',icon: '📡', col: '#ff9f43', dur: 18, cost: 300, desc: 'Shows giant worms & chests' }
                 ];
 
                 const SHOP_PACKS = [
-                  { id: 'c1', title: '🪙 2,500 Coins',   desc: 'Quick skin upgrade',  coins: 2500,  dias: 0,   ad: true },
+                  { id: 'c1', title: '🪙 2,500 Coins',   desc: 'Watch Ad for Gold',   coins: 2500,  dias: 0,   ad: true },
                   { id: 'c2', title: '🪙 10,000 Coins',  desc: 'Unlock Epic skins',   coins: 10000, dias: 0,   priceDia: 40 },
                   { id: 'd1', title: '💎 25 Diamonds',   desc: 'Convert 2,000 Coins', coins: -2000, dias: 25,  priceCoin: 2000 },
                   { id: 'd2', title: '💎 100 Diamonds',  desc: 'Convert 7,500 Coins', coins: -7500, dias: 100, priceCoin: 7500 }
                 ];
 
-                // 46 UNIQUE COSTUMED SNAKES (ID, Name, Tier, BodyType, HatType, Base, Mid, Accent, Curr, Price)
+                // 64 UNIQUE VIDEO-INSPIRED SNAKES: [id, name, tier, acc(hat/ears/horns), bodyPat, base, mid, dark, accent, curr, price]
                 const RAW_SKINS = [
-                  ['emerald',    'Emerald Worm',    'Free',      'stripe',  'none',    '#69f03a','#3ec41b','#e8ff85','free',0],
-                  ['sky',        'Sky Runner',      'Free',      'stripe',  'none',    '#4de2f0','#1ea5db','#ffffff','free',0],
-                  ['sunny',      'Sunny Bee',       'Free',      'band',    'none',    '#ffe259','#f0b418','#261d06','free',0],
-                  ['clover',     'Lucky Clover',    'Free',      'vine',    'clover',  '#45e052','#22a830','#b8ff75','free',0],
-                  ['mandarine',  'Mandarine',       'Rare',      'dots',    'leaf',    '#ff9524','#e06b09','#ffe27a','coin',500],
-                  ['pineapple',  'Pineapple',       'Rare',      'waffle',  'leaf',    '#ffd838','#d99814','#52cf2d','coin',700],
-                  ['melon',      'Watermelon',      'Rare',      'band',    'none',    '#ff4d6d','#3ec435','#1f1f1f','coin',800],
-                  ['donut',      'Sweet Donut',     'Rare',      'donut',   'none',    '#ff7eb6','#e0a15c','#59f4ff','coin',900],
-                  ['icecherry',  'Ice Cherry',      'Rare',      'waffle',  'rose',    '#ff5c8a','#f2c179','#fff5e0','coin',1000],
-                  ['chocotoby',  'Choco Toby',      'Rare',      'square',  'none',    '#8a4b24','#5c2e12','#ffd89c','coin',1100],
-                  ['quadro',     'Quadro Cube',     'Rare',      'square',  'visor',   '#42c6ff','#1e78d4','#ffe259','coin',1200],
-                  ['ducky',      'Rubber Duck',     'Rare',      'stripe',  'beak',    '#ffe847','#f0b814','#ff7a18','coin',1250],
-                  ['owl',        'Forest Owl',      'Rare',      'dots',    'beak',    '#c49a6c','#8c6239','#fff0d4','coin',1300],
-                  ['panda',      'Cute Panda',      'Rare',      'band',    'ears',    '#f5f8fa','#dce4eb','#222831','coin',1400],
-                  ['bear',       'Honey Bear',      'Rare',      'stripe',  'ears',    '#b87333','#854b19','#ffe0a3','coin',1500],
-                  ['monkey',     'Jungle Monkey',   'Rare',      'stripe',  'ears',    '#a66329','#733e12','#f5d0a9','coin',1600],
-                  ['tiger',      'Bengal Tiger',    'Rare',      'band',    'ears',    '#ff8c24','#d9640b','#241608','coin',1750],
-                  ['fox',        'Orange Fox',      'Rare',      'dots',    'ears',    '#ff7224','#cf4a08','#fff5e6','coin',1850],
-                  ['elf',        'Forest Elf',      'Rare',      'stripe',  'elf',     '#52e368','#28a83e','#ffe259','coin',2000],
-                  ['rose',       'Thorny Rose',     'Epic',      'vine',    'rose',    '#38b842','#1f8528','#ff3864','coin',2400],
-                  ['garland',    'Party Garland',   'Epic',      'garland', 'santa',   '#24a846','#15752e','#ffe259','coin',2600],
-                  ['lantern',    'Sky Lantern',     'Epic',      'lantern', 'none',    '#ff5c38','#d92e14','#ffe875','coin',2800],
-                  ['santa',      'Santa Worm',      'Epic',      'band',    'santa',   '#ff3b47','#d11b27','#ffffff','coin',3000],
-                  ['spider',     'Web Spider',      'Epic',      'spider',  'none',    '#4b3d6e','#2f244a','#ff4757','coin',3200],
-                  ['deadhead',   'Dead Head',       'Epic',      'stitch',  'none',    '#68b86b','#448747','#ffe259','coin',3400],
-                  ['pirateocto', 'Pirate Octopus',  'Epic',      'dots',    'pirate',  '#ff5e9c','#c92466','#ffe259','coin',3600],
-                  ['pirateshark','Pirate Shark',    'Epic',      'stripe',  'pirate',  '#5c94c7','#326799','#ffffff','coin',3800],
-                  ['racer',      'Turbo Racer',     'Epic',      'band',    'helmet',  '#ff3847','#d41727','#ffffff','coin',4000],
-                  ['gamer',      'Cyber Gamer',     'Epic',      'glow',    'helmet',  '#00f7ff','#8b32d4','#ff59d6','coin',4200],
-                  ['witch',      'Magic Witch',     'Epic',      'glow',    'hood',    '#9b38ff','#5c15ab','#69f03a','coin',4500],
-                  ['reaper',     'Grim Reaper',     'Epic',      'stitch',  'hood',    '#3b465c','#212938','#59f4ff','coin',4800],
-                  ['cupidon',    'Cupidon Angel',   'Epic',      'wings',   'crown',   '#ff85b3','#ff4d88','#ffe259','coin',5200],
-                  ['queen',      'Heart Queen',     'Legendary', 'hearts',  'crown',   '#ff3b6b','#c91444','#ffe259','coin',6000],
-                  ['unicorn',    'Magic Unicorn',   'Legendary', 'rainbow', 'unicorn', '#ff85e0','#70e8ff','#ffe259','dia', 35],
-                  ['raptor',     'Jungle Raptor',   'Legendary', 'dragon',  'horns',   '#52cf2d','#2c8a14','#ffe259','dia', 45],
-                  ['greendrag',  'Green Dragon',    'Legendary', 'dragon',  'horns',   '#24e075','#10994c','#ffe259','dia', 55],
-                  ['waterdrag',  'Water Dragon',    'Legendary', 'dragon',  'horns',   '#38d4ff','#1485c9','#c4f7ff','dia', 65],
-                  ['lavadrag',   'Magma Dragon',    'Legendary', 'dragon',  'horns',   '#ff511c','#c72408','#ffe259','dia', 75],
-                  ['frostdrag',  'Frost Dragon',    'Legendary', 'dragon',  'crown',   '#8cf5ff','#38b2e3','#ffffff','dia', 85],
-                  ['golddrag',   'Golden Dragon',   'Mythical',  'dragon',  'crown',   '#ffe259','#e0980d','#fff9c4','dia', 100],
-                  ['thunder',    'Thunder Raijin',  'Mythical',  'glow',    'horns',   '#ffe647','#246ee0','#ffffff','dia', 115],
-                  ['phoenix',    'Solar Phoenix',   'Mythical',  'wings',   'crown',   '#ff6a1a','#e02814','#ffe85c','dia', 130],
-                  ['emperor',    'Royal Emperor',   'Mythical',  'hearts',  'crown',   '#ffd23f','#c91c38','#ffffff','dia', 145],
-                  ['rainbow',    'Rainbow Prism',   'Mythical',  'rainbow', 'crown',   '#ff4757','#ffe259','#59f4ff','dia', 160],
-                  ['neonking',   'Neon Overlord',   'Mythical',  'garland', 'visor',   '#00f7ff','#ff38d4','#8cff3b','dia', 180],
-                  ['galaxy',     'Galaxy Emperor',  'Mythical',  'rainbow', 'horns',   '#8b38ff','#00f7ff','#ffe259','dia', 200]
+                  ['croco',      'Croco',          'Free',      'croco',    'scales',  '#55c934','#2d8c18','#104008','#ffe259','free',0],
+                  ['corgi',      'Corgi',          'Free',      'foxEars',  'band',    '#f59b38','#c96c14','#5c2b04','#fff7eb','free',0],
+                  ['watermelon', 'Watermelon',     'Free',      'leaf',     'melon',   '#ff4769','#38c94b','#12521b','#141414','free',0],
+                  ['honey',      'Honey Bee',      'Free',      'antenna',  'honey',   '#ffd23f','#e09800','#3b2200','#1c1405','free',0],
+                  ['turtle',     'Turtle',         'Rare',      'shell',    'scales',  '#45b858','#247a35','#0e3817','#d9b648','coin',600],
+                  ['octopus',    'Octopus',        'Rare',      'tentacle', 'dots',    '#b84dff','#7b1cc9','#300859','#ff94e0','coin',700],
+                  ['dolphin',    'Dolphin',        'Rare',      'fin',      'stripe',  '#4dc3ff','#1d7ec4','#0a3459','#e8f7ff','coin',800],
+                  ['gentleman',  'Gentleman',      'Rare',      'tophat',   'tux',     '#384252','#1e2430','#0c0f14','#ffffff','coin',900],
+                  ['gamer',      'Gamer',          'Rare',      'headset',  'neon',    '#262b40','#141826','#080a12','#00f7ff','coin',1000],
+                  ['racer',      'Racer',          'Rare',      'helmet',   'checker', '#ff3847','#ba1422','#45040a','#ffffff','coin',1100],
+                  ['marshmallow','Marshmallow',    'Rare',      'bow',      'pastel',  '#fff2f7','#ffd4e5','#a86b82','#9cf4ff','coin',1150],
+                  ['pudding',    'Pudding',        'Rare',      'berry',    'drizzle', '#ffe885','#e6b835','#6e480a','#8c4212','coin',1200],
+                  ['donut',      'Donut',          'Rare',      'sprinkle', 'sprinkle','#ff73b9','#d43b84','#631238','#ffe85c','coin',1250],
+                  ['brownbear',  'Brown Bear',     'Rare',      'bearEars', 'fur',     '#9c6134','#693c1b','#2e1606','#e6c29f','coin',1300],
+                  ['zebra',      'Zebra',          'Rare',      'horseEars','zebra',   '#f5f8fa','#dce3ea','#1a1e24','#14171a','coin',1350],
+                  ['poodle',     'Poodle',         'Rare',      'fluff',    'dots',    '#ff9ce0','#d65cb0','#631d4e','#fff0fa','coin',1400],
+                  ['luckycat',   'Lucky Cat',      'Rare',      'catEars',  'band',    '#ffffff','#e0e8f0','#47525e','#ff3b30','coin',1450],
+                  ['hippo',      'Hippo',          'Rare',      'bearEars', 'dots',    '#9880b8','#675285','#2e2142','#d8c8eb','coin',1500],
+                  ['cherrypie',  'Cherry Pie',     'Rare',      'cherry',   'lattice', '#e8a854','#ba7524','#593208','#d91e36','coin',1550],
+                  ['piranha',    'Piranha',        'Rare',      'fin',      'scales',  '#ff4254','#b81829','#4a050d','#ffe259','coin',1600],
+                  ['polaroid',   'Polaroid',       'Rare',      'camera',   'polaroid','#f2f5f7','#c4d0db','#242b33','#ff4757','coin',1650],
+                  ['tiramisu',   'Tiramisu',       'Rare',      'leaf',     'band',    '#d4a878','#7a4b2a','#331a0b','#fff4e0','coin',1700],
+                  ['blocks',     'Blocks',         'Rare',      'block',    'blocks',  '#38b6ff','#ff4757','#1c2640','#ffe259','coin',1750],
+                  ['monkey',     'Monkey',         'Rare',      'bearEars', 'fur',     '#a86832','#73421a','#331a07','#f0cfa8','coin',1800],
+                  ['duck',       'Duck',           'Rare',      'beak',     'stripe',  '#ffe847','#e0b800','#6e5200','#ff7a18','coin',1850],
+                  ['eagle',      'Eagle',          'Rare',      'beak',     'scales',  '#6e4724','#422710','#1a0d04','#ffffff','coin',1900],
+                  ['panther',    'Panther',        'Rare',      'catEars',  'neon',    '#262436','#14121f','#06050a','#a855ff','coin',1950],
+                  ['rhino',      'Rhino',          'Rare',      'rhinoHorn','scales',  '#828c99','#545d69','#22272e','#f2ebd9','coin',2000],
+                  ['panda',      'Panda',          'Rare',      'pandaEars','panda',   '#ffffff','#dce4eb','#14171a','#14171a','coin',2100],
+                  ['owl',        'Owl',            'Rare',      'owlEars',  'scales',  '#c79c6e','#8c633b','#3d2712','#ffe85c','coin',2200],
+                  ['pineapple',  'Pineapple',      'Rare',      'pineLeaf', 'honey',   '#ffd23f','#d9980c','#6e4602','#4be35d','coin',2300],
+                  ['lemon',      'Lemon',          'Rare',      'leaf',     'stripe',  '#f5ff47','#c9d40c','#595e02','#ffffff','coin',2400],
+                  ['shark',      'Shark',          'Rare',      'fin',      'stripe',  '#5e8eb8','#345d85','#142940','#ffffff','coin',2500],
+                  ['parrot',     'Parrot',         'Rare',      'beak',     'rainbow', '#ff3b30','#24c94b','#0d387a','#ffe259','coin',2600],
+                  ['sheep',      'Sheep',          'Rare',      'fluff',    'dots',    '#ffffff','#dfe8f0','#47525e','#ffb8c9','coin',2700],
+                  ['kitty',      'Kitty',          'Rare',      'catEars',  'pastel',  '#ffb8d6','#e070a0','#6e2445','#ffffff','coin',2800],
+                  ['strawberry', 'Strawberry',     'Rare',      'pineLeaf', 'dots',    '#ff3355','#c91432','#5c0412','#ffe85c','coin',2900],
+                  ['koifish',    'Koi Fish',       'Rare',      'fin',      'koi',     '#ffffff','#ff6b1a','#8c2b04','#1a1a1a','coin',3000],
+                  ['capybara',   'Capybara',       'Rare',      'orangeHat','fur',     '#b88254','#855732','#3d2410','#ff9f1a','coin',3100],
+                  ['teddy',      'Teddy',          'Rare',      'bearEars', 'band',    '#c4874b','#8f5926','#42240a','#ff4757','coin',3200],
+                  ['elephant',   'Elephant',       'Rare',      'elephEars','dots',    '#8ba3ba','#5d748a','#263442','#fff7e0','coin',3300],
+                  ['tiger',      'Tiger',          'Rare',      'catEars',  'zebra',   '#ff8c24','#c75608','#381502','#14100d','coin',3400],
+                  ['pirate',     'Pirate',         'Epic',      'pirateHat','stripe',  '#2e333d','#171a21','#08090d','#ff3b30','coin',4000],
+                  ['clown',      'Clown',          'Epic',      'clownHat', 'dots',    '#ffffff','#ff4757','#1c54b8','#ffe259','coin',4200],
+                  ['jester',     'Jester',         'Epic',      'jesterHat','checker', '#9b38ff','#ffd23f','#2b0a59','#ff4757','coin',4400],
+                  ['wizard',     'Wizard',         'Epic',      'wizardHat','stars',   '#3848b8','#1b246e','#0a0e36','#ffe259','coin',4600],
+                  ['knight',     'Knight',         'Epic',      'helmet',   'scales',  '#b8c7d9','#7a8a9e','#2c3440','#ff3b30','coin',4800],
+                  ['golem',      'Golem',          'Epic',      'horns',    'cracks',  '#696e75','#3e4247','#181a1c','#ff6b1a','coin',5000],
+                  ['skeleton',   'Skeleton',       'Epic',      'skull',    'bones',   '#242a33','#14181f','#07090d','#f2f7ff','coin',5200],
+                  ['vampire',    'Bat Vampire',    'Epic',      'batEars',  'band',    '#472459','#241030','#0c0412','#ff3847','coin',5400],
+                  ['spider',     'Spider',         'Epic',      'spider',   'neon',    '#26212e','#14111a','#060508','#ff3b30','coin',5600],
+                  ['witch',      'Witch',          'Epic',      'witchHat', 'stars',   '#5c248c','#31104f','#120521','#69f03a','coin',5800],
+                  ['santa',      'Santa',          'Epic',      'santaHat', 'band',    '#e82538','#a81120','#45040a','#ffffff','coin',6000],
+                  ['xmastree',   'Xmas Tree',      'Epic',      'starTop',  'dots',    '#24a842','#126925','#062e0f','#ff3b30','coin',6200],
+                  ['rudolph',    'Rudolph',        'Epic',      'antler',   'fur',     '#a66332','#733e18','#331906','#ff2438','coin',6400],
+                  ['elf',        'Elf',            'Epic',      'elfHat',   'stripe',  '#38c94b','#1c852a','#093d10','#ff3b30','coin',6500],
+                  ['dullahan',   'Dullahan',       'Legendary', 'pumpkin',  'glow',    '#ff7a18','#a83804','#240802','#ffe259','dia',35],
+                  ['medusa',     'Medusa',         'Legendary', 'snakes',   'scales',  '#38c97a','#197845','#07301b','#ffe259','dia',45],
+                  ['reaper',     'Grim Reaper',    'Legendary', 'hood',     'glow',    '#262b38','#11141c','#05070a','#4de2f0','dia',55],
+                  ['unicorn',    'Unicorn',        'Legendary', 'uniHorn',  'rainbow', '#fff5fc','#ffc4eb','#753463','#59f4ff','dia',65],
+                  ['waterdrag',  'Water Dragon',   'Legendary', 'dragHorn', 'scales',  '#29b6ff','#0e63b8','#04244d','#8cf5ff','dia',75],
+                  ['greendrag',  'Green Dragon',   'Legendary', 'dragHorn', 'scales',  '#38e05c','#168c30','#063811','#ffe259','dia',85],
+                  ['reddrag',    'Red Dragon',     'Mythic',    'dragHorn', 'glow',    '#ff3b1f','#a81004','#360301','#ffd23f','dia',110],
+                  ['golddrag',   'Golden Dragon',  'Mythic',    'crown',    'rainbow', '#ffe259','#e09800','#4d2c00','#ffffff','dia',140]
                 ];
 
                 const SKINS = RAW_SKINS.map(r => ({
-                  id: r[0], name: r[1], tier: r[2], body: r[3], hat: r[4],
-                  base: r[5], mid: r[6], accent: r[7], curr: r[8], price: r[9]
+                  id: r[0], name: r[1], tier: r[2], acc: r[3], pat: r[4],
+                  base: r[5], mid: r[6], dark: r[7], accent: r[8],
+                  curr: r[9], price: r[10]
                 }));
 
                 const WORLD_BOTS = {
@@ -597,8 +1220,7 @@
                     { name: 'SpeedDemon_US', score: 92400, country: '🇺🇸' },
                     { name: 'BlitzKing_IN',  score: 78150, country: '🇮🇳' },
                     { name: 'FastBite_RU',   score: 64200, country: '🇷🇺' },
-                    { name: 'FlashWorm_JP',  score: 51900, country: '🇯🇵' },
-                    { name: 'NovaStriker',   score: 38400, country: '🇬🇧' }
+                    { name: 'FlashWorm_JP',  score: 51900, country: '🇯🇵' }
                   ],
                   treasure: [
                     { name: 'GoldHunter_IN', score: 164200, country: '🇮🇳' },
@@ -610,7 +1232,7 @@
 
                 const AI_NAMES = [
                   'LuckyWorm','MightyBite','SugarPop','ViperX','CobraRaj','NeonTail','TurboKid','KingSlime',
-                  'ChocoToby','ShadowFang','Frosty','Blaze99','PandaRoll','TigerClaw','Zoomer','PixelWorm',
+                  'ChocoBite','ShadowFang','Frosty','Blaze99','PandaRoll','TigerClaw','Zoomer','PixelWorm',
                   'Goldie','Minty','Zappy','Kratos','Naruto','Luffy','Thor','Nova','Raven','Joker','Titan','Flash'
                 ];
 
@@ -622,8 +1244,8 @@
                 const DEFAULT_PROFILE = {
                   name: 'ApexHunter', avatar: '🐍', level: 1, coins: 2500, diamonds: 50,
                   onlineMode: true, mode: 'infinity',
-                  skin: 'emerald', eye: 'cute', lip: 'smile', expr: 'hi', food: 'mixed', floor: 'clover',
-                  ownedSkins: ['emerald', 'sky', 'sunny', 'clover'],
+                  skin: 'croco', eye: 'cute', lip: 'smile', expr: 'hi', food: 'mixed', floor: 'clover',
+                  ownedSkins: ['croco', 'corgi', 'watermelon', 'honey'],
                   ownedEyes: ['cute'], ownedLips: ['smile'], ownedExprs: ['hi', 'yum'], ownedFloors: ['clover'],
                   potions: { magnet: 2, x5: 2, speed: 2, zoom: 2, radar: 2 },
                   bestScores: { infinity: 0, time: 0, treasure: 0 },
@@ -637,23 +1259,28 @@
                     const raw = localStorage.getItem('serpent_wild_v23_wz') || localStorage.getItem('serpent_wild_v22_wz');
                     if (!raw) return JSON.parse(JSON.stringify(DEFAULT_PROFILE));
                     const d = JSON.parse(raw);
-                    const m = {
+                    const merged = {
                       ...JSON.parse(JSON.stringify(DEFAULT_PROFILE)), ...d,
                       potions: { ...DEFAULT_PROFILE.potions, ...(d.potions || {}) },
                       bestScores: { ...DEFAULT_PROFILE.bestScores, ...(d.bestScores || {}) },
                       settings: { ...DEFAULT_PROFILE.settings, ...(d.settings || {}) }
                     };
-                    ['emerald','sky','sunny','clover'].forEach(id => { if (!m.ownedSkins.includes(id)) m.ownedSkins.push(id); });
-                    return m;
+                    ['croco','corgi','watermelon','honey'].forEach(id => { if (!merged.ownedSkins.includes(id)) merged.ownedSkins.push(id); });
+                    if (!SKINS.some(s => s.id === merged.skin)) merged.skin = 'croco';
+                    return merged;
                   } catch (e) { return JSON.parse(JSON.stringify(DEFAULT_PROFILE)); }
                 })();
 
-                const recordPlayToday = () => { const t = todayIso(); if (!profile.playedDates.includes(t)) profile.playedDates.push(t); };
+                const recordPlayToday = () => {
+                  const t = todayIso();
+                  if (!profile.playedDates.includes(t)) profile.playedDates.push(t);
+                };
                 recordPlayToday();
                 const saveProfile = () => { try { localStorage.setItem('serpent_wild_v23_wz', JSON.stringify(profile)); } catch (e) {} };
                 saveProfile();
 
                 const isWorldChampion = () => (profile.bestScores.infinity || 0) >= WORLD_BOTS.infinity[0].score;
+
                 const rand = (a, b) => a + Math.random() * (b - a);
                 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
                 const lerp = (a, b, t) => a + (b - a) * t;
@@ -692,7 +1319,11 @@
                     const sr = this.ctx.sampleRate, len = Math.floor(sr * dur);
                     const b = this.ctx.createBuffer(1, len, sr), ch = b.getChannelData(0);
                     let ph = 0;
-                    for (let i = 0; i < len; i++) { ph += (2 * Math.PI * (f1 + (f2 - f1) * (i / len))) / sr; ch[i] = Math.sin(ph) * Math.sin(Math.PI * (i / len)) * vol; }
+                    for (let i = 0; i < len; i++) {
+                      const t = i / len;
+                      ph += (2 * Math.PI * (f1 + (f2 - f1) * t)) / sr;
+                      ch[i] = Math.sin(ph) * Math.sin(Math.PI * t) * vol;
+                    }
                     return b;
                   },
                   updateVol() {
@@ -709,7 +1340,6 @@
                 };
                 window.pauseGameAudio = () => { try { Sound.ctx && Sound.ctx.suspend(); } catch (e) {} };
                 window.resumeGameAudio = () => { try { Sound.ctx && Sound.ctx.resume(); } catch (e) {} };
-
                 const canvas = document.getElementById('gameCanvas');
                 const ctx = canvas.getContext('2d');
                 const miniCanvas = document.getElementById('minimapCanvas');
@@ -718,12 +1348,19 @@
                 const wsCtx = wsCanvas.getContext('2d');
 
                 let appW = window.innerWidth, appH = window.innerHeight, dpr = 1;
-                let screenState = 'splash', floorPattern = null, globalTime = 0, lastFrame = 0, hudTick = 0;
+                let screenState = 'splash';
+                let floorPattern = null, globalTime = 0, lastFrame = 0, hudTick = 0;
                 let worms = [], foods = [], potions = [], chests = [], particles = [], floatTexts = [];
                 let player = null, lobbyWorm = null, wsPreviewWorm = null;
-                let buffs = {}, matchKills = 0, matchCoins = 0, matchTimer = 300, reviveUsed = false, reviveIv = null;
+                let buffs = {};
+                let matchKills = 0, matchCoins = 0, matchTimer = 300, pendingStartBonus = 0;
+                let reviveUsed = false, reviveIv = null;
                 let camera = { x: WORLD_CENTER, y: WORLD_CENTER, zoom: 0.92 };
-                const ctrl = { joyActive: false, joyTouchId: null, joyMouse: false, joyOx: 0, joyOy: 0, joyAngle: 0, joyMag: 0, boostHeld: false, keys: { up: false, down: false, left: false, right: false, boost: false } };
+
+                const ctrl = {
+                  joyActive: false, joyTouchId: null, joyMouse: false, joyOx: 0, joyOy: 0, joyAngle: 0, joyMag: 0,
+                  boostHeld: false, keys: { up: false, down: false, left: false, right: false, boost: false }
+                };
 
                 function resizeCanvas() {
                   appW = window.innerWidth; appH = window.innerHeight;
@@ -734,16 +1371,20 @@
 
                 function buildFloorPattern(floorId) {
                   const fl = ARENA_FLOORS.find(f => f.id === floorId) || ARENA_FLOORS[0];
-                  const t = document.createElement('canvas'); t.width = 160; t.height = 160;
+                  const t = document.createElement('canvas');
+                  t.width = 160; t.height = 160;
                   const c = t.getContext('2d');
                   c.fillStyle = fl.bg; c.fillRect(0, 0, 160, 160);
+
                   c.strokeStyle = fl.line; c.lineWidth = 2;
+                  const r = 40;
                   for (let y = 0; y <= 160; y += 69) {
                     for (let x = 0; x <= 160; x += 80) {
                       const ox = (Math.floor(y / 69) % 2) * 40;
                       c.beginPath();
                       for (let i = 0; i < 6; i++) {
-                        const a = (Math.PI / 3) * i, px = x + ox + Math.cos(a) * 40, py = y + Math.sin(a) * 40;
+                        const a = (Math.PI / 3) * i;
+                        const px = x + ox + Math.cos(a) * r, py = y + Math.sin(a) * r;
                         i === 0 ? c.moveTo(px, py) : c.lineTo(px, py);
                       }
                       c.closePath(); c.stroke();
@@ -752,7 +1393,7 @@
                   if (fl.id === 'clover') {
                     for (let i = 0; i < 14; i++) {
                       const cx = rand(14, 146), cy = rand(14, 146), sz = rand(4, 7);
-                      c.fillStyle = i % 2 === 0 ? 'rgba(115, 240, 75, 0.22)' : 'rgba(20, 96, 28, 0.3)';
+                      c.fillStyle = i % 2 === 0 ? 'rgba(98, 214, 64, 0.22)' : 'rgba(18, 92, 24, 0.34)';
                       for (let k = 0; k < 4; k++) {
                         const a = (Math.PI / 2) * k + 0.4;
                         c.beginPath(); c.arc(cx + Math.cos(a) * sz * 0.7, cy + Math.sin(a) * sz * 0.7, sz * 0.65, 0, Math.PI * 2); c.fill();
@@ -762,113 +1403,229 @@
                   floorPattern = ctx.createPattern(t, 'repeat');
                 }
 
-                // BRIGHT GLOSSY WORMS-ZONE HEAD + 13 CUSTOM COSTUME HATS/ACCESSORIES!
+                // 64-SNAKE CUSTOM HEAD ACCESSORIES (EARS, HATS, HORNS, CROWN, HEADSET, BEAK, ETC.)
+                function drawSkinAccessory(c, skin, hr, layer) {
+                  const acc = skin.acc;
+                  c.save();
+                  if (layer === 'back') {
+                    if (acc === 'foxEars' || acc === 'catEars' || acc === 'horseEars' || acc === 'owlEars' || acc === 'batEars') {
+                      const eLen = acc === 'batEars' ? 1.55 : (acc === 'foxEars' ? 1.38 : 1.24);
+                      for (const s of [-1, 1]) {
+                        c.fillStyle = acc === 'batEars' ? skin.dark : skin.mid;
+                        c.strokeStyle = 'rgba(0,0,0,0.45)'; c.lineWidth = 1.4;
+                        c.beginPath(); c.moveTo(-hr * 0.1, s * hr * 0.72); c.lineTo(-hr * 0.85, s * hr * eLen); c.lineTo(-hr * 0.78, s * hr * 0.32); c.closePath(); c.fill(); c.stroke();
+                        c.fillStyle = acc === 'catEars' ? '#ff94b8' : skin.accent;
+                        c.beginPath(); c.moveTo(-hr * 0.24, s * hr * 0.7); c.lineTo(-hr * 0.68, s * hr * (eLen * 0.82)); c.lineTo(-hr * 0.64, s * hr * 0.45); c.closePath(); c.fill();
+                      }
+                    } else if (acc === 'bearEars' || acc === 'pandaEars') {
+                      for (const s of [-1, 1]) {
+                        c.fillStyle = acc === 'pandaEars' ? '#14171a' : skin.mid;
+                        c.strokeStyle = 'rgba(0,0,0,0.4)'; c.lineWidth = 1.3;
+                        c.beginPath(); c.arc(-hr * 0.48, s * hr * 0.88, hr * 0.36, 0, Math.PI * 2); c.fill(); c.stroke();
+                        if (acc !== 'pandaEars') { c.fillStyle = skin.accent; c.beginPath(); c.arc(-hr * 0.48, s * hr * 0.88, hr * 0.18, 0, Math.PI * 2); c.fill(); }
+                      }
+                    } else if (acc === 'elephEars') {
+                      for (const s of [-1, 1]) {
+                        c.fillStyle = skin.mid; c.strokeStyle = skin.dark; c.lineWidth = 1.5;
+                        c.beginPath(); c.ellipse(-hr * 0.32, s * hr * 1.15, hr * 0.56, hr * 0.48, s * 0.25, 0, Math.PI * 2); c.fill(); c.stroke();
+                        c.fillStyle = '#f2b8c6'; c.beginPath(); c.ellipse(-hr * 0.32, s * hr * 1.12, hr * 0.32, hr * 0.26, s * 0.25, 0, Math.PI * 2); c.fill();
+                      }
+                    } else if (acc === 'dragHorn' || acc === 'horns') {
+                      c.fillStyle = acc === 'dragHorn' ? skin.accent : '#e8dfd0'; c.strokeStyle = skin.dark; c.lineWidth = 1.4;
+                      for (const s of [-1, 1]) {
+                        c.beginPath(); c.moveTo(-hr * 0.1, s * hr * 0.68); c.quadraticCurveTo(-hr * 0.85, s * hr * 1.4, -hr * 1.52, s * hr * 1.05);
+                        c.quadraticCurveTo(-hr * 0.85, s * hr * 0.92, -hr * 0.55, s * hr * 0.45); c.closePath(); c.fill(); c.stroke();
+                      }
+                    } else if (acc === 'antler') {
+                      c.strokeStyle = '#6e3f19'; c.lineWidth = Math.max(2.4, hr * 0.16); c.lineCap = 'round';
+                      for (const s of [-1, 1]) {
+                        c.beginPath(); c.moveTo(-hr * 0.15, s * hr * 0.65); c.lineTo(-hr * 1.15, s * hr * 1.3);
+                        c.moveTo(-hr * 0.62, s * hr * 0.96); c.lineTo(-hr * 0.95, s * hr * 1.52); c.stroke();
+                      }
+                    } else if (acc === 'fin') {
+                      c.fillStyle = skin.mid; c.strokeStyle = skin.dark; c.lineWidth = 1.4;
+                      for (const s of [-1, 1]) {
+                        c.beginPath(); c.moveTo(0, s * hr * 0.78); c.quadraticCurveTo(-hr * 0.45, s * hr * 1.48, -hr * 0.92, s * hr * 0.95); c.closePath(); c.fill(); c.stroke();
+                      }
+                    } else if (acc === 'tentacle' || acc === 'snakes') {
+                      c.strokeStyle = acc === 'snakes' ? '#24a842' : skin.mid; c.lineWidth = Math.max(2.5, hr * 0.22); c.lineCap = 'round';
+                      for (let k = -2; k <= 2; k++) {
+                        const wig = Math.sin(globalTime * 7 + k) * hr * 0.18;
+                        c.beginPath(); c.moveTo(-hr * 0.55, k * hr * 0.34); c.quadraticCurveTo(-hr * 1.15, k * hr * 0.55 + wig, -hr * 1.48, k * hr * 0.44 - wig); c.stroke();
+                      }
+                    } else if (acc === 'spider') {
+                      c.strokeStyle = '#14111a'; c.lineWidth = Math.max(2, hr * 0.13);
+                      for (const s of [-1, 1]) for (let l = -1; l <= 1; l++) {
+                        c.beginPath(); c.moveTo(l * hr * 0.35, s * hr * 0.75); c.lineTo(l * hr * 0.48, s * hr * 1.38); c.lineTo(l * hr * 0.2, s * hr * 1.62); c.stroke();
+                      }
+                    } else if (acc === 'fluff') {
+                      c.fillStyle = skin.base;
+                      for (let k = 0; k < 8; k++) {
+                        const a = (k / 8) * Math.PI * 2;
+                        c.beginPath(); c.arc(Math.cos(a) * hr * 0.85, Math.sin(a) * hr * 0.85, hr * 0.38, 0, Math.PI * 2); c.fill();
+                      }
+                    } else if (acc === 'hood') {
+                      c.fillStyle = '#141824'; c.strokeStyle = '#4de2f0'; c.lineWidth = 1.6;
+                      c.beginPath(); c.moveTo(hr * 0.65, -hr * 1.05); c.quadraticCurveTo(-hr * 1.45, -hr * 1.25, -hr * 1.48, 0);
+                      c.quadraticCurveTo(-hr * 1.45, hr * 1.25, hr * 0.65, hr * 1.05); c.closePath(); c.fill(); c.stroke();
+                    }
+                  } else {
+                    // FRONT / TOP ACCESSORIES
+                    if (acc === 'tophat') {
+                      c.fillStyle = '#1a1e26'; c.strokeStyle = '#ffe259'; c.lineWidth = 1.6;
+                      c.beginPath(); c.ellipse(-hr * 0.32, 0, hr * 0.44, hr * 0.92, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+                      c.fillStyle = '#262c38'; c.beginPath(); c.arc(-hr * 0.38, 0, hr * 0.56, 0, Math.PI * 2); c.fill(); c.stroke();
+                    } else if (acc === 'crown') {
+                      c.fillStyle = '#ffe259'; c.strokeStyle = '#9e5c00'; c.lineWidth = 1.5;
+                      c.beginPath(); c.moveTo(-hr * 0.2, -hr * 0.58); c.lineTo(-hr * 0.95, -hr * 0.72); c.lineTo(-hr * 0.55, -hr * 0.2);
+                      c.lineTo(-hr * 1.15, 0); c.lineTo(-hr * 0.55, hr * 0.2); c.lineTo(-hr * 0.95, hr * 0.72); c.lineTo(-hr * 0.2, hr * 0.58); c.closePath(); c.fill(); c.stroke();
+                      c.fillStyle = '#ff3847'; c.beginPath(); c.arc(-hr * 0.52, 0, hr * 0.16, 0, Math.PI * 2); c.fill();
+                    } else if (acc === 'headset') {
+                      c.strokeStyle = '#00f7ff'; c.lineWidth = Math.max(2.6, hr * 0.18);
+                      c.beginPath(); c.arc(-hr * 0.12, 0, hr * 1.04, Math.PI * 0.52, Math.PI * 1.48); c.stroke();
+                      c.fillStyle = '#141826';
+                      for (const s of [-1, 1]) { c.beginPath(); c.ellipse(-hr * 0.12, s * hr * 1.02, hr * 0.32, hr * 0.2, 0, 0, Math.PI * 2); c.fill(); c.stroke(); }
+                    } else if (acc === 'helmet') {
+                      c.fillStyle = 'rgba(255,255,255,0.22)'; c.strokeStyle = skin.accent; c.lineWidth = 2;
+                      c.beginPath(); c.arc(0, 0, hr * 1.12, Math.PI * 0.45, Math.PI * 1.55); c.stroke();
+                      c.fillStyle = skin.accent; c.fillRect(-hr * 1.12, -hr * 0.14, hr * 1.15, hr * 0.28);
+                    } else if (acc === 'pirateHat') {
+                      c.fillStyle = '#171a21'; c.strokeStyle = '#ffe259'; c.lineWidth = 1.6;
+                      c.beginPath(); c.moveTo(-hr * 0.1, -hr * 1.08); c.quadraticCurveTo(-hr * 1.15, 0, -hr * 0.1, hr * 1.08); c.lineTo(-hr * 0.65, 0); c.closePath(); c.fill(); c.stroke();
+                      c.fillStyle = '#ffffff'; c.beginPath(); c.arc(-hr * 0.48, 0, hr * 0.2, 0, Math.PI * 2); c.fill();
+                    } else if (acc === 'wizardHat' || acc === 'witchHat' || acc === 'santaHat' || acc === 'elfHat') {
+                      c.fillStyle = acc === 'santaHat' ? '#e82538' : (acc === 'elfHat' ? '#24b83d' : skin.mid);
+                      c.strokeStyle = skin.accent; c.lineWidth = 1.5;
+                      c.beginPath(); c.moveTo(-hr * 0.15, -hr * 0.85); c.lineTo(-hr * 1.55, 0); c.lineTo(-hr * 0.15, hr * 0.85); c.closePath(); c.fill(); c.stroke();
+                      c.fillStyle = '#ffffff'; c.beginPath(); c.arc(-hr * 1.55, 0, hr * 0.22, 0, Math.PI * 2); c.fill();
+                    } else if (acc === 'clownHat' || acc === 'jesterHat') {
+                      c.fillStyle = '#ff4757'; c.beginPath(); c.arc(hr * 1.05, 0, hr * 0.26, 0, Math.PI * 2); c.fill();
+                      for (const s of [-1, 1]) {
+                        c.fillStyle = s === 1 ? '#ffe259' : '#9b38ff';
+                        c.beginPath(); c.moveTo(-hr * 0.2, s * hr * 0.5); c.lineTo(-hr * 1.25, s * hr * 1.18); c.lineTo(-hr * 0.72, s * hr * 0.22); c.closePath(); c.fill();
+                        c.fillStyle = '#fff'; c.beginPath(); c.arc(-hr * 1.25, s * hr * 1.18, hr * 0.16, 0, Math.PI * 2); c.fill();
+                      }
+                    } else if (acc === 'uniHorn' || acc === 'rhinoHorn') {
+                      c.fillStyle = acc === 'uniHorn' ? '#ffe259' : '#f2ebd9'; c.strokeStyle = '#9e5c00'; c.lineWidth = 1.3;
+                      c.beginPath(); c.moveTo(hr * 0.85, -hr * 0.24); c.lineTo(hr * 1.85, 0); c.lineTo(hr * 0.85, hr * 0.24); c.closePath(); c.fill(); c.stroke();
+                    } else if (acc === 'beak') {
+                      c.fillStyle = '#ff9f1a'; c.strokeStyle = '#7a3e00'; c.lineWidth = 1.4;
+                      c.beginPath(); c.moveTo(hr * 0.88, -hr * 0.36); c.lineTo(hr * 1.62, 0); c.lineTo(hr * 0.88, hr * 0.36); c.closePath(); c.fill(); c.stroke();
+                    } else if (acc === 'croco') {
+                      c.fillStyle = skin.base; c.strokeStyle = skin.dark; c.lineWidth = 1.3;
+                      c.beginPath(); c.ellipse(hr * 1.18, 0, hr * 0.48, hr * 0.44, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+                      c.fillStyle = '#ffffff';
+                      for (const s of [-1, 1]) { c.beginPath(); c.moveTo(hr * 1.1, s * hr * 0.4); c.lineTo(hr * 1.24, s * hr * 0.58); c.lineTo(hr * 1.34, s * hr * 0.36); c.closePath(); c.fill(); }
+                    } else if (acc === 'leaf' || acc === 'pineLeaf' || acc === 'cherry' || acc === 'berry' || acc === 'orangeHat') {
+                      c.fillStyle = acc === 'orangeHat' ? '#ff9f1a' : (acc === 'cherry' ? '#ff2442' : '#4be35d');
+                      c.beginPath(); c.arc(-hr * 0.45, 0, hr * 0.34, 0, Math.PI * 2); c.fill();
+                      c.fillStyle = '#248a2d'; c.beginPath(); c.ellipse(-hr * 0.82, -hr * 0.22, hr * 0.34, hr * 0.16, -0.4, 0, Math.PI * 2); c.fill();
+                    } else if (acc === 'antenna') {
+                      c.strokeStyle = '#1c1405'; c.lineWidth = 2;
+                      for (const s of [-1, 1]) {
+                        c.beginPath(); c.moveTo(hr * 0.5, s * hr * 0.4); c.lineTo(hr * 1.25, s * hr * 0.78); c.stroke();
+                        c.fillStyle = '#ffe259'; c.beginPath(); c.arc(hr * 1.25, s * hr * 0.78, hr * 0.16, 0, Math.PI * 2); c.fill();
+                      }
+                    } else if (acc === 'bow') {
+                      c.fillStyle = '#ff4d8d';
+                      for (const s of [-1, 1]) { c.beginPath(); c.moveTo(-hr * 0.45, 0); c.lineTo(-hr * 0.88, s * hr * 0.52); c.lineTo(-hr * 0.28, s * hr * 0.48); c.closePath(); c.fill(); }
+                      c.fillStyle = '#ffe259'; c.beginPath(); c.arc(-hr * 0.48, 0, hr * 0.16, 0, Math.PI * 2); c.fill();
+                    } else if (acc === 'starTop' || acc === 'pumpkin') {
+                      c.fillStyle = acc === 'pumpkin' ? '#ff7a18' : '#ffe259';
+                      c.beginPath(); c.arc(-hr * 0.55, 0, hr * 0.38, 0, Math.PI * 2); c.fill();
+                    } else if (acc === 'camera' || acc === 'block') {
+                      c.fillStyle = '#242b33'; c.strokeStyle = '#fff'; c.lineWidth = 1.4;
+                      c.fillRect(-hr * 0.75, -hr * 0.45, hr * 0.58, hr * 0.9); c.strokeRect(-hr * 0.75, -hr * 0.45, hr * 0.58, hr * 0.9);
+                    }
+                  }
+                  c.restore();
+                }
+
+                // WORMS ZONE CUTE & EXPRESSIVE HEAD (64 SKINS + CUSTOM EYES + CUSTOM LIPS)
                 function drawWormHead(c, skin, eyeId, lipId, hr, blinkAmt, mouthOpen, lookAng) {
-                  const isRain = skin.body === 'rainbow';
-                  const headCol = isRain ? `hsl(${(globalTime * 150) % 360}, 95%, 60%)` : skin.base;
-                  const headMid = isRain ? `hsl(${(globalTime * 150 + 35) % 360}, 90%, 48%)` : skin.mid;
+                  const isRain = skin.pat === 'rainbow';
+                  const headCol = isRain ? `hsl(${(globalTime * 150) % 360}, 95%, 58%)` : skin.base;
+                  const headMid = isRain ? `hsl(${(globalTime * 150 + 40) % 360}, 90%, 44%)` : skin.mid;
 
-                  // Ears / Elf Ears / Horns behind head
-                  if (skin.hat === 'ears') {
-                    for (const s of [-1, 1]) {
-                      c.fillStyle = skin.id === 'panda' ? '#222831' : skin.mid;
-                      c.beginPath(); c.arc(-hr * 0.35, s * hr * 0.92, hr * 0.42, 0, Math.PI * 2); c.fill();
-                      c.fillStyle = skin.id === 'panda' ? '#3d4554' : skin.accent;
-                      c.beginPath(); c.arc(-hr * 0.35, s * hr * 0.92, hr * 0.2, 0, Math.PI * 2); c.fill();
-                    }
-                  } else if (skin.hat === 'elf') {
-                    for (const s of [-1, 1]) {
-                      c.fillStyle = '#ffd5b8'; c.strokeStyle = 'rgba(0,0,0,0.35)'; c.lineWidth = 1.2;
-                      c.beginPath(); c.moveTo(-hr * 0.1, s * hr * 0.85); c.lineTo(-hr * 0.95, s * hr * 1.45); c.lineTo(-hr * 0.65, s * hr * 0.55); c.closePath(); c.fill(); c.stroke();
-                    }
-                  } else if (skin.hat === 'horns') {
-                    for (const s of [-1, 1]) {
-                      c.fillStyle = skin.accent; c.strokeStyle = 'rgba(0,0,0,0.45)'; c.lineWidth = 1.3;
-                      c.beginPath(); c.moveTo(-hr * 0.1, s * hr * 0.72); c.quadraticCurveTo(-hr * 0.85, s * hr * 1.48, -hr * 1.38, s * hr * 1.15); c.lineTo(-hr * 0.6, s * hr * 0.42); c.closePath(); c.fill(); c.stroke();
-                    }
-                  }
+                  drawSkinAccessory(c, skin, hr, 'back');
 
-                  // Main glossy head (Square for Choco Toby/Quadro, plump round for others)
-                  const hg = c.createRadialGradient(hr * 0.2, -hr * 0.28, hr * 0.12, 0, 0, hr * 1.35);
-                  hg.addColorStop(0, headCol);
-                  hg.addColorStop(0.78, headMid);
-                  hg.addColorStop(1, headMid);
+                  const hg = c.createRadialGradient(hr * 0.18, -hr * 0.25, hr * 0.1, 0, 0, hr * 1.25);
+                  hg.addColorStop(0, skin.acc === 'skull' ? '#ffffff' : headCol);
+                  hg.addColorStop(0.75, skin.acc === 'skull' ? '#dce4eb' : headMid);
+                  hg.addColorStop(1, skin.dark);
                   c.fillStyle = hg;
-                  c.strokeStyle = 'rgba(0,0,0,0.38)'; c.lineWidth = 1.6;
-                  c.beginPath();
-                  if (skin.body === 'square') {
-                    const sz = hr * 1.95;
-                    c.roundRect ? c.roundRect(-sz * 0.48, -sz * 0.5, sz, sz, hr * 0.35) : c.rect(-sz * 0.48, -sz * 0.5, sz, sz);
-                  } else {
-                    c.ellipse(hr * 0.08, 0, hr * 1.16, hr * 1.04, 0, 0, Math.PI * 2);
+                  c.strokeStyle = 'rgba(0,0,0,0.38)'; c.lineWidth = 1.4;
+                  c.beginPath(); c.ellipse(hr * 0.08, 0, hr * 1.14, hr * 1.04, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+
+                  // Glossy shine & rosy cheeks
+                  c.fillStyle = 'rgba(255,255,255,0.28)';
+                  c.beginPath(); c.ellipse(-hr * 0.12, -hr * 0.42, hr * 0.44, hr * 0.2, -0.2, 0, Math.PI * 2); c.fill();
+                  c.fillStyle = 'rgba(255, 110, 145, 0.34)';
+                  c.beginPath(); c.arc(hr * 0.34, -hr * 0.66, hr * 0.18, 0, Math.PI * 2); c.arc(hr * 0.34, hr * 0.66, hr * 0.18, 0, Math.PI * 2); c.fill();
+
+                  // LIPS / MOUTH
+                  const mx = hr * 0.82;
+                  if (mouthOpen > 0.08) {
+                    c.fillStyle = '#5c0816';
+                    c.beginPath(); c.ellipse(mx, 0, hr * (0.18 + mouthOpen * 0.24), hr * (0.28 + mouthOpen * 0.22), 0, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = '#ff6b81';
+                    c.beginPath(); c.arc(mx - hr * 0.04, 0, hr * 0.14 * mouthOpen, 0, Math.PI * 2); c.fill();
                   }
-                  c.fill(); c.stroke();
-
-                  // Glossy top highlight & rosy cheeks
-                  c.fillStyle = 'rgba(255,255,255,0.32)';
-                  c.beginPath(); c.ellipse(-hr * 0.12, -hr * 0.44, hr * 0.46, hr * 0.2, -0.2, 0, Math.PI * 2); c.fill();
-                  c.fillStyle = 'rgba(255, 110, 150, 0.34)';
-                  c.beginPath(); c.arc(hr * 0.34, -hr * 0.66, hr * 0.2, 0, Math.PI * 2); c.arc(hr * 0.34, hr * 0.66, hr * 0.2, 0, Math.PI * 2); c.fill();
-
-                  // Beak costume (Duck / Owl) OR Custom Lips
-                  const mx = hr * 0.85;
-                  if (skin.hat === 'beak') {
-                    c.fillStyle = '#ff9518'; c.strokeStyle = '#7a3b00'; c.lineWidth = 1.4;
-                    c.beginPath(); c.moveTo(hr * 1.58, 0); c.quadraticCurveTo(hr * 1.1, -hr * 0.42, hr * 0.78, -hr * 0.36); c.lineTo(hr * 0.78, hr * 0.36); c.quadraticCurveTo(hr * 1.1, hr * 0.42, hr * 1.58, 0); c.fill(); c.stroke();
-                  } else {
-                    if (mouthOpen > 0.08) {
-                      c.fillStyle = '#63081a';
-                      c.beginPath(); c.ellipse(mx, 0, hr * (0.18 + mouthOpen * 0.24), hr * (0.28 + mouthOpen * 0.22), 0, 0, Math.PI * 2); c.fill();
-                      c.fillStyle = '#ff6b81';
-                      c.beginPath(); c.arc(mx - hr * 0.04, 0, hr * 0.14 * mouthOpen, 0, Math.PI * 2); c.fill();
-                    }
-                    if (lipId === 'redlips' || lipId === 'pink') {
-                      c.fillStyle = lipId === 'redlips' ? '#ff2442' : '#ff69b4';
-                      c.beginPath(); c.ellipse(mx + hr * 0.06, -hr * 0.14, hr * 0.16, hr * 0.24, 0.15, 0, Math.PI * 2); c.fill();
-                      c.beginPath(); c.ellipse(mx + hr * 0.06, hr * 0.14, hr * 0.16, hr * 0.24, -0.15, 0, Math.PI * 2); c.fill();
-                    } else if (lipId === 'fangs') {
-                      c.strokeStyle = '#1b090c'; c.lineWidth = 2; c.beginPath(); c.arc(mx - hr * 0.15, 0, hr * 0.3, -0.75, 0.75); c.stroke();
-                      c.fillStyle = '#fff';
-                      for (const s of [-1, 1]) { c.beginPath(); c.moveTo(mx + hr * 0.08, s * hr * 0.24); c.lineTo(mx + hr * 0.34, s * hr * 0.16); c.lineTo(mx + hr * 0.08, s * hr * 0.08); c.closePath(); c.fill(); }
-                    } else if (lipId === 'tongue') {
-                      c.fillStyle = '#ff4d79'; c.strokeStyle = '#9e1338'; c.lineWidth = 1.2;
-                      c.beginPath(); c.ellipse(mx + hr * 0.22, hr * 0.08, hr * 0.24, hr * 0.15, 0.2, 0, Math.PI * 2); c.fill(); c.stroke();
-                    } else if (lipId === 'gold') {
-                      c.fillStyle = '#ffd23f'; c.strokeStyle = '#7a4b00'; c.lineWidth = 1.4;
-                      c.beginPath(); c.rect(mx - hr * 0.04, -hr * 0.26, hr * 0.24, hr * 0.52); c.fill(); c.stroke();
-                    } else if (mouthOpen <= 0.08) {
-                      c.strokeStyle = '#1a1a1a'; c.lineWidth = Math.max(1.8, hr * 0.11); c.lineCap = 'round';
-                      c.beginPath(); c.arc(mx - hr * 0.18, 0, hr * 0.3, -0.72, 0.72); c.stroke();
-                    }
+                  if (lipId === 'redlips' || lipId === 'pink') {
+                    c.fillStyle = lipId === 'redlips' ? '#ff2442' : '#ff69b4';
+                    c.beginPath(); c.ellipse(mx + hr * 0.06, -hr * 0.14, hr * 0.16, hr * 0.24, 0.15, 0, Math.PI * 2); c.fill();
+                    c.beginPath(); c.ellipse(mx + hr * 0.06, hr * 0.14, hr * 0.16, hr * 0.24, -0.15, 0, Math.PI * 2); c.fill();
+                  } else if (lipId === 'fangs') {
+                    c.strokeStyle = '#1b090c'; c.lineWidth = 2;
+                    c.beginPath(); c.arc(mx - hr * 0.15, 0, hr * 0.32, -0.75, 0.75); c.stroke();
+                    c.fillStyle = '#ffffff';
+                    for (const s of [-1, 1]) { c.beginPath(); c.moveTo(mx + hr * 0.08, s * hr * 0.24); c.lineTo(mx + hr * 0.34, s * hr * 0.16); c.lineTo(mx + hr * 0.08, s * hr * 0.08); c.closePath(); c.fill(); }
+                  } else if (lipId === 'tongue') {
+                    c.fillStyle = '#ff4d79'; c.beginPath(); c.ellipse(mx + hr * 0.22, hr * 0.08, hr * 0.24, hr * 0.15, 0.2, 0, Math.PI * 2); c.fill();
+                  } else if (lipId === 'gold') {
+                    c.fillStyle = '#ffd23f'; c.strokeStyle = '#7a4b00'; c.lineWidth = 1.4;
+                    c.fillRect(mx - hr * 0.04, -hr * 0.26, hr * 0.22, hr * 0.52); c.strokeRect(mx - hr * 0.04, -hr * 0.26, hr * 0.22, hr * 0.52);
+                  } else if (mouthOpen <= 0.08 && skin.acc !== 'beak') {
+                    c.strokeStyle = '#1a1a1a'; c.lineWidth = Math.max(1.8, hr * 0.11); c.lineCap = 'round';
+                    c.beginPath(); c.arc(mx - hr * 0.18, 0, hr * 0.28, -0.72, 0.72); c.stroke();
                   }
 
-                  // Eyes (Custom + Food Tracking + Blink)
+                  // EYES
                   const px = Math.cos(lookAng) * hr * 0.11, py = Math.sin(lookAng) * hr * 0.11;
-                  if (eyeId === 'visor' || skin.hat === 'visor') {
+                  if (eyeId === 'visor') {
                     c.fillStyle = '#0d1b36'; c.strokeStyle = '#59f4ff'; c.lineWidth = 2;
                     c.beginPath(); c.ellipse(hr * 0.34, 0, hr * 0.32, hr * 0.78, 0, 0, Math.PI * 2); c.fill(); c.stroke();
                   } else {
                     for (const s of [-1, 1]) {
                       const ex = hr * 0.32, ey = s * hr * 0.46, er = hr * 0.34;
+                      if (skin.acc === 'pandaEars') {
+                        c.fillStyle = '#14171a'; c.beginPath(); c.ellipse(ex, ey, er * 1.25, er * 1.1, s * 0.25, 0, Math.PI * 2); c.fill();
+                      }
                       if (blinkAmt > 0.85 || (eyeId === 'wink' && s === 1)) {
                         c.strokeStyle = '#111'; c.lineWidth = Math.max(2, hr * 0.12); c.lineCap = 'round';
-                        c.beginPath(); c.arc(ex, ey, er * 0.7, -0.9, 0.9); c.stroke(); continue;
+                        c.beginPath(); c.arc(ex, ey, er * 0.7, -0.9, 0.9); c.stroke();
+                        continue;
                       }
-                      c.fillStyle = '#ffffff'; c.strokeStyle = 'rgba(0,0,0,0.4)'; c.lineWidth = 1.4;
+                      c.fillStyle = skin.acc === 'skull' ? '#14171a' : '#ffffff'; c.strokeStyle = 'rgba(0,0,0,0.4)'; c.lineWidth = 1.3;
                       c.beginPath(); c.arc(ex, ey, er, 0, Math.PI * 2); c.fill(); c.stroke();
+
                       if (eyeId === 'heart') {
                         c.fillStyle = '#ff2e63';
                         c.beginPath(); c.arc(ex + px - er * 0.15, ey + py - er * 0.1, er * 0.28, 0, Math.PI * 2); c.arc(ex + px + er * 0.15, ey + py - er * 0.1, er * 0.28, 0, Math.PI * 2); c.fill();
                         c.beginPath(); c.moveTo(ex + px - er * 0.4, ey + py); c.lineTo(ex + px, ey + py + er * 0.45); c.lineTo(ex + px + er * 0.4, ey + py); c.fill();
                       } else if (eyeId === 'star') {
                         c.fillStyle = '#ffb800'; c.beginPath();
-                        for (let k = 0; k < 10; k++) { const a = (k * Math.PI) / 5 + globalTime * 2, rd = k % 2 === 0 ? er * 0.62 : er * 0.28; k === 0 ? c.moveTo(ex + px + Math.cos(a) * rd, ey + py + Math.sin(a) * rd) : c.lineTo(ex + px + Math.cos(a) * rd, ey + py + Math.sin(a) * rd); }
+                        for (let k = 0; k < 10; k++) {
+                          const a = (k * Math.PI) / 5 + globalTime * 2, rad = k % 2 === 0 ? er * 0.62 : er * 0.28;
+                          k === 0 ? c.moveTo(ex + px + Math.cos(a) * rad, ey + py + Math.sin(a) * rad) : c.lineTo(ex + px + Math.cos(a) * rad, ey + py + Math.sin(a) * rad);
+                        }
                         c.closePath(); c.fill();
                       } else if (eyeId === 'hypno') {
                         c.strokeStyle = '#7b38ff'; c.lineWidth = 1.8;
-                        c.beginPath(); c.arc(ex, ey, er * 0.65, globalTime * 6, globalTime * 6 + 4.4); c.stroke();
+                        c.beginPath(); c.arc(ex, ey, er * 0.62, globalTime * 6, globalTime * 6 + 4.4); c.stroke();
                       } else {
-                        c.fillStyle = '#111524'; c.beginPath(); c.arc(ex + px, ey + py, er * 0.56, 0, Math.PI * 2); c.fill();
+                        c.fillStyle = skin.acc === 'skull' ? '#59f4ff' : '#111524';
+                        c.beginPath(); c.arc(ex + px, ey + py, er * 0.54, 0, Math.PI * 2); c.fill();
                         c.fillStyle = '#ffffff'; c.beginPath(); c.arc(ex + px - er * 0.18, ey + py - er * 0.18, er * 0.22, 0, Math.PI * 2); c.fill();
                       }
                       if (eyeId === 'angry') {
@@ -878,35 +1635,71 @@
                     }
                   }
 
-                  // FRONT HEAD COSTUMES (Crown, Pirate Hat, Rose, Leaf, Clover, Santa, Helmet, Hood, Unicorn)
-                  if (skin.hat === 'crown') {
-                    c.fillStyle = '#ffd23f'; c.strokeStyle = '#8a5200'; c.lineWidth = 1.4;
-                    c.beginPath(); c.moveTo(-hr * 0.45, -hr * 0.55); c.lineTo(-hr * 1.05, -hr * 0.68); c.lineTo(-hr * 0.72, -hr * 0.2); c.lineTo(-hr * 1.15, 0); c.lineTo(-hr * 0.72, hr * 0.2); c.lineTo(-hr * 1.05, hr * 0.68); c.lineTo(-hr * 0.45, hr * 0.55); c.closePath(); c.fill(); c.stroke();
-                    c.fillStyle = '#ff2e63'; c.beginPath(); c.arc(-hr * 0.68, 0, hr * 0.14, 0, Math.PI * 2); c.fill();
-                  } else if (skin.hat === 'pirate') {
-                    c.fillStyle = '#1f232e'; c.strokeStyle = '#ffd23f'; c.lineWidth = 1.6;
-                    c.beginPath(); c.ellipse(-hr * 0.42, 0, hr * 0.62, hr * 1.12, 0, 0, Math.PI * 2); c.fill(); c.stroke();
-                    c.fillStyle = '#ffffff'; c.beginPath(); c.arc(-hr * 0.45, 0, hr * 0.22, 0, Math.PI * 2); c.fill();
-                  } else if (skin.hat === 'rose') {
-                    c.fillStyle = '#ff2457';
-                    for (let k = 0; k < 5; k++) { const a = (k / 5) * Math.PI * 2; c.beginPath(); c.arc(-hr * 0.45 + Math.cos(a) * hr * 0.28, Math.sin(a) * hr * 0.28, hr * 0.28, 0, Math.PI * 2); c.fill(); }
-                    c.fillStyle = '#ffd23f'; c.beginPath(); c.arc(-hr * 0.45, 0, hr * 0.16, 0, Math.PI * 2); c.fill();
-                  } else if (skin.hat === 'leaf' || skin.hat === 'clover') {
-                    c.fillStyle = '#4be33b'; c.strokeStyle = '#186b11'; c.lineWidth = 1.2;
-                    for (let k = -1; k <= 1; k++) { c.beginPath(); c.ellipse(-hr * 0.65, k * hr * 0.34, hr * 0.45, hr * 0.22, k * 0.4, 0, Math.PI * 2); c.fill(); c.stroke(); }
-                  } else if (skin.hat === 'santa') {
-                    c.fillStyle = '#e82534'; c.beginPath(); c.moveTo(-hr * 0.25, -hr * 0.78); c.quadraticCurveTo(-hr * 1.25, -hr * 0.4, -hr * 1.38, hr * 0.45); c.lineTo(-hr * 0.25, hr * 0.78); c.closePath(); c.fill();
-                    c.fillStyle = '#ffffff'; c.beginPath(); c.ellipse(-hr * 0.25, 0, hr * 0.24, hr * 0.88, 0, 0, Math.PI * 2); c.fill();
-                    c.beginPath(); c.arc(-hr * 1.38, hr * 0.45, hr * 0.26, 0, Math.PI * 2); c.fill();
-                  } else if (skin.hat === 'unicorn') {
-                    c.fillStyle = '#ffe259'; c.strokeStyle = '#ff6be6'; c.lineWidth = 1.4;
-                    c.beginPath(); c.moveTo(hr * 0.65, -hr * 0.22); c.lineTo(hr * 1.75, 0); c.lineTo(hr * 0.65, hr * 0.22); c.closePath(); c.fill(); c.stroke();
-                  } else if (skin.hat === 'helmet') {
-                    c.strokeStyle = '#ffffff'; c.lineWidth = hr * 0.22; c.beginPath(); c.arc(-hr * 0.05, 0, hr * 1.08, Math.PI * 0.55, Math.PI * 1.45); c.stroke();
-                    c.fillStyle = 'rgba(0,247,255,0.45)'; c.beginPath(); c.arc(hr * 0.3, 0, hr * 0.85, -0.7, 0.7); c.fill();
-                  } else if (skin.hat === 'hood') {
-                    c.fillStyle = skin.mid; c.strokeStyle = skin.accent; c.lineWidth = 1.5;
-                    c.beginPath(); c.moveTo(-hr * 0.1, -hr * 1.05); c.lineTo(-hr * 1.45, 0); c.lineTo(-hr * 0.1, hr * 1.05); c.quadraticCurveTo(-hr * 0.55, 0, -hr * 0.1, -hr * 1.05); c.fill(); c.stroke();
+                  drawSkinAccessory(c, skin, hr, 'front');
+                }
+
+                // DRAW UNIQUE BODY SEGMENT PATTERN (HONEY, WATERMELON, POLAROID, BLOCKS, BONES, KOI, ETC.)
+                function drawBodySegment(c, skin, x, y, sr, idx, ang) {
+                  const pat = skin.pat;
+                  let col = skin.base;
+                  if (pat === 'rainbow') col = `hsl(${(globalTime * 150 + idx * 14) % 360}, 95%, 56%)`;
+                  else if (pat === 'zebra' || pat === 'band' || pat === 'panda') col = (Math.floor(idx / 3) % 2 === 1) ? skin.accent : skin.base;
+                  else if (pat === 'checker') col = (idx % 2 === 0) ? skin.base : skin.accent;
+                  else if (pat === 'blocks') { const bc = ['#38b6ff','#ff4757','#ffe259','#69f03a','#b84dff']; col = bc[idx % bc.length]; }
+                  else if (pat === 'koi') col = (idx % 7 < 3) ? '#ffffff' : (idx % 7 < 5 ? '#ff6b1a' : '#1f1f1f');
+                  else if (pat === 'melon') col = (idx % 2 === 0) ? '#ff4769' : '#ff6b85';
+                  else if (pat === 'stripe' && idx % 3 === 0) col = skin.mid;
+
+                  // Smooth bright Worms Zone shading (no dark muddy rings!)
+                  const g = c.createRadialGradient(x - sr * 0.28, y - sr * 0.28, sr * 0.08, x, y, sr);
+                  g.addColorStop(0, col);
+                  g.addColorStop(0.82, pat === 'rainbow' ? col : skin.mid);
+                  g.addColorStop(1, skin.dark);
+                  c.fillStyle = g;
+                  c.beginPath(); c.arc(x, y, sr, 0, Math.PI * 2); c.fill();
+
+                  if (pat === 'melon') {
+                    c.strokeStyle = '#24a842'; c.lineWidth = Math.max(2, sr * 0.18);
+                    c.beginPath(); c.arc(x, y, sr * 0.92, 0, Math.PI * 2); c.stroke();
+                    if (idx % 3 === 0) { c.fillStyle = '#141414'; c.beginPath(); c.arc(x, y, sr * 0.14, 0, Math.PI * 2); c.fill(); }
+                  } else if (pat === 'dots' || pat === 'sprinkle' || pat === 'stars') {
+                    if (idx % 3 === 0) {
+                      c.fillStyle = skin.accent;
+                      c.beginPath(); c.arc(x, y, sr * (pat === 'sprinkle' ? 0.24 : 0.34), 0, Math.PI * 2); c.fill();
+                    }
+                  } else if (pat === 'bones' && idx % 3 === 0) {
+                    c.save(); c.translate(x, y); c.rotate(ang);
+                    c.strokeStyle = '#f2f7ff'; c.lineWidth = Math.max(2, sr * 0.18);
+                    c.beginPath(); c.moveTo(0, -sr * 0.7); c.lineTo(0, sr * 0.7); c.stroke();
+                    c.fillStyle = '#fff'; c.beginPath(); c.arc(0, 0, sr * 0.22, 0, Math.PI * 2); c.fill();
+                    c.restore();
+                  } else if (pat === 'honey' && idx % 3 === 0) {
+                    c.strokeStyle = '#7a4500'; c.lineWidth = 1.5;
+                    c.beginPath();
+                    for (let k = 0; k < 6; k++) {
+                      const a = (Math.PI / 3) * k;
+                      k === 0 ? c.moveTo(x + Math.cos(a) * sr * 0.55, y + Math.sin(a) * sr * 0.55) : c.lineTo(x + Math.cos(a) * sr * 0.55, y + Math.sin(a) * sr * 0.55);
+                    }
+                    c.closePath(); c.stroke();
+                  } else if (pat === 'polaroid' && idx % 4 === 0) {
+                    c.save(); c.translate(x, y); c.rotate(ang);
+                    c.fillStyle = '#ffffff'; c.fillRect(-sr * 0.5, -sr * 0.55, sr, sr * 1.1);
+                    c.fillStyle = skin.accent; c.fillRect(-sr * 0.38, -sr * 0.42, sr * 0.76, sr * 0.66);
+                    c.restore();
+                  } else if (pat === 'scales' && idx % 3 === 0) {
+                    c.save(); c.translate(x, y); c.rotate(ang);
+                    c.fillStyle = skin.accent; c.globalAlpha = 0.55;
+                    c.beginPath(); c.moveTo(sr * 0.4, 0); c.lineTo(0, -sr * 0.42); c.lineTo(-sr * 0.4, 0); c.lineTo(0, sr * 0.42); c.closePath(); c.fill();
+                    c.restore();
+                  } else if (pat === 'tux' && idx % 4 === 0) {
+                    c.fillStyle = '#ffffff'; c.beginPath(); c.arc(x, y, sr * 0.18, 0, Math.PI * 2); c.fill();
+                  } else if (pat === 'neon' && idx % 3 === 0) {
+                    c.strokeStyle = skin.accent; c.lineWidth = 1.8;
+                    c.beginPath(); c.arc(x, y, sr * 0.52, 0, Math.PI * 2); c.stroke();
+                  }
+                  if (idx % 2 === 0) {
+                    c.fillStyle = 'rgba(255,255,255,0.2)';
+                    c.beginPath(); c.arc(x - sr * 0.25, y - sr * 0.25, sr * 0.28, 0, Math.PI * 2); c.fill();
                   }
                 }
 
@@ -914,13 +1707,11 @@
                   const tc = thumbCvs.getContext('2d');
                   const w = thumbCvs.width, h = thumbCvs.height;
                   tc.clearRect(0, 0, w, h);
-                  tc.save(); tc.translate(w * 0.56, h * 0.52);
+                  tc.save(); tc.translate(w * 0.54, h * 0.52);
                   for (let i = 3; i >= 1; i--) {
-                    tc.fillStyle = i % 2 === 0 ? skin.base : skin.mid;
-                    if (skin.body === 'square') { tc.fillRect(-i * 10 - 11, -11, 22, 22); }
-                    else { tc.beginPath(); tc.arc(-i * 9, Math.sin(i) * 4, 13 - i * 1.1, 0, Math.PI * 2); tc.fill(); }
+                    drawBodySegment(tc, skin, -i * 9, Math.sin(i) * 4, 12.5 - i * 1.1, i, 0);
                   }
-                  drawWormHead(tc, skin, profile.eye, profile.lip, 14, 0, 0, 0);
+                  drawWormHead(tc, skin, profile.eye, profile.lip, 13.5, 0, 0, 0);
                   tc.restore();
                 }
 
@@ -930,7 +1721,7 @@
                     this.isPlayer = isPlayer; this.isChamp = isChamp; this.alive = true;
                     this.x = x; this.y = y; this.angle = rand(0, Math.PI * 2); this.targetAngle = this.angle;
                     this.score = score; this.kills = 0; this.boosting = false;
-                    this.spawnShield = isPlayer ? 3.5 : 1.5;
+                    this.spawnShield = isPlayer ? 4.0 : 1.5;
                     this.mouthOpen = 0; this.blinkTimer = rand(1.5, 4.5); this.blinkAmt = 0;
                     this.lookAng = 0; this.bubbleText = ''; this.bubbleTimer = 0;
                     this.aiTimer = rand(0, 0.5); this.aiWander = this.angle; this.aiBoost = 0;
@@ -946,7 +1737,7 @@
                   updateAI(dt) {
                     this.aiTimer -= dt;
                     if (this.aiBoost > 0) this.aiBoost -= dt;
-                    if (dist(this.x, this.y, WORLD_CENTER, WORLD_CENTER) > ARENA_RADIUS - 450) {
+                    if (dist(this.x, this.y, WORLD_CENTER, WORLD_CENTER) > ARENA_RADIUS - 420) {
                       this.targetAngle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x);
                       this.boosting = false; return;
                     }
@@ -962,10 +1753,18 @@
                     }
                     if (danger) { this.targetAngle = Math.atan2(avY, avX); this.boosting = this.score > 160; return; }
                     if (this.aiTimer <= 0) {
-                      this.aiTimer = rand(0.35, 0.9); this.aiWander += rand(-1.1, 1.1); this.targetAngle = this.aiWander;
+                      this.aiTimer = rand(0.35, 0.9);
+                      this.aiWander += rand(-1.1, 1.1);
+                      this.targetAngle = this.aiWander;
                       let bestF = null, bestD = 360 * 360;
-                      for (let i = 0; i < foods.length; i += 2) { const f = foods[i], d2 = distSq(this.x, this.y, f.x, f.y); if (d2 < bestD) { bestD = d2; bestF = f; } }
-                      if (bestF) { this.targetAngle = Math.atan2(bestF.y - this.y, bestF.x - this.x); if (bestF.big && this.score > 200 && Math.random() < 0.35) this.aiBoost = 0.6; }
+                      for (let i = 0; i < foods.length; i += 2) {
+                        const f = foods[i], d2 = distSq(this.x, this.y, f.x, f.y);
+                        if (d2 < bestD) { bestD = d2; bestF = f; }
+                      }
+                      if (bestF) {
+                        this.targetAngle = Math.atan2(bestF.y - this.y, bestF.x - this.x);
+                        if (bestF.big && this.score > 200 && Math.random() < 0.35) this.aiBoost = 0.6;
+                      }
                     }
                     this.boosting = this.aiBoost > 0 && this.score > 140;
                   }
@@ -975,32 +1774,42 @@
                     if (this.spawnShield > 0) this.spawnShield = Math.max(0, this.spawnShield - dt);
                     if (this.mouthOpen > 0) this.mouthOpen = Math.max(0, this.mouthOpen - dt * 3.8);
                     if (this.bubbleTimer > 0) this.bubbleTimer = Math.max(0, this.bubbleTimer - dt);
+
                     this.blinkTimer -= dt;
-                    if (this.blinkTimer <= 0) { this.blinkAmt = 1; if (this.blinkTimer < -0.14) { this.blinkAmt = 0; this.blinkTimer = rand(2.2, 5.2); } }
+                    if (this.blinkTimer <= 0) {
+                      this.blinkAmt = 1;
+                      if (this.blinkTimer < -0.14) { this.blinkAmt = 0; this.blinkTimer = rand(2.2, 5.2); }
+                    }
+
                     if (!this.isPlayer) this.updateAI(dt);
 
                     const speedBuff = this.isPlayer && (buffs.speed || 0) > 0;
                     const canBoost = (this.boosting || speedBuff) && (this.score > 120 || speedBuff);
                     if (this.boosting && !speedBuff && canBoost) {
-                      this.score = Math.max(100, this.score - dt * 16);
+                      this.score = Math.max(100, this.score - dt * 15);
                       if (Math.random() < 0.14 && foods.length < 750) {
                         const tail = this.segments[this.segments.length - 1];
                         foods.push({ x: tail.x, y: tail.y, val: 6, r: 9, icon: '✨', col: this.skin.base, orb: true, big: false });
                       }
                     }
 
-                    const spd = canBoost ? 215 * (speedBuff ? 1.82 : 1.65) : 215;
-                    this.angle += clamp(angleDiff(this.targetAngle, this.angle), -5.8 * dt, 5.8 * dt);
+                    const baseSpd = 215;
+                    const spd = canBoost ? baseSpd * (speedBuff ? 1.82 : 1.65) : baseSpd;
+                    const diff = angleDiff(this.targetAngle, this.angle);
+                    this.angle += clamp(diff, -5.8 * dt, 5.8 * dt);
                     this.x += Math.cos(this.angle) * spd * dt;
                     this.y += Math.sin(this.angle) * spd * dt;
 
                     const r = this.getRadius();
-                    if (dist(this.x, this.y, WORLD_CENTER, WORLD_CENTER) + r > ARENA_RADIUS) { killWorm(this, null, 'Arena Wall'); return; }
+                    if (dist(this.x, this.y, WORLD_CENTER, WORLD_CENTER) + r > ARENA_RADIUS) {
+                      killWorm(this, null, 'Arena Wall'); return;
+                    }
 
                     this.segments[0].x = this.x; this.segments[0].y = this.y;
-                    const spc = r * 0.46;
+                    const spc = r * 0.44;
                     for (let i = 1; i < this.segments.length; i++) {
-                      const p = this.segments[i - 1], c = this.segments[i], dx = c.x - p.x, dy = c.y - p.y, d = Math.hypot(dx, dy) || 0.001;
+                      const p = this.segments[i - 1], c = this.segments[i];
+                      const dx = c.x - p.x, dy = c.y - p.y, d = Math.hypot(dx, dy) || 0.001;
                       if (d > spc) { const rt = spc / d; c.x = p.x + dx * rt; c.y = p.y + dy * rt; }
                     }
                     const tLen = this.getSegCount();
@@ -1010,140 +1819,71 @@
 
                   draw(c, showUi = true) {
                     if (!this.alive || this.segments.length < 4) return;
-                    const r = this.getRadius(), len = this.segments.length, bType = this.skin.body;
-                    const isRain = bType === 'rainbow';
+                    const r = this.getRadius(), len = this.segments.length;
 
                     c.save();
-                    // Soft drop shadow
                     c.fillStyle = 'rgba(0,0,0,0.22)';
                     for (let i = len - 1; i >= 0; i -= 2) {
-                      const seg = this.segments[i], tp = i > len - 6 ? lerp(1, 0.58, (i - (len - 6)) / 6) : 1;
-                      c.beginPath(); c.arc(seg.x + 4, seg.y + 6, r * tp, 0, Math.PI * 2); c.fill();
+                      const seg = this.segments[i];
+                      const taper = i > len - 6 ? lerp(1, 0.55, (i - (len - 6)) / 6) : 1;
+                      c.beginPath(); c.arc(seg.x + 4, seg.y + 6, r * taper, 0, Math.PI * 2); c.fill();
                     }
 
-                    // Glow aura for glow/rainbow/garland or Boost
-                    if (bType === 'glow' || isRain || bType === 'garland' || this.boosting) {
-                      c.fillStyle = isRain ? `hsl(${(globalTime * 150) % 360},100%,62%)` : (this.boosting ? '#ffe259' : this.skin.accent);
-                      c.globalAlpha = 0.24;
-                      for (let i = len - 1; i >= 0; i -= 3) { c.beginPath(); c.arc(this.segments[i].x, this.segments[i].y, r * 1.3, 0, Math.PI * 2); c.fill(); }
+                    if (this.skin.pat === 'glow' || this.skin.pat === 'rainbow' || this.boosting) {
+                      c.fillStyle = this.skin.pat === 'rainbow' ? `hsl(${(globalTime * 150) % 360},100%,60%)` : (this.boosting ? '#ffe259' : this.skin.accent);
+                      c.globalAlpha = 0.22;
+                      for (let i = len - 1; i >= 0; i -= 3) {
+                        c.beginPath(); c.arc(this.segments[i].x, this.segments[i].y, r * 1.26, 0, Math.PI * 2); c.fill();
+                      }
                       c.globalAlpha = 1;
                     }
 
-                    // BRIGHT GLOSSY CUSTOM BODY SHAPES (NO MORE BLACK OVERLAP!)
                     for (let i = len - 1; i >= 1; i--) {
                       const seg = this.segments[i], prev = this.segments[i - 1];
                       const ang = Math.atan2(prev.y - seg.y, prev.x - seg.x);
-                      const tp = i > len - 6 ? lerp(1, 0.58, (i - (len - 6)) / 6) : 1;
-                      const sr = r * tp;
-
-                      let col1 = this.skin.base, col2 = this.skin.mid;
-                      if (isRain) { col1 = `hsl(${(globalTime * 150 + i * 11) % 360}, 95%, 60%)`; col2 = `hsl(${(globalTime * 150 + i * 11 + 25) % 360}, 90%, 48%)`; }
-                      else if (bType === 'band' && (Math.floor(i / 3) % 2 === 1)) { col1 = this.skin.accent; col2 = this.skin.accent; }
-                      else if (bType === 'stripe' && i % 4 === 0) { col1 = this.skin.mid; col2 = this.skin.base; }
-
-                      // Side attachments (Spider legs, Dragon fins, Angel wings, Rose leaves)
-                      if (bType === 'spider' && i % 5 === 0) {
-                        c.save(); c.translate(seg.x, seg.y); c.rotate(ang);
-                        c.strokeStyle = '#1b1429'; c.lineWidth = Math.max(2, sr * 0.18); c.lineCap = 'round';
-                        const wig = Math.sin(globalTime * 12 + i) * sr * 0.22;
-                        for (const s of [-1, 1]) { c.beginPath(); c.moveTo(0, s * sr * 0.8); c.lineTo(wig, s * sr * 1.65); c.stroke(); }
-                        c.restore();
-                      } else if (bType === 'dragon' && i % 4 === 0) {
-                        c.save(); c.translate(seg.x, seg.y); c.rotate(ang);
-                        c.fillStyle = this.skin.accent;
-                        for (const s of [-1, 1]) { c.beginPath(); c.moveTo(sr * 0.3, s * sr * 0.85); c.lineTo(-sr * 0.45, s * sr * 1.48); c.lineTo(-sr * 0.55, s * sr * 0.72); c.closePath(); c.fill(); }
-                        c.restore();
-                      } else if (bType === 'wings' && i === 4) {
-                        c.save(); c.translate(seg.x, seg.y); c.rotate(ang);
-                        const fl = Math.sin(globalTime * 10) * 0.25;
-                        c.fillStyle = this.skin.accent; c.strokeStyle = '#fff'; c.lineWidth = 1.5;
-                        for (const s of [-1, 1]) { c.save(); c.rotate(s * fl); c.beginPath(); c.ellipse(-sr * 0.3, s * sr * 1.65, sr * 0.65, sr * 1.15, s * 0.35, 0, Math.PI * 2); c.fill(); c.stroke(); c.restore(); }
-                        c.restore();
-                      } else if (bType === 'vine' && i % 5 === 0) {
-                        c.save(); c.translate(seg.x, seg.y); c.rotate(ang);
-                        c.fillStyle = '#4be33b';
-                        const s = (i % 10 === 0) ? 1 : -1;
-                        c.beginPath(); c.ellipse(0, s * sr * 1.28, sr * 0.55, sr * 0.28, s * 0.45, 0, Math.PI * 2); c.fill();
-                        c.restore();
-                      }
-
-                      // Segment Shape (Square vs Lantern vs Glossy Round)
-                      const g = c.createRadialGradient(seg.x - sr * 0.26, seg.y - sr * 0.28, sr * 0.08, seg.x, seg.y, sr * 1.05);
-                      g.addColorStop(0, col1); g.addColorStop(1, col2);
-                      c.fillStyle = g;
-                      if (bType === 'square') {
-                        c.save(); c.translate(seg.x, seg.y); c.rotate(ang);
-                        c.strokeStyle = 'rgba(0,0,0,0.28)'; c.lineWidth = 1.4;
-                        c.beginPath(); c.roundRect ? c.roundRect(-sr, -sr, sr * 2, sr * 2, sr * 0.32) : c.rect(-sr, -sr, sr * 2, sr * 2);
-                        c.fill(); c.stroke(); c.restore();
-                      } else if (bType === 'lantern') {
-                        c.beginPath(); c.arc(seg.x, seg.y, sr * (i % 3 === 0 ? 1.12 : 0.88), 0, Math.PI * 2); c.fill();
-                        if (i % 3 === 0) { c.strokeStyle = '#ffe875'; c.lineWidth = 1.5; c.stroke(); }
-                      } else {
-                        c.beginPath(); c.arc(seg.x, seg.y, sr, 0, Math.PI * 2); c.fill();
-                      }
-
-                      // Special Surface Patterns (Donut Sprinkles, Garland Lights, Hearts, Stitches, Waffle, Dots)
-                      if (bType === 'donut' && i % 3 === 0) {
-                        const spCols = ['#ff4757','#ffe259','#59f4ff','#ffffff'];
-                        c.fillStyle = spCols[i % spCols.length];
-                        c.fillRect(seg.x - sr * 0.3, seg.y - sr * 0.2, sr * 0.36, sr * 0.16);
-                      } else if (bType === 'garland' && i % 4 === 0) {
-                        const lCols = ['#ff3864','#ffe259','#4de2f0','#ff9524'];
-                        c.fillStyle = lCols[(i + Math.floor(globalTime * 4)) % lCols.length];
-                        c.beginPath(); c.arc(seg.x, seg.y, sr * 0.42, 0, Math.PI * 2); c.fill();
-                      } else if (bType === 'hearts' && i % 5 === 0) {
-                        c.fillStyle = this.skin.accent; c.beginPath(); c.arc(seg.x, seg.y, sr * 0.36, 0, Math.PI * 2); c.fill();
-                      } else if (bType === 'stitch' && i % 4 === 0) {
-                        c.save(); c.translate(seg.x, seg.y); c.rotate(ang);
-                        c.strokeStyle = '#1b1b1b'; c.lineWidth = 1.8;
-                        c.beginPath(); c.moveTo(-sr * 0.35, -sr * 0.35); c.lineTo(sr * 0.35, sr * 0.35); c.moveTo(sr * 0.35, -sr * 0.35); c.lineTo(-sr * 0.35, sr * 0.35); c.stroke();
-                        c.restore();
-                      } else if (bType === 'waffle' && i % 3 === 0) {
-                        c.strokeStyle = 'rgba(120,65,10,0.32)'; c.lineWidth = 1.2;
-                        c.beginPath(); c.moveTo(seg.x - sr * 0.6, seg.y); c.lineTo(seg.x + sr * 0.6, seg.y); c.stroke();
-                      } else if (bType === 'dots' && i % 4 === 0) {
-                        c.fillStyle = this.skin.accent; c.beginPath(); c.arc(seg.x, seg.y, sr * 0.34, 0, Math.PI * 2); c.fill();
-                      }
-
-                      if (i % 2 === 0 && bType !== 'square') {
-                        c.fillStyle = 'rgba(255,255,255,0.24)';
-                        c.beginPath(); c.arc(seg.x - sr * 0.25, seg.y - sr * 0.26, sr * 0.3, 0, Math.PI * 2); c.fill();
-                      }
+                      const taper = i > len - 6 ? lerp(1, 0.55, (i - (len - 6)) / 6) : 1;
+                      drawBodySegment(c, this.skin, seg.x, seg.y, r * taper, i, ang);
                     }
 
-                    // Head
-                    c.save(); c.translate(this.x, this.y); c.rotate(this.angle);
+                    c.save();
+                    c.translate(this.x, this.y);
+                    c.rotate(this.angle);
                     drawWormHead(c, this.skin, this.eye, this.lip, r * 1.08, this.blinkAmt, this.mouthOpen, this.lookAng);
-                    if (this.spawnShield > 0) { c.strokeStyle = 'rgba(89, 244, 255, 0.85)'; c.lineWidth = 3; c.beginPath(); c.arc(0, 0, r * 1.65, 0, Math.PI * 2); c.stroke(); }
+                    if (this.spawnShield > 0) {
+                      c.strokeStyle = 'rgba(89, 244, 255, 0.85)'; c.lineWidth = 3;
+                      c.beginPath(); c.arc(0, 0, r * 1.65, 0, Math.PI * 2); c.stroke();
+                    }
                     c.restore();
 
-                    // Non-Overlapping Nameplate & Speech Bubble
-                    if (showUi) {
-                      c.font = '900 11px sans-serif'; c.textAlign = 'center';
-                      const lbl = this.isChamp ? `👑 ${this.name}` : this.name;
-                      c.fillStyle = 'rgba(0,0,0,0.65)'; c.fillText(lbl, this.x + 1, this.y - r - 18);
-                      c.fillStyle = this.isChamp ? '#ffe259' : '#ffffff'; c.fillText(lbl, this.x, this.y - r - 19);
-                    }
                     if (this.bubbleTimer > 0 && this.bubbleText) {
-                      c.save(); c.font = '900 12px sans-serif';
+                      c.save();
+                      c.font = '900 12px sans-serif';
                       const tw = c.measureText(this.bubbleText).width + 18;
-                      const bx = this.x - tw / 2, by = this.y - r - (showUi ? 58 : 48);
+                      const bx = this.x - tw / 2, by = this.y - r - 44;
                       c.fillStyle = '#ffffff'; c.strokeStyle = '#1b3554'; c.lineWidth = 2;
-                      c.beginPath(); c.roundRect ? c.roundRect(bx, by, tw, 24, 12) : c.rect(bx, by, tw, 24); c.fill(); c.stroke();
+                      c.beginPath(); c.roundRect ? c.roundRect(bx, by, tw, 24, 12) : c.rect(bx, by, tw, 24);
+                      c.fill(); c.stroke();
                       c.fillStyle = '#11223a'; c.textAlign = 'center'; c.textBaseline = 'middle';
                       c.fillText(this.bubbleText, this.x, by + 12);
                       c.restore();
                     }
+
+                    if (showUi) {
+                      c.font = '900 11px sans-serif'; c.textAlign = 'center';
+                      const lbl = this.isChamp ? `👑 ${this.name}` : this.name;
+                      c.fillStyle = 'rgba(0,0,0,0.65)'; c.fillText(lbl, this.x + 1, this.y - r - 11);
+                      c.fillStyle = this.isChamp ? '#ffe259' : '#ffffff'; c.fillText(lbl, this.x, this.y - r - 12);
+                    }
                     c.restore();
                   }
                 }
+
                 function spawnFood(count = 1, nearPlayer = false) {
                   const fv = FOOD_VARIETIES.find(f => f.id === profile.food) || FOOD_VARIETIES[0];
                   const vals = [3, 6, 12, 22, 36, 54];
                   const cols = ['#ff4757','#ffe259','#69f03a','#4de2f0','#ff6be6','#ff9f43'];
                   for (let i = 0; i < count; i++) {
-                    const pt = (nearPlayer && player && player.alive)
+                    let pt = (nearPlayer && player && player.alive)
                       ? { x: clamp(player.x + rand(-1800, 1800), WORLD_CENTER - ARENA_RADIUS + 200, WORLD_CENTER + ARENA_RADIUS - 200),
                           y: clamp(player.y + rand(-1800, 1800), WORLD_CENTER - ARENA_RADIUS + 200, WORLD_CENTER + ARENA_RADIUS - 200) }
                       : randInArena(240);
@@ -1221,7 +1961,6 @@
 
                 function openReviveModal() {
                   screenState = 'revive';
-                  ctrl.joyActive = false; ctrl.joyTouchId = null; ctrl.boostHeld = false;
                   document.getElementById('revScoreTxt').textContent = Math.floor(player.score).toLocaleString();
                   let left = 5;
                   document.getElementById('revCountTxt').textContent = left;
@@ -1254,7 +1993,6 @@
                   screenState = 'playing';
                   reviveUsed = false;
                   matchKills = 0; matchCoins = 0; matchTimer = 300; buffs = {};
-                  ctrl.joyActive = false; ctrl.joyTouchId = null; ctrl.boostHeld = false;
                   document.getElementById('lobbyScreen').style.display = 'none';
                   document.getElementById('resultsModal').classList.remove('open');
                   document.getElementById('hud').style.display = 'block';
@@ -1264,9 +2002,11 @@
                   worms = []; foods = []; potions = []; chests = []; particles = []; floatTexts = [];
 
                   const pSkin = SKINS.find(s => s.id === profile.skin) || SKINS[0];
+                  const startScore = 100 + (bonusScore || pendingStartBonus);
+                  pendingStartBonus = 0;
                   player = new Worm({
                     name: profile.name, skin: pSkin, eye: profile.eye, lip: profile.lip,
-                    x: WORLD_CENTER, y: WORLD_CENTER, isPlayer: true, score: 100 + bonusScore, isChamp: isWorldChampion()
+                    x: WORLD_CENTER, y: WORLD_CENTER, isPlayer: true, score: startScore, isChamp: isWorldChampion()
                   });
                   const exprObj = EXPRESSIONS.find(e => e.id === profile.expr) || EXPRESSIONS[0];
                   player.say(exprObj.text);
@@ -1304,7 +2044,7 @@
                   if (finalScore > 10000) profile.level = Math.max(profile.level, Math.floor(finalScore / 8000) + 1);
                   saveProfile();
 
-                  document.getElementById('resTitle').textContent = (profile.mode === 'time' && matchTimer <= 0) ? 'TIME UP!' : 'GAME OVER!';
+                  document.getElementById('resTitle').textContent = profile.mode === 'time' && matchTimer <= 0 ? 'TIME UP!' : 'GAME OVER!';
                   document.getElementById('resSub').textContent = subText;
                   document.getElementById('resScore').textContent = finalScore.toLocaleString();
                   document.getElementById('resKills').textContent = matchKills;
@@ -1323,8 +2063,8 @@
                   Object.keys(buffs).forEach(k => { if (buffs[k] > 0) buffs[k] = Math.max(0, buffs[k] - dt); });
 
                   if (player && player.alive) {
-                    const kx = (ctrl.keys.right ? 1 : 0) - (ctrl.keys.left ? 1 : 0);
-                    const ky = (ctrl.keys.down ? 1 : 0) - (ctrl.keys.up ? 1 : 0);
+                    let kx = (ctrl.keys.right ? 1 : 0) - (ctrl.keys.left ? 1 : 0);
+                    let ky = (ctrl.keys.down ? 1 : 0) - (ctrl.keys.up ? 1 : 0);
                     if (kx !== 0 || ky !== 0) player.targetAngle = Math.atan2(ky, kx);
                     else if (ctrl.joyActive && ctrl.joyMag > 8) player.targetAngle = ctrl.joyAngle;
                     player.boosting = ctrl.boostHeld || ctrl.keys.boost;
@@ -1332,18 +2072,22 @@
 
                   for (const w of worms) w.update(dt);
 
-                  // FAIR 0.68 HITBOX SO CLOSE TURNS FEEL SMOOTH & FAIR
+                  // FAIR STRICT INNER-HEAD HITBOX (NO UNFAIR SIDE-GRAZE DEATHS!)
                   for (const w of worms) {
                     if (!w.alive || w.spawnShield > 0) continue;
-                    const hr = w.getRadius() * 0.68;
+                    const rW = w.getRadius();
+                    const noseX = w.x + Math.cos(w.angle) * (rW * 0.35);
+                    const noseY = w.y + Math.sin(w.angle) * (rW * 0.35);
+                    const hitW = rW * 0.48;
                     for (const o of worms) {
                       if (o === w || !o.alive || o.spawnShield > 0) continue;
-                      if (distSq(w.x, w.y, o.x, o.y) > 950 * 950) continue;
-                      const oR = o.getRadius() * 0.68;
+                      if (distSq(noseX, noseY, o.x, o.y) > 950 * 950) continue;
+                      const hitO = o.getRadius() * 0.64;
+                      const hitSq = (hitW + hitO) * (hitW + hitO);
                       let hit = false;
                       const step = o.segments.length > 100 ? 2 : 1;
-                      for (let k = 1; k < o.segments.length; k += step) {
-                        if (distSq(w.x, w.y, o.segments[k].x, o.segments[k].y) < (hr + oR) ** 2) { hit = true; break; }
+                      for (let k = 2; k < o.segments.length; k += step) {
+                        if (distSq(noseX, noseY, o.segments[k].x, o.segments[k].y) < hitSq) { hit = true; break; }
                       }
                       if (hit) { killWorm(w, o, `Crashed into ${o.name}`); break; }
                     }
@@ -1433,8 +2177,7 @@
                       .map(p => `<span class="buff-tag">${p.icon} ${Math.ceil(buffs[p.id])}s</span>`).join('');
 
                     const sorted = worms.filter(w => w.alive).sort((a, b) => b.score - a.score);
-                    const top10 = sorted.slice(0, 10);
-                    document.getElementById('arenaLeaderBox').innerHTML = top10.map((w, i) =>
+                    document.getElementById('arenaLeaderBox').innerHTML = sorted.slice(0, 10).map((w, i) =>
                       `<div class="alb-row${w.isPlayer ? ' me' : ''}"><span>${i === 0 ? '👑' : (i + 1) + '.'} ${w.name.slice(0, 10)}</span><span>${Math.floor(w.score).toLocaleString()}</span></div>`
                     ).join('');
 
@@ -1452,7 +2195,9 @@
 
                   const radarOn = (buffs.radar || 0) > 0;
                   miniCtx.fillStyle = '#ffe259';
-                  for (const ch of chests) { miniCtx.beginPath(); miniCtx.arc(cx + (ch.x - WORLD_CENTER) * sc, cy + (ch.y - WORLD_CENTER) * sc, radarOn ? 4 : 2.5, 0, Math.PI * 2); miniCtx.fill(); }
+                  for (const ch of chests) {
+                    miniCtx.beginPath(); miniCtx.arc(cx + (ch.x - WORLD_CENTER) * sc, cy + (ch.y - WORLD_CENTER) * sc, radarOn ? 4 : 2.5, 0, Math.PI * 2); miniCtx.fill();
+                  }
                   for (const wm of worms) {
                     if (!wm.alive || wm.isPlayer) continue;
                     miniCtx.fillStyle = (radarOn && wm.score > 5000) ? '#ff4757' : 'rgba(255,140,140,0.65)';
@@ -1468,12 +2213,12 @@
                 function renderGame(dt) {
                   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
                   if (floorPattern) { ctx.fillStyle = floorPattern; ctx.fillRect(0, 0, appW, appH); }
-                  else { ctx.fillStyle = '#1a7322'; ctx.fillRect(0, 0, appW, appH); }
+                  else { ctx.fillStyle = '#145e1c'; ctx.fillRect(0, 0, appW, appH); }
 
                   if (document.getElementById('workshopModal').classList.contains('open') && wsPreviewWorm) {
                     wsCtx.clearRect(0, 0, wsCanvas.width, wsCanvas.height);
                     const t = globalTime * 1.4;
-                    const nx = wsCanvas.width * 0.5 + Math.cos(t) * 52, ny = wsCanvas.height * 0.56 + Math.sin(t) * 46;
+                    const nx = wsCanvas.width * 0.5 + Math.cos(t) * 50, ny = wsCanvas.height * 0.52 + Math.sin(t) * 50;
                     wsPreviewWorm.angle = Math.atan2(ny - wsPreviewWorm.y, nx - wsPreviewWorm.x);
                     wsPreviewWorm.x = nx; wsPreviewWorm.y = ny; wsPreviewWorm.segments[0].x = nx; wsPreviewWorm.segments[0].y = ny;
                     for (let i = 1; i < wsPreviewWorm.segments.length; i++) {
@@ -1486,8 +2231,8 @@
                   if (screenState !== 'playing') {
                     if (lobbyWorm) {
                       const t = globalTime * 0.95;
-                      const rx = Math.min(appW * 0.16, 125), ry = Math.min(appH * 0.15, 68);
-                      const nx = appW * 0.5 + Math.cos(t) * rx, ny = appH * 0.52 + Math.sin(t * 2) * (ry * 0.55);
+                      const rx = Math.min(appW * 0.16, 125), ry = Math.min(appH * 0.16, 72);
+                      const nx = appW * 0.5 + Math.cos(t) * rx, ny = appH * 0.48 + Math.sin(t * 2) * (ry * 0.6);
                       lobbyWorm.angle = Math.atan2(ny - lobbyWorm.y, nx - lobbyWorm.x);
                       lobbyWorm.x = nx; lobbyWorm.y = ny; lobbyWorm.segments[0].x = nx; lobbyWorm.segments[0].y = ny;
                       lobbyWorm.blinkTimer -= dt;
@@ -1525,7 +2270,10 @@
                   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                   for (const f of foods) {
                     if (!near(f.x, f.y)) continue;
-                    if (f.big) { ctx.fillStyle = 'rgba(255, 226, 89, 0.28)'; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * 1.25, 0, Math.PI * 2); ctx.fill(); }
+                    if (f.big) {
+                      ctx.fillStyle = 'rgba(255, 226, 89, 0.28)';
+                      ctx.beginPath(); ctx.arc(f.x, f.y, f.r * 1.25, 0, Math.PI * 2); ctx.fill();
+                    }
                     if (f.orb) {
                       ctx.fillStyle = f.col; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * 0.72, 0, Math.PI * 2); ctx.fill();
                       ctx.fillStyle = 'rgba(255,255,255,0.65)'; ctx.beginPath(); ctx.arc(f.x - 3, f.y - 3, f.r * 0.25, 0, Math.PI * 2); ctx.fill();
@@ -1580,7 +2328,6 @@
                   renderGame(dt);
                   requestAnimationFrame(mainLoop);
                 }
-
                 function syncQuickPotions() {
                   ['magnet', 'x5', 'speed', 'zoom', 'radar'].forEach(id => {
                     const el = document.getElementById(`qpc_${id}`);
@@ -1621,7 +2368,7 @@
                   const sk = SKINS.find(s => s.id === profile.skin) || SKINS[0];
                   lobbyWorm = new Worm({
                     name: profile.name, skin: sk, eye: profile.eye, lip: profile.lip,
-                    x: appW * 0.5, y: appH * 0.52, isPlayer: true, score: 120, isChamp: isWorldChampion()
+                    x: appW * 0.5, y: appH * 0.48, isPlayer: true, score: 120, isChamp: isWorldChampion()
                   });
                   lobbyWorm.spawnShield = 0;
                   const ex = EXPRESSIONS.find(e => e.id === profile.expr) || EXPRESSIONS[0];
@@ -1630,7 +2377,6 @@
 
                 function enterLobby() {
                   screenState = 'lobby';
-                  ctrl.joyActive = false; ctrl.joyTouchId = null; ctrl.boostHeld = false;
                   document.getElementById('hud').style.display = 'none';
                   document.getElementById('resultsModal').classList.remove('open');
                   document.getElementById('reviveModal').classList.remove('open');
@@ -1669,7 +2415,7 @@
                   const sk = SKINS.find(s => s.id === wsSelSkin) || SKINS[0];
                   wsPreviewWorm = new Worm({
                     name: sk.name, skin: sk, eye: profile.eye, lip: profile.lip,
-                    x: 105, y: 115, isPlayer: true, score: 140
+                    x: 105, y: 105, isPlayer: true, score: 140
                   });
                   wsPreviewWorm.spawnShield = 0;
                   const owned = profile.ownedSkins.includes(sk.id) || sk.curr === 'free';
@@ -1723,7 +2469,7 @@
                       const owned = profile.ownedEyes.includes(ey.id) || ey.cost === 0;
                       const eq = profile.eye === ey.id;
                       const c = document.createElement('div'); c.className = 'item-card' + (eq ? ' selected' : '');
-                      c.innerHTML = `<strong style="color:#ffe259;font-size:12px;">${ey.name}</strong><div style="font-size:10px;color:#b8d8f8;">${ey.desc}</div><button class="${eq ? 'btn-ghost' : 'btn-gold'}" style="padding:6px;font-size:10px;">${eq ? 'EQUIPPED ✅' : (owned ? 'EQUIP' : `BUY ${ey.cost} 🪙`)}</button>`;
+                      c.innerHTML = `<strong style="color:#ffe259;font-size:11.5px;">${ey.name}</strong><div style="font-size:9.5px;color:#b8d8f8;">${ey.desc}</div><button class="${eq ? 'btn-ghost' : 'btn-gold'}" style="padding:5px;font-size:9.5px;">${eq ? 'EQUIPPED ✅' : (owned ? 'EQUIP' : `BUY ${ey.cost} 🪙`)}</button>`;
                       c.onclick = () => {
                         if (owned) profile.eye = ey.id;
                         else if (profile.coins >= ey.cost) { profile.coins -= ey.cost; profile.ownedEyes.push(ey.id); profile.eye = ey.id; Sound.play('buy'); }
@@ -1741,7 +2487,7 @@
                       const owned = profile.ownedLips.includes(lp.id) || lp.cost === 0;
                       const eq = profile.lip === lp.id;
                       const c = document.createElement('div'); c.className = 'item-card' + (eq ? ' selected' : '');
-                      c.innerHTML = `<strong style="color:#ff9ec4;font-size:12px;">${lp.name}</strong><div style="font-size:10px;color:#b8d8f8;">${lp.desc}</div><button class="${eq ? 'btn-ghost' : 'btn-gold'}" style="padding:6px;font-size:10px;">${eq ? 'EQUIPPED ✅' : (owned ? 'EQUIP' : `BUY ${lp.cost} 🪙`)}</button>`;
+                      c.innerHTML = `<strong style="color:#ff9ec4;font-size:11.5px;">${lp.name}</strong><div style="font-size:9.5px;color:#b8d8f8;">${lp.desc}</div><button class="${eq ? 'btn-ghost' : 'btn-gold'}" style="padding:5px;font-size:9.5px;">${eq ? 'EQUIPPED ✅' : (owned ? 'EQUIP' : `BUY ${lp.cost} 🪙`)}</button>`;
                       c.onclick = () => {
                         if (owned) profile.lip = lp.id;
                         else if (profile.coins >= lp.cost) { profile.coins -= lp.cost; profile.ownedLips.push(lp.id); profile.lip = lp.id; Sound.play('buy'); }
@@ -1759,7 +2505,7 @@
                       const owned = profile.ownedExprs.includes(ex.id) || ex.cost === 0;
                       const eq = profile.expr === ex.id;
                       const c = document.createElement('div'); c.className = 'item-card' + (eq ? ' selected' : '');
-                      c.innerHTML = `<strong style="color:#fff;font-size:13px;">"${ex.text}"</strong><button class="${eq ? 'btn-ghost' : 'btn-blue'}" style="padding:6px;font-size:10px;">${eq ? 'ACTIVE ✅' : (owned ? 'SELECT' : `BUY ${ex.cost} 🪙`)}</button>`;
+                      c.innerHTML = `<strong style="color:#fff;font-size:12.5px;">"${ex.text}"</strong><button class="${eq ? 'btn-ghost' : 'btn-blue'}" style="padding:5px;font-size:9.5px;">${eq ? 'ACTIVE ✅' : (owned ? 'SELECT' : `BUY ${ex.cost} 🪙`)}</button>`;
                       c.onclick = () => {
                         if (owned) profile.expr = ex.id;
                         else if (profile.coins >= ex.cost) { profile.coins -= ex.cost; profile.ownedExprs.push(ex.id); profile.expr = ex.id; Sound.play('buy'); }
@@ -1775,7 +2521,7 @@
                     POTIONS.forEach(po => {
                       const cnt = profile.potions[po.id] || 0;
                       const c = document.createElement('div'); c.className = 'item-card';
-                      c.innerHTML = `<div style="display:flex;justify-content:space-between;"><strong style="color:${po.col};">${po.icon} ${po.name}</strong><span style="font-size:10px;font-weight:900;color:#69f03a;">x${cnt}</span></div><div style="font-size:10px;color:#b8d8f8;">${po.desc}</div><button class="btn-gold" style="padding:6px;font-size:10px;">BUY +1 (${po.cost} 🪙)</button>`;
+                      c.innerHTML = `<div style="display:flex;justify-content:space-between;"><strong style="color:${po.col};">${po.icon} ${po.name}</strong><span style="font-size:10px;font-weight:900;color:#69f03a;">x${cnt}</span></div><div style="font-size:9.5px;color:#b8d8f8;">${po.desc}</div><button class="btn-gold" style="padding:5px;font-size:9.5px;">BUY +1 (${po.cost} 🪙)</button>`;
                       c.onclick = () => {
                         if (profile.coins < po.cost) { Sound.play('over'); return; }
                         profile.coins -= po.cost; profile.potions[po.id] = cnt + 1;
@@ -1790,7 +2536,7 @@
                     FOOD_VARIETIES.forEach(fv => {
                       const eq = profile.food === fv.id;
                       const c = document.createElement('div'); c.className = 'item-card' + (eq ? ' selected' : '');
-                      c.innerHTML = `<strong style="color:#ffe259;font-size:12.5px;">${fv.icon} ${fv.name}</strong><div style="font-size:11px;">${fv.items[0] === 'orb' ? '💎🔮✨🌟' : fv.items.slice(0, 6).join(' ')}</div><div style="font-size:10px;font-weight:900;color:#69f03a;">${eq ? 'ACTIVE ✅' : 'TAP TO SELECT'}</div>`;
+                      c.innerHTML = `<strong style="color:#ffe259;font-size:12px;">${fv.icon} ${fv.name}</strong><div style="font-size:11px;">${fv.items[0] === 'orb' ? '💎🔮✨🌟' : fv.items.slice(0, 6).join(' ')}</div><div style="font-size:9.5px;font-weight:900;color:#69f03a;">${eq ? 'ACTIVE ✅' : 'TAP TO SELECT'}</div>`;
                       c.onclick = () => { profile.food = fv.id; saveProfile(); Sound.play('click'); renderWorkshop(); };
                       fGrid.appendChild(c);
                     });
@@ -1803,7 +2549,7 @@
                       const owned = profile.ownedFloors.includes(fl.id) || fl.cost === 0;
                       const eq = profile.floor === fl.id;
                       const c = document.createElement('div'); c.className = 'item-card' + (eq ? ' selected' : '');
-                      c.innerHTML = `<strong style="color:#fff;font-size:12px;">${fl.name}</strong><div style="height:24px;border-radius:8px;background:${fl.bg};border:2px solid ${fl.hex};"></div><button class="${eq ? 'btn-ghost' : 'btn-gold'}" style="padding:6px;font-size:10px;">${eq ? 'ACTIVE ✅' : (owned ? 'SELECT' : `BUY ${fl.cost} 🪙`)}</button>`;
+                      c.innerHTML = `<strong style="color:#fff;font-size:11.5px;">${fl.name}</strong><div style="height:22px;border-radius:7px;background:${fl.bg};border:2px solid ${fl.hex};"></div><button class="${eq ? 'btn-ghost' : 'btn-gold'}" style="padding:5px;font-size:9.5px;">${eq ? 'ACTIVE ✅' : (owned ? 'SELECT' : `BUY ${fl.cost} 🪙`)}</button>`;
                       c.onclick = () => {
                         if (owned) profile.floor = fl.id;
                         else if (profile.coins >= fl.cost) { profile.coins -= fl.cost; profile.ownedFloors.push(fl.id); profile.floor = fl.id; Sound.play('buy'); }
@@ -1830,7 +2576,7 @@
                   POTIONS.forEach(po => {
                     const cnt = profile.potions[po.id] || 0;
                     const c = document.createElement('div'); c.className = 'item-card';
-                    c.innerHTML = `<strong style="color:${po.col};">${po.icon} ${po.name} (x${cnt})</strong><div style="font-size:10px;color:#b8d8f8;">${po.desc}</div><button class="btn-gold" style="padding:7px;font-size:10.5px;">BUY ${po.cost} 🪙</button>`;
+                    c.innerHTML = `<strong style="color:${po.col};">${po.icon} ${po.name} (x${cnt})</strong><div style="font-size:9.5px;color:#b8d8f8;">${po.desc}</div><button class="btn-gold" style="padding:6px;font-size:10px;">BUY ${po.cost} 🪙</button>`;
                     c.onclick = () => {
                       if (profile.coins < po.cost) { Sound.play('over'); return; }
                       profile.coins -= po.cost; profile.potions[po.id] = cnt + 1;
@@ -1843,17 +2589,21 @@
                   SHOP_PACKS.forEach(item => {
                     const c = document.createElement('div'); c.className = 'item-card';
                     const btnTxt = item.ad ? '🎬 WATCH AD' : (item.priceDia ? `${item.priceDia} 💎` : `${item.priceCoin.toLocaleString()} 🪙`);
-                    c.innerHTML = `<strong style="color:#ffe259;">${item.title}</strong><div style="font-size:10px;color:#b8d8f8;">${item.desc}</div><button class="${item.ad ? 'btn-ad' : 'btn-blue'}" style="justify-content:center;">${btnTxt}</button>`;
+                    c.innerHTML = `<strong style="color:#ffe259;">${item.title}</strong><div style="font-size:9.5px;color:#b8d8f8;">${item.desc}</div><button class="${item.ad ? 'btn-ad' : 'btn-blue'}" style="justify-content:center;">${btnTxt}</button>`;
                     c.onclick = () => {
-                      if (item.ad) watchRewardAd(`Claim ${item.title}`, () => { profile.coins += item.coins; saveProfile(); renderShop(); });
-                      else if (item.priceDia && profile.diamonds >= item.priceDia) { profile.diamonds -= item.priceDia; profile.coins += item.coins; saveProfile(); Sound.play('buy'); renderShop(); }
-                      else if (item.priceCoin && profile.coins >= item.priceCoin) { profile.coins -= item.priceCoin; profile.diamonds += item.dias; saveProfile(); Sound.play('buy'); renderShop(); }
-                      else { Sound.play('over'); }
+                      if (item.ad) {
+                        watchRewardAd(`Claim ${item.title}`, () => { profile.coins += item.coins; saveProfile(); renderShop(); });
+                      } else if (item.priceDia && profile.diamonds >= item.priceDia) {
+                        profile.diamonds -= item.priceDia; profile.coins += item.coins; saveProfile(); Sound.play('buy'); renderShop();
+                      } else if (item.priceCoin && profile.coins >= item.priceCoin) {
+                        profile.coins -= item.priceCoin; profile.diamonds += item.dias; saveProfile(); Sound.play('buy'); renderShop();
+                      } else { Sound.play('over'); }
                     };
                     pk.appendChild(c);
                   });
                 }
 
+                // FULL-MONTH COMPACT PLAY CALENDAR (1 TO 30/31 FITS ON ONE SCREEN!)
                 function openCalendar() {
                   const now = new Date();
                   const y = now.getFullYear(), m = now.getMonth(), todayD = now.getDate();
@@ -1880,8 +2630,8 @@
                     const isToday = d === todayD;
                     const isPast = d < todayD;
                     const cls = played ? 'played' : (isPast ? 'missed' : '');
-                    const mark = played ? '✅' : (isPast ? '❌' : '·');
-                    grid.innerHTML += `<div class="cal-day ${cls}${isToday ? ' today' : ''}"><span>${d}</span><span style="font-size:10px;">${mark}</span></div>`;
+                    const mark = played ? '✅' : (isPast ? '❌' : '');
+                    grid.innerHTML += `<div class="cal-day ${cls}${isToday ? ' today' : ''}"><span>${d}</span>${mark ? `<span style="font-size:9px;">${mark}</span>` : ''}</div>`;
                   }
                   document.getElementById('calendarModal').classList.add('open');
                   Sound.play('click');
@@ -1903,17 +2653,19 @@
                         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
                           <strong style="width:24px;color:${isTop1 ? '#ffe259' : '#9cd6ff'};">#${idx + 1}</strong>
                           <span>${e.country}</span>
-                          <strong style="font-size:12.5px;">${e.name}${e.isMe ? ' (YOU)' : ''}</strong>
+                          <strong style="font-size:12px;">${e.name}${e.isMe ? ' (YOU)' : ''}</strong>
                           ${badge}
                         </div>
-                        <strong style="color:#ffe259;font-size:13px;">${e.score.toLocaleString()}</strong>
+                        <strong style="color:#ffe259;font-size:12.5px;">${e.score.toLocaleString()}</strong>
                       </div>`;
                   }).join('');
                 }
 
                 function syncSettingsUI() {
                   document.getElementById('inName').value = profile.name;
-                  const sn = document.getElementById('setNetBtn'); sn.textContent = profile.onlineMode ? '🟢 ONLINE' : '🟠 OFFLINE'; sn.classList.toggle('selected', profile.onlineMode);
+                  const sn = document.getElementById('setNetBtn');
+                  sn.textContent = profile.onlineMode ? '🟢 ONLINE' : '🟠 OFFLINE';
+                  sn.classList.toggle('selected', profile.onlineMode);
                   const sb = document.getElementById('setBgmBtn'); sb.textContent = profile.settings.bgm ? 'ON' : 'OFF'; sb.classList.toggle('selected', profile.settings.bgm);
                   const ss = document.getElementById('setSfxBtn'); ss.textContent = profile.settings.sfx ? 'ON' : 'OFF'; ss.classList.toggle('selected', profile.settings.sfx);
                   document.getElementById('setJoyFloat').classList.toggle('selected', profile.settings.joy === 'floating');
@@ -1977,8 +2729,14 @@
                 document.getElementById('btnShopWatchAd').addEventListener('click', () => watchRewardAd('Earn +300 Free Gold Coins!', () => { profile.coins += 300; saveProfile(); renderShop(); }));
                 document.getElementById('btnAd10k').addEventListener('click', () => watchRewardAd('Start Battle with +10,000 Score Boost!', () => { Sound.init(); startMatch(10000); }));
 
-                document.getElementById('btnRevSkip').addEventListener('click', () => { clearInterval(reviveIv); document.getElementById('reviveModal').classList.remove('open'); finishMatch('Defeated in Arena'); });
-                document.getElementById('btnRevWatch').addEventListener('click', () => { clearInterval(reviveIv); document.getElementById('reviveModal').classList.remove('open'); watchRewardAd('Revive with Full Score & Shield!', () => revivePlayer()); });
+                document.getElementById('btnRevSkip').addEventListener('click', () => {
+                  clearInterval(reviveIv); document.getElementById('reviveModal').classList.remove('open');
+                  finishMatch('Defeated in Arena');
+                });
+                document.getElementById('btnRevWatch').addEventListener('click', () => {
+                  clearInterval(reviveIv); document.getElementById('reviveModal').classList.remove('open');
+                  watchRewardAd('Revive with Full Score & Shield!', () => revivePlayer());
+                });
 
                 document.querySelectorAll('.ws-ico-tab').forEach(b => b.addEventListener('click', () => {
                   wsTab = b.dataset.wst;
@@ -2000,41 +2758,34 @@
                   if (window.AndroidAudio) window.AndroidAudio.setNotifications(profile.settings.notifs);
                 });
 
-                const toggleMute = e => { if (e) e.stopPropagation(); profile.settings.muted = !profile.settings.muted; saveProfile(); Sound.updateVol(); refreshLobbyUI(); Sound.play('click'); };
+                const toggleMute = () => { profile.settings.muted = !profile.settings.muted; saveProfile(); Sound.updateVol(); refreshLobbyUI(); Sound.play('click'); };
                 document.getElementById('btnLobbyAudio').addEventListener('click', toggleMute);
                 document.getElementById('hudAudioBtn').addEventListener('click', toggleMute);
-                document.getElementById('hudExitBtn').addEventListener('click', e => { e.stopPropagation(); Sound.play('click'); enterLobby(); });
-                document.getElementById('hudExprBtn').addEventListener('click', e => {
-                  e.stopPropagation();
+                document.getElementById('hudExitBtn').addEventListener('click', () => { Sound.play('click'); enterLobby(); });
+                document.getElementById('hudExprBtn').addEventListener('click', () => {
                   if (!player || !player.alive) return;
-                  const ex = EXPRESSIONS.find(x => x.id === profile.expr) || EXPRESSIONS[0];
+                  const ex = EXPRESSIONS.find(e => e.id === profile.expr) || EXPRESSIONS[0];
                   player.say(ex.text); Sound.play('click');
                 });
 
-                // STOP PROPAGATION ON HUD POTION BUTTONS SO JOYSTICK NEVER INTERFERES
-                document.querySelectorAll('[data-qp]').forEach(btn => {
-                  btn.addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
-                  btn.addEventListener('click', e => {
-                    e.stopPropagation();
-                    const id = btn.dataset.qp;
-                    if (!player || !player.alive || (profile.potions[id] || 0) <= 0) { Sound.play('over'); return; }
-                    const po = POTIONS.find(p => p.id === id);
-                    if (!po) return;
-                    profile.potions[id]--; buffs[id] = po.dur;
-                    saveProfile(); syncQuickPotions(); Sound.play('potion'); vibrate(25);
-                    floatTexts.push({ x: player.x, y: player.y - 24, text: `${po.icon} ${po.name}!`, color: po.col, life: 1.2, maxLife: 1.2, big: true });
-                  });
-                });
+                document.querySelectorAll('[data-qp]').forEach(btn => btn.addEventListener('click', () => {
+                  const id = btn.dataset.qp;
+                  if (!player || !player.alive || (profile.potions[id] || 0) <= 0) { Sound.play('over'); return; }
+                  const po = POTIONS.find(p => p.id === id);
+                  if (!po) return;
+                  profile.potions[id]--; buffs[id] = po.dur;
+                  saveProfile(); syncQuickPotions(); Sound.play('potion'); vibrate(25);
+                  floatTexts.push({ x: player.x, y: player.y - 24, text: `${po.icon} ${po.name}!`, color: po.col, life: 1.2, maxLife: 1.2, big: true });
+                }));
 
                 document.getElementById('btnResLobby').addEventListener('click', () => { Sound.play('click'); enterLobby(); });
                 document.getElementById('btnResAgain').addEventListener('click', () => { Sound.play('click'); startMatch(0); });
 
-                // ISOLATED MULTI-TOUCH JOYSTICK & BOOST (ZERO TOUCH CONFLICT)
                 const joyEl = document.getElementById('floatingJoy'), joyKnob = document.getElementById('floatingJoyKnob');
                 function updateJoy(x, y) {
                   const dx = x - ctrl.joyOx, dy = y - ctrl.joyOy, d = Math.hypot(dx, dy);
                   ctrl.joyMag = d; ctrl.joyAngle = Math.atan2(dy, dx);
-                  const cl = Math.min(d, 38);
+                  const cl = Math.min(d, 36);
                   joyKnob.style.transform = `translate(calc(-50% + ${Math.cos(ctrl.joyAngle) * cl}px), calc(-50% + ${Math.sin(ctrl.joyAngle) * cl}px))`;
                 }
 
@@ -2042,9 +2793,9 @@
                   if (screenState !== 'playing') return;
                   e.preventDefault();
                   for (const t of e.changedTouches) {
-                    if (ctrl.joyTouchId === null && t.clientX < appW * 0.65) {
+                    if (ctrl.joyTouchId === null) {
                       ctrl.joyTouchId = t.identifier; ctrl.joyActive = true;
-                      if (profile.settings.joy === 'fixed') { ctrl.joyOx = 82; ctrl.joyOy = appH - 82; }
+                      if (profile.settings.joy === 'fixed') { ctrl.joyOx = 146; ctrl.joyOy = appH - 76; }
                       else { ctrl.joyOx = t.clientX; ctrl.joyOy = t.clientY; joyEl.style.left = `${t.clientX}px`; joyEl.style.top = `${t.clientY}px`; }
                       joyEl.classList.add('visible'); updateJoy(t.clientX, t.clientY);
                     }
@@ -2072,10 +2823,9 @@
 
                 const btnBoost = document.getElementById('btnBoost');
                 const setBoost = on => { ctrl.boostHeld = on; btnBoost.classList.toggle('active', on); };
-                btnBoost.addEventListener('touchstart', e => { e.preventDefault(); e.stopPropagation(); setBoost(true); }, { passive: false });
-                btnBoost.addEventListener('touchend', e => { e.stopPropagation(); setBoost(false); });
-                btnBoost.addEventListener('touchcancel', () => setBoost(false));
-                btnBoost.addEventListener('mousedown', e => { e.stopPropagation(); setBoost(true); });
+                btnBoost.addEventListener('touchstart', e => { e.preventDefault(); setBoost(true); }, { passive: false });
+                btnBoost.addEventListener('touchend', () => setBoost(false));
+                btnBoost.addEventListener('mousedown', () => setBoost(true));
                 window.addEventListener('mouseup', () => setBoost(false));
 
                 window.addEventListener('keydown', e => {
@@ -2135,7 +2885,7 @@
       - name: Upload Serpent-Wild v23 APK & AAB
         uses: actions/upload-artifact@v4
         with:
-          name: Serpent-Wild-v23-WormsZone-Pro
+          name: Serpent-Wild-v23-64Snakes-APK
           path: |
             app/build/outputs/apk/release/app-release.apk
             app/build/outputs/bundle/release/app-release.aab
