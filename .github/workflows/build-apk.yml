@@ -435,6 +435,8 @@ jobs:
                       override fun onAdFailedToLoad(adError: LoadAdError) {
                           rewardedAd = null
                           isLoadingRewardedAd = false
+                          webView.postDelayed({ loadRewardedAd() }, 15000L)
+
                       }
                   })
               }
@@ -673,6 +675,8 @@ jobs:
 
 
                   webView = WebView(this).apply {
+                  setLayerType(View.LAYER_TYPE_HARDWARE, null)
+
                       setBackgroundColor(Color.parseColor("#0d4a14"))
                       overScrollMode = View.OVER_SCROLL_NEVER
                       isHorizontalScrollBarEnabled = false
@@ -1497,42 +1501,42 @@ jobs:
                   ['rhino',      'Rhino',          'Free',      'rhinoHorn', 'rhinoClassic',  'none',         '',        '#84919e','#545e69','#222830','#e8e1cc','free',0],
                   ['panda',      'Panda',          'Free',      'pandaEars', 'pandaClassic',  'none',         '',        '#ffffff','#dce4eb','#14171a','#14171a','free',0],
                   ['watermelon', 'Watermelon',     'Free',      'leaf',      'melonClassic',  'none',         '',        '#ff4769','#38c94b','#12521b','#141414','free',0],
+                        ['dilopho',    'Dilophosaurus',  'Rare',      'frill',     'frillBody',     'pulseFrill',   '#ff38d4', '#8cff3b','#38a814','#0e3d06','#ff38d4','coin',3000],
+                  ['honey',      'Honey',          'Rare',      'antenna',   'honeycomb',     'drip',         '#ffd23f', '#ffd23f','#d98e00','#522d00','#ffae00','coin',3200],
+                  ['donut',      'Donut',          'Rare',      'sprinkle',  'donuts',        'orbitSprinkle','#ff73b9', '#ff73b9','#e6a86e','#6e3a12','#ffe85c','coin',5200],
+                  ['goo',        'Goo',            'Rare',      'slimeCap',  'slime',         'bubble',       '#7cff3b', '#7cff3b','#2ec914','#0b4706','#d4ff8a','coin',6600],
+                  ['blocks',     'Blocks',         'Rare',      'block',     'tetris',        'shiftColor',   '#38b6ff', '#38b6ff','#ff4757','#141e33','#ffe259','coin',7800],
+                  ['icecreamy',  'Ice Creamy',     'Rare',      'cherry',    'scoops',        'meltSparkle',  '#ff94c2', '#ff94c2','#9cf4ff','#593047','#ffe875','coin',8000],
+                  ['polaroid',   'Polaroid',       'Rare',      'camera',    'polaroid',      'flash',        '#ffffff', '#f2f5f7','#c4d0db','#242b33','#ff4757','coin',10200],
+                  ['kitty',      'Kitty',          'Rare',      'catEars',   'pawBody',       'heartFloat',   '#ff85c0', '#ffb8d6','#e070a0','#6e2445','#ff2e63','coin',15400],
+                  ['luckycat',   'Lucky Cat',      'Rare',      'catEars',   'coinBody',      'coinSpin',     '#ffe259', '#ffffff','#e0e8f0','#47525e','#ffd23f','coin',17600],
+                  ['poodle',     'Poodle',         'Rare',      'fluff',     'fluffCloud',    'bounceFluff',  '#ff9ce0', '#ff9ce0','#d65cb0','#631d4e','#fff0fa','coin',19800],
+                  ['brownbear',  'Brown Bear',     'Rare',      'bearEars',  'furStitch',     'pawGlow',      '#e09f5a', '#9c6134','#693c1b','#2e1606','#ffe299','coin',21000],
+                  ['hare',       'Hare',           'Rare',      'bunnyEars', 'carrotTrail',   'hopPulse',     '#a8f0ff', '#e0d6cc','#a69a8d','#4a423a','#ff8c24','coin',23200],
+                  ['parrot',     'Parrot',         'Rare',      'beak',      'featherWave',   'flutter',      '#4be35d', '#ff3b30','#24c94b','#0d387a','#ffe259','coin',25500],
 
-                  ['dilopho',    'Dilophosaurus',  'Rare',      'frill',     'frillBody',     'pulseFrill',   '#ff38d4', '#8cff3b','#38a814','#0e3d06','#ff38d4','coin',800],
-                  ['honey',      'Honey',          'Rare',      'antenna',   'honeycomb',     'drip',         '#ffd23f', '#ffd23f','#d98e00','#522d00','#ffae00','coin',900],
-                  ['donut',      'Donut',          'Rare',      'sprinkle',  'donuts',        'orbitSprinkle','#ff73b9', '#ff73b9','#e6a86e','#6e3a12','#ffe85c','coin',1000],
-                  ['goo',        'Goo',            'Rare',      'slimeCap',  'slime',         'bubble',       '#7cff3b', '#7cff3b','#2ec914','#0b4706','#d4ff8a','coin',1100],
-                  ['blocks',     'Blocks',         'Rare',      'block',     'tetris',        'shiftColor',   '#38b6ff', '#38b6ff','#ff4757','#141e33','#ffe259','coin',1200],
-                  ['icecreamy',  'Ice Creamy',     'Rare',      'cherry',    'scoops',        'meltSparkle',  '#ff94c2', '#ff94c2','#9cf4ff','#593047','#ffe875','coin',1300],
-                  ['polaroid',   'Polaroid',       'Rare',      'camera',    'polaroid',      'flash',        '#ffffff', '#f2f5f7','#c4d0db','#242b33','#ff4757','coin',1400],
-                  ['kitty',      'Kitty',          'Rare',      'catEars',   'pawBody',       'heartFloat',   '#ff85c0', '#ffb8d6','#e070a0','#6e2445','#ff2e63','coin',1500],
-                  ['luckycat',   'Lucky Cat',      'Rare',      'catEars',   'coinBody',      'coinSpin',     '#ffe259', '#ffffff','#e0e8f0','#47525e','#ffd23f','coin',1600],
-                  ['poodle',     'Poodle',         'Rare',      'fluff',     'fluffCloud',    'bounceFluff',  '#ff9ce0', '#ff9ce0','#d65cb0','#631d4e','#fff0fa','coin',1700],
-                  ['brownbear',  'Brown Bear',     'Rare',      'bearEars',  'furStitch',     'pawGlow',      '#e09f5a', '#9c6134','#693c1b','#2e1606','#ffe299','coin',1800],
-                  ['hare',       'Hare',           'Rare',      'bunnyEars', 'carrotTrail',   'hopPulse',     '#a8f0ff', '#e0d6cc','#a69a8d','#4a423a','#ff8c24','coin',1900],
-                  ['parrot',     'Parrot',         'Rare',      'beak',      'featherWave',   'flutter',      '#4be35d', '#ff3b30','#24c94b','#0d387a','#ffe259','coin',2000],
+                  ['gamer',      'Gamer',          'Epic',      'headset',   'cyberCircuit',  'rgbWave',      '#00f7ff', '#1e2438','#111524','#06080f','#00f7ff','coin',27000],
+                  ['jester',     'Jester',         'Epic',      'jesterHat', 'diamondCheck',  'confetti',     '#b84dff', '#9b38ff','#ffd23f','#2b0a59','#ff4757','coin',28500],
+                  ['panther',    'Panther',        'Epic',      'catEars',   'neonClaw',      'stealthPulse', '#a855ff', '#262436','#14121f','#06050a','#b859ff','coin',30000],
+                  ['smilodon',   'Smilodon',       'Epic',      'saber',     'saberStripe',   'fangSpark',    '#ff9f43', '#f2a649','#ba6e18','#4a2704','#ffffff','coin',32500],
+                  ['vampire',    'Bat Vampire',    'Epic',      'batEars',   'batWings',      'bloodMist',    '#ff2442', '#472459','#241030','#0c0412','#ff2442','coin',35000],
+                  ['spider',     'Spider',         'Epic',      'spider',    'spiderLegs',    'legCrawl',     '#ff3b30', '#26212e','#14111a','#060508','#ff3b30','coin',38500],
+                  ['octopus',    'Octopus',        'Epic',      'tentacle',  'suckerRings',   'inkBubble',    '#d07aff', '#b84dff','#7b1cc9','#300859','#ffd23f','coin',42000],
+                  ['skeleton',   'Skeleton',       'Epic',      'skull',     'ribcage',       'soulSpark',    '#59f4ff', '#242a33','#14181f','#07090d','#f2f7ff','coin',45500],
+                  ['garland',    'Garland',        'Epic',      'starTop',   'wireBulbs',     'bulbTwinkle',  '#ffe259', '#1c782c','#0e4718','#051f0a','#ffe259','coin',50000],
+                  ['xmastree',   'Christmas Tree', 'Epic',      'starTop',   'pineNeedles',   'treeLights',   '#69f03a', '#24a842','#126925','#062e0f','#ff3b30','coin',70000],
+                  ['wizard',     'Wizard',         'Epic',      'wizardHat', 'arcaneRunes',   'starOrbit',    '#ffd23f', '#3848b8','#1b246e','#0a0e36','#ffe259','coin',80000],
+                  ['snake',      'Cobra King',     'Epic',      'cobraHood', 'emeraldScales', 'venomDrip',    '#69ff59', '#32d94e','#148528','#05330e','#b8ff70','coin',113000],
 
-                  ['gamer',      'Gamer',          'Epic',      'headset',   'cyberCircuit',  'rgbWave',      '#00f7ff', '#1e2438','#111524','#06080f','#00f7ff','coin',2800],
-                  ['jester',     'Jester',         'Epic',      'jesterHat', 'diamondCheck',  'confetti',     '#b84dff', '#9b38ff','#ffd23f','#2b0a59','#ff4757','coin',3000],
-                  ['panther',    'Panther',        'Epic',      'catEars',   'neonClaw',      'stealthPulse', '#a855ff', '#262436','#14121f','#06050a','#b859ff','coin',3200],
-                  ['smilodon',   'Smilodon',       'Epic',      'saber',     'saberStripe',   'fangSpark',    '#ff9f43', '#f2a649','#ba6e18','#4a2704','#ffffff','coin',3400],
-                  ['vampire',    'Bat Vampire',    'Epic',      'batEars',   'batWings',      'bloodMist',    '#ff2442', '#472459','#241030','#0c0412','#ff2442','coin',3600],
-                  ['spider',     'Spider',         'Epic',      'spider',    'spiderLegs',    'legCrawl',     '#ff3b30', '#26212e','#14111a','#060508','#ff3b30','coin',3800],
-                  ['octopus',    'Octopus',        'Epic',      'tentacle',  'suckerRings',   'inkBubble',    '#d07aff', '#b84dff','#7b1cc9','#300859','#ffd23f','coin',4000],
-                  ['skeleton',   'Skeleton',       'Epic',      'skull',     'ribcage',       'soulSpark',    '#59f4ff', '#242a33','#14181f','#07090d','#f2f7ff','coin',4200],
-                  ['garland',    'Garland',        'Epic',      'starTop',   'wireBulbs',     'bulbTwinkle',  '#ffe259', '#1c782c','#0e4718','#051f0a','#ffe259','coin',4500],
-                  ['xmastree',   'Christmas Tree', 'Epic',      'starTop',   'pineNeedles',   'treeLights',   '#69f03a', '#24a842','#126925','#062e0f','#ff3b30','coin',4800],
-                  ['wizard',     'Wizard',         'Epic',      'wizardHat', 'arcaneRunes',   'starOrbit',    '#ffd23f', '#3848b8','#1b246e','#0a0e36','#ffe259','coin',5200],
-                  ['snake',      'Cobra King',     'Epic',      'cobraHood', 'emeraldScales', 'venomDrip',    '#69ff59', '#32d94e','#148528','#05330e','#b8ff70','coin',5600],
 
-                  ['raptor',     'Raptor',         'Legendary', 'dragHorn',  'dinoSpikes',    'electricArc',  '#00e5ff', '#1ca8ff','#0c58b8','#041d4d','#69f03a','dia',35],
-                  ['beast',      'Beast',          'Legendary', 'horns',     'lavaArmor',     'emberRise',    '#ff6b1a', '#5c2614','#2e1007','#120502','#ff8c24','dia',45],
-                  ['phantom',    'Phantom',        'Legendary', 'hood',      'ghostWisp',     'phaseFade',    '#4de2f0', '#4de2f0','#197ea6','#062638','#aef6ff','dia',60],
-                  ['firehorse',  'Fire Horse',     'Legendary', 'horseEars', 'blazeMane',     'firePlume',    '#ff7a18', '#ff5e14','#b82404','#380701','#ffe259','dia',75],
-                  ['evil',       'Evil',           'Legendary', 'horns',     'hellSpikes',    'darkFlame',    '#ff1e38', '#9e0b1a','#47040b','#170103','#ff4757','dia',90],
+                  ['raptor',     'Raptor',         'Legendary', 'dragHorn',  'dinoSpikes',    'electricArc',  '#00e5ff', '#1ca8ff','#0c58b8','#041d4d','#69f03a','dia',250],
+                  ['beast',      'Beast',          'Legendary', 'horns',     'lavaArmor',     'emberRise',    '#ff6b1a', '#5c2614','#2e1007','#120502','#ff8c24','dia',445],
+                  ['phantom',    'Phantom',        'Legendary', 'hood',      'ghostWisp',     'phaseFade',    '#4de2f0', '#4de2f0','#197ea6','#062638','#aef6ff','dia',1560],
+                  ['firehorse',  'Fire Horse',     'Legendary', 'horseEars', 'blazeMane',     'firePlume',    '#ff7a18', '#ff5e14','#b82404','#380701','#ffe259','dia',3775],
+                  ['evil',       'Evil',           'Legendary', 'horns',     'hellSpikes',    'darkFlame',    '#ff1e38', '#9e0b1a','#47040b','#170103','#ff4757','dia',5190],
 
-                  ['dullahan',   'Dullahan',       'Mythic',    'greenSkull','spectralEmerald','greenInferno','#69ff59', '#196e3d','#0b3b20','#03170b','#69ff59','dia',115],
-                  ['waterdrag',  'Water Dragon',   'Mythic',    'dragHorn',  'aquaFins',      'waterRipple',  '#59f4ff', '#29b6ff','#0e63b8','#04244d','#8cf5ff','dia',140]
+                  ['dullahan',   'Dullahan',       'Mythic',    'greenSkull','spectralEmerald','greenInferno','#69ff59', '#196e3d','#0b3b20','#03170b','#69ff59','dia',8115],
+                  ['waterdrag',  'Water Dragon',   'Mythic',    'dragHorn',  'aquaFins',      'waterRipple',  '#59f4ff', '#29b6ff','#0e63b8','#04244d','#8cf5ff','dia',11140]
                 ];
 
                 const SKINS = RAW_SKINS.map(r => ({
@@ -1676,7 +1680,7 @@ jobs:
                 window.pauseGameAudio = () => { try { Sound.ctx && Sound.ctx.suspend(); } catch (e) {} };
                 window.resumeGameAudio = () => { try { Sound.ctx && Sound.ctx.resume(); } catch (e) {} };
                 const canvas = document.getElementById('gameCanvas');
-                const ctx = canvas.getContext('2d');
+                const ctx = canvas.getContext('2d', { alpha: false });
                 const miniCanvas = document.getElementById('minimapCanvas');
                 const miniCtx = miniCanvas.getContext('2d');
                 const wsCanvas = document.getElementById('wsPreviewCanvas');
@@ -1699,7 +1703,7 @@ jobs:
 
                 function resizeCanvas() {
                   appW = window.innerWidth; appH = window.innerHeight;
-                  dpr = Math.min(window.devicePixelRatio || 1, profile.settings.gfx === 'low' ? 1 : 1.75);
+                  dpr = Math.min(window.devicePixelRatio || 1, profile.settings.gfx === 'low' ? 1 : 1.5);
                   canvas.width = Math.max(1, Math.floor(appW * dpr));
                   canvas.height = Math.max(1, Math.floor(appH * dpr));
                 }
@@ -2175,6 +2179,8 @@ jobs:
                   } else {
                     c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
                   }
+                 c.fillStyle = 'rgba(255,255,255,0.18)';
+                 c.beginPath(); c.arc(sr * 0.12, -sr * 0.28, sr * 0.34, 0, Math.PI * 2); c.fill();
 
                   c.restore();
                 }
@@ -2705,6 +2711,20 @@ jobs:
                   const tl = segs[segs.length - 1];
                   return Math.abs(tl.x - camera.x) < vx && Math.abs(tl.y - camera.y) < vy;
                 }
+                       const foodSpriteCache = {};
+                function getFoodSprite(icon, r, big) {
+                  const k = icon + '_' + r + '_' + (big ? 1 : 0);
+                  if (foodSpriteCache[k]) return foodSpriteCache[k];
+                  const sz = Math.ceil(r * 2.4 + (big ? 24 : 12)), mid = sz / 2;
+                  const c = document.createElement('canvas'); c.width = sz; c.height = sz;
+                  const g = c.getContext('2d');
+                  if (big) { const gr = g.createRadialGradient(mid, mid, r * 0.2, mid, mid, r * 1.35); gr.addColorStop(0, 'rgba(255,226,89,0.58)'); gr.addColorStop(1, 'rgba(255,226,89,0)'); g.fillStyle = gr; g.beginPath(); g.arc(mid, mid, r * 1.35, 0, Math.PI * 2); g.fill(); }
+                  g.shadowColor = 'rgba(0,0,0,0.45)'; g.shadowBlur = 4; g.shadowOffsetY = 2;
+                  g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = Math.round(r * 1.65) + 'px sans-serif';
+                  g.fillText(icon, mid, mid);
+                  return (foodSpriteCache[k] = c);
+                }
+
 
                 function renderGame(dt) {
                   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -2755,29 +2775,39 @@ jobs:
                   ctx.scale(camera.zoom, camera.zoom);
                   ctx.translate(-camera.x, -camera.y);
 
-                  if (floorPattern) { ctx.fillStyle = floorPattern; ctx.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE); }
-
-                  ctx.strokeStyle = '#ff4757'; ctx.lineWidth = 24;
-                  ctx.beginPath(); ctx.arc(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 0, Math.PI * 2); ctx.stroke();
-
-                  const vx = (appW / camera.zoom) * 0.65 + 160, vy = (appH / camera.zoom) * 0.65 + 160;
+                             const vx = (appW / camera.zoom) * 0.6 + 140, vy = (appH / camera.zoom) * 0.6 + 140;
                   const near = (x, y) => Math.abs(x - camera.x) < vx && Math.abs(y - camera.y) < vy;
+
+                  if (floorPattern) {
+                    ctx.fillStyle = floorPattern;
+                    ctx.fillRect(camera.x - vx, camera.y - vy, vx * 2, vy * 2);
+                  }
+
+                  ctx.strokeStyle = 'rgba(255, 71, 87, 0.28)'; ctx.lineWidth = 46;
+                  ctx.beginPath(); ctx.arc(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 0, Math.PI * 2); ctx.stroke();
+                  ctx.strokeStyle = '#ff4757'; ctx.lineWidth = 18;
+                  ctx.beginPath(); ctx.arc(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 0, Math.PI * 2); ctx.stroke();
+                  ctx.strokeStyle = '#ffd2d7'; ctx.lineWidth = 4;
+                  ctx.beginPath(); ctx.arc(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 0, Math.PI * 2); ctx.stroke();
 
                   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                   for (const f of foods) {
                     if (!near(f.x, f.y)) continue;
-                    if (f.big) {
-                      ctx.fillStyle = 'rgba(255, 226, 89, 0.28)';
-                      ctx.beginPath(); ctx.arc(f.x, f.y, f.r * 1.25, 0, Math.PI * 2); ctx.fill();
-                    }
                     if (f.orb) {
-                      ctx.fillStyle = f.col; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * 0.72, 0, Math.PI * 2); ctx.fill();
-                      ctx.fillStyle = 'rgba(255,255,255,0.65)'; ctx.beginPath(); ctx.arc(f.x - 3, f.y - 3, f.r * 0.25, 0, Math.PI * 2); ctx.fill();
+                      if (f.big) {
+                        ctx.fillStyle = 'rgba(255, 226, 89, 0.28)';
+                        ctx.beginPath(); ctx.arc(f.x, f.y, f.r * 1.25, 0, Math.PI * 2); ctx.fill();
+                      }
+                      ctx.fillStyle = f.col; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * 0.78, 0, Math.PI * 2); ctx.fill();
+                      ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.beginPath(); ctx.arc(f.x - 3, f.y - 3, f.r * 0.28, 0, Math.PI * 2); ctx.fill();
                     } else {
-                      ctx.font = `${Math.round(f.r * 1.6)}px sans-serif`;
-                      ctx.fillText(f.icon, f.x, f.y);
+                      const sp = getFoodSprite(f.icon, f.r, f.big);
+                      ctx.drawImage(sp, f.x - sp.width / 2, f.y - sp.height / 2);
                     }
                   }
+       
+                      
+                      
 
                   for (const p of potions) {
                     if (!near(p.x, p.y)) continue;
