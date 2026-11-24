@@ -182,8 +182,10 @@ jobs:
           -keepclassmembers class * {
               @android.webkit.JavascriptInterface <methods>;
           }
-          -keep class com.apexwild.serpent.MainActivity$AudioBridge { *; }
+          -keep class com.apexwild.serpent.MainActivity$AudioBridge { *; }    
           -keep class com.apexwild.serpent.MainActivity$BillingBridge { *; }
+          -keep class com.apexwild.serpent.MainActivity$AdBridge { *; }
+
           -keep class com.apexwild.serpent.ReminderReceiver { *; }
           -keep class com.android.billingclient.** { *; }
           EOF
@@ -238,6 +240,8 @@ jobs:
               implementation("androidx.core:core-ktx:1.15.0")
               implementation("androidx.appcompat:appcompat:1.7.0")
               implementation("com.android.billingclient:billing-ktx:7.1.1")
+              implementation("com.google.android.gms:play-services-ads:23.6.0")
+
           }
           EOF
 
@@ -271,6 +275,8 @@ jobs:
                   android:supportsRtl="true"
                   android:theme="@style/Theme.SerpentWild"
                   android:usesCleartextTraffic="false">
+                  <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3210967652219044~5142816234" />
+
 
                   <receiver android:name=".ReminderReceiver" android:exported="false" />
 
@@ -394,6 +400,13 @@ jobs:
           import com.android.billingclient.api.Purchase
           import com.android.billingclient.api.PurchasesUpdatedListener
           import com.android.billingclient.api.QueryProductDetailsParams
+          import com.google.android.gms.ads.AdError
+          import com.google.android.gms.ads.AdRequest
+          import com.google.android.gms.ads.FullScreenContentCallback
+          import com.google.android.gms.ads.LoadAdError
+          import com.google.android.gms.ads.MobileAds
+          import com.google.android.gms.ads.rewarded.RewardedAd
+          import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
 
           class MainActivity : AppCompatActivity(), PurchasesUpdatedListener {
               private lateinit var webView: WebView
@@ -406,6 +419,65 @@ jobs:
               private var billingClient: BillingClient? = null
               private val productDetailsMap = mutableMapOf<String, ProductDetails>()
               private val playSkus = listOf("pack_10", "pack_25", "pack_79", "pack_88", "pack_107")
+              private var rewardedAd: RewardedAd? = null
+              private var isLoadingRewardedAd = false
+              private val rewardedAdUnitId = "ca-app-pub-3210967652219044/8395665532"
+
+              private fun loadRewardedAd() {
+                  if (isLoadingRewardedAd || rewardedAd != null) return
+                  isLoadingRewardedAd = true
+                  val adRequest = AdRequest.Builder().build()
+                  RewardedAd.load(this, rewardedAdUnitId, adRequest, object : RewardedAdLoadCallback() {
+                      override fun onAdLoaded(ad: RewardedAd) {
+                          rewardedAd = ad
+                          isLoadingRewardedAd = false
+                      }
+                      override fun onAdFailedToLoad(adError: LoadAdError) {
+                          rewardedAd = null
+                          isLoadingRewardedAd = false
+                      }
+                  })
+              }
+
+              inner class AdBridge {
+                  @JavascriptInterface
+                  fun showRewardedAd() {
+                      runOnUiThread {
+                          val ad = rewardedAd
+                          if (ad != null) {
+                              var rewardEarned = false
+                              ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+                                  override fun onAdDismissedFullScreenContent() {
+                                      rewardedAd = null
+                                      loadRewardedAd()
+                                      val js = if (rewardEarned) {
+                                          "window.onRewardedAdComplete && window.onRewardedAdComplete();"
+                                      } else {
+                                          "window.onRewardedAdCancelled && window.onRewardedAdCancelled();"
+                                      }
+                                      webView.post { webView.evaluateJavascript(js, null) }
+                                  }
+                                  override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                                      rewardedAd = null
+                                      loadRewardedAd()
+                                      webView.post {
+                                          webView.evaluateJavascript("window.onRewardedAdFailed && window.onRewardedAdFailed();", null)
+                                      }
+                                  }
+                              }
+                              ad.show(this@MainActivity) {
+                                  rewardEarned = true
+                              }
+                          } else {
+                              loadRewardedAd()
+                              Toast.makeText(this@MainActivity, "Ad is loading, please try again in a moment!", Toast.LENGTH_SHORT).show()
+                              webView.post {
+                                  webView.evaluateJavascript("window.onRewardedAdFailed && window.onRewardedAdFailed();", null)
+                              }
+                          }
+                      }
+                  }
+              }
 
               inner class AudioBridge {
                   @JavascriptInterface
@@ -597,6 +669,8 @@ jobs:
                   requestNotifPermission()
                   scheduleReminder(6L * 60L * 60L * 1000L)
                   setupPlayBilling()
+                  MobileAds.initialize(this) { loadRewardedAd() }
+
 
                   webView = WebView(this).apply {
                       setBackgroundColor(Color.parseColor("#0d4a14"))
@@ -617,6 +691,8 @@ jobs:
                       }
                       addJavascriptInterface(AudioBridge(), "AndroidAudio")
                       addJavascriptInterface(BillingBridge(), "AndroidBilling")
+                      addJavascriptInterface(AdBridge(), "AndroidAds")
+
                       webViewClient = WebViewClient()
                       webChromeClient = WebChromeClient()
                   }
@@ -2881,8 +2957,28 @@ jobs:
                   }
                   saveProfile(); Sound.play('buy'); renderShop(); syncQuickPotions(); refreshLobbyUI();
                 };
+                let pendingAdReward = null;
+                window.onRewardedAdComplete = () => {
+                  const cb = pendingAdReward;
+                  pendingAdReward = null;
+                  if (cb) { Sound.play('buy'); cb(); }
+                };
+                window.onRewardedAdCancelled = () => {
+                  pendingAdReward = null;
+                  if (screenState === 'revive') finishMatch('Defeated in Arena');
+                };
+                window.onRewardedAdFailed = () => {
+                  pendingAdReward = null;
+                  if (screenState === 'revive') finishMatch('Defeated in Arena');
+                };
 
                 function watchRewardAd(desc, onReward) {
+                  if (window.AndroidAds && window.AndroidAds.showRewardedAd) {
+                    pendingAdReward = onReward;
+                    window.AndroidAds.showRewardedAd();
+                    return;
+                  }
+
                   const modal = document.getElementById('adModal');
                   const bar = document.getElementById('adProgress');
                   const txt = document.getElementById('adTimerTxt');
