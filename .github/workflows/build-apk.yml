@@ -1769,12 +1769,38 @@ jobs:
                   return profile.settings.gfx !== 'medium' && profile.settings.gfx !== 'low';
                 }
 
+                                let cachedGameVg = null;
+                let shadeMaxCvs = null, shadeMedCvs = null;
+
+                function getShadeSprite(maxQ) {
+                  if (maxQ && shadeMaxCvs) return shadeMaxCvs;
+                  if (!maxQ && shadeMedCvs) return shadeMedCvs;
+                  const s = 64, r = s / 2;
+                  const oc = document.createElement('canvas');
+                  oc.width = s; oc.height = s;
+                  const g = oc.getContext('2d');
+                  const sh = g.createRadialGradient(r + r * 0.18, r - r * 0.36, r * 0.06, r, r, r);
+                  sh.addColorStop(0, maxQ ? 'rgba(255,255,255,0.44)' : 'rgba(255,255,255,0.32)');
+                  sh.addColorStop(0.42, 'rgba(255,255,255,0.04)');
+                  sh.addColorStop(0.78, 'rgba(0,0,0,0.18)');
+                  sh.addColorStop(1, maxQ ? 'rgba(0,0,0,0.46)' : 'rgba(0,0,0,0.34)');
+                  g.fillStyle = sh;
+                  g.beginPath(); g.arc(r, r, r, 0, Math.PI * 2); g.fill();
+                  if (maxQ) shadeMaxCvs = oc; else shadeMedCvs = oc;
+                  return oc;
+                }
+
                 function resizeCanvas() {
                   appW = window.innerWidth; appH = window.innerHeight;
-                  dpr = Math.min(window.devicePixelRatio || 1, isMaxGfx() ? 1.75 : 1.1);
+                  dpr = Math.min(window.devicePixelRatio || 1, isMaxGfx() ? 1.25 : 1.0);
                   canvas.width = Math.max(1, Math.floor(appW * dpr));
                   canvas.height = Math.max(1, Math.floor(appH * dpr));
+                  cachedGameVg = ctx.createRadialGradient(appW * 0.5, appH * 0.5, appW * 0.28, appW * 0.5, appH * 0.5, appW * 0.78);
+                  cachedGameVg.addColorStop(0, 'rgba(255,255,255,0.03)');
+                  cachedGameVg.addColorStop(0.65, 'rgba(0,0,0,0)');
+                  cachedGameVg.addColorStop(1, 'rgba(0,10,4,0.44)');
                 }
+
 
                 function buildFloorPattern(floorId) {
                   const fl = ARENA_FLOORS.find(f => f.id === floorId) || ARENA_FLOORS[0];
@@ -2297,13 +2323,8 @@ jobs:
                   const isLeg = skin.tier === 'Legendary';
                   const isEpic = skin.tier === 'Epic';
 
-                  const sh = c.createRadialGradient(sr * 0.18, -sr * 0.36, sr * 0.06, 0, 0, sr * 1.05);
-                  sh.addColorStop(0, maxQ ? 'rgba(255,255,255,0.44)' : 'rgba(255,255,255,0.32)');
-                  sh.addColorStop(0.42, 'rgba(255,255,255,0.04)');
-                  sh.addColorStop(0.78, 'rgba(0,0,0,0.18)');
-                  sh.addColorStop(1, maxQ ? 'rgba(0,0,0,0.46)' : 'rgba(0,0,0,0.34)');
-                  c.fillStyle = sh;
-                  c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                               c.drawImage(getShadeSprite(maxQ), -sr, -sr, sr * 2, sr * 2);
+     
 
                   if (isEpic || isLeg || isMythic) {
                     const wave = 0.5 + 0.5 * Math.sin(t * (isMythic ? 9 : 6.5) - idx * 0.55);
@@ -3045,13 +3066,10 @@ jobs:
                   }
  
                   ctx.restore();
-                                    if (isMaxGfx()) {
-                    const vg = ctx.createRadialGradient(appW * 0.5, appH * 0.5, appW * 0.28, appW * 0.5, appH * 0.5, appW * 0.78);
-                    vg.addColorStop(0, 'rgba(255,255,255,0.03)');
-                    vg.addColorStop(0.65, 'rgba(0,0,0,0)');
-                    vg.addColorStop(1, 'rgba(0,10,4,0.44)');
-                    ctx.fillStyle = vg; ctx.fillRect(0, 0, appW, appH);
+                                  if (isMaxGfx() && cachedGameVg) {
+                    ctx.fillStyle = cachedGameVg; ctx.fillRect(0, 0, appW, appH);
                   }
+                    
 
                 }
 
