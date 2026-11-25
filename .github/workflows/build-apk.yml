@@ -2131,77 +2131,42 @@ jobs:
                     c.restore(); return;
                   }
 
-                                           if (skin.glow && idx % 2 === 0) {
+                            if (skin.glow && idx % 2 === 0) {
                     const isMythic = skin.tier === 'Mythic';
                     const isLeg = skin.tier === 'Legendary';
-                    const isDiamond = String(skin.tier || '').toLowerCase() === 'diamond';
                     const pVal = Number(skin.price ?? skin.cost ?? 0);
                     const pBoost = pVal <= 3000
                       ? (Math.max(0, pVal) / 3000) * 0.25
                       : 0.25 + Math.min(0.35, ((pVal - 3000) / (100000 - 3000)) * 0.35);
                     const gRad = sr * ((isMythic ? 1.52 : (isLeg ? 1.42 : 1.28)) + pBoost);
                     const baseA = (isMythic ? 0.34 : (isLeg ? 0.26 : 0.18)) + pBoost * 0.45;
-                    const alpha = Math.min(0.88, baseA) + 0.06 * Math.sin(t * 6 + idx * 0.5);
-
-                    if (pVal > 50000 || isDiamond) {
-                      const keyStr = String(skin.id ?? skin.name ?? skin.glow ?? skin.tier ?? pVal);
-                      let seed = 0;
-                      for (let k = 0; k < keyStr.length; k++) {
-                        seed = (seed * 37 + keyStr.charCodeAt(k)) % 100000;
-                      }
-                      const snakeUid = (seed + Math.floor(pVal * 1.13)) % 9973;
-                      const baseHue = (snakeUid * 137.508) % 360;
-                      const span = 55 + (snakeUid % 45);
-                      const flow = globalTime * 3.1 + idx * 0.34 + snakeUid * 0.17;
-
-                      // Multiple RGB hues per segment (unique to each snake)
-                      const h1 = (baseHue + Math.sin(flow) * span + 360) % 360;
-                      const h2 = (baseHue + 95 + Math.cos(flow * 0.85 + idx * 0.2) * (span * 0.75) + 360) % 360;
-                      const h3 = (baseHue + 205 + Math.sin(flow * 1.15 - idx * 0.15) * (span * 0.65) + 360) % 360;
-                      const pulse = 0.9 + 0.1 * Math.sin(globalTime * 5 + idx * 0.45);
-
-                      c.save();
-                      c.globalCompositeOperation = 'lighter';
-                      c.globalAlpha = Math.min(0.94, alpha * 1.25) * pulse;
-
-                      // Layer 1: Multi-hue radial aura
-                      const radGrad = c.createRadialGradient(0, 0, sr * 0.15, 0, 0, gRad * 1.08);
-                      radGrad.addColorStop(0, `hsla(${h1}, 100%, 72%, 0.9)`);
-                      radGrad.addColorStop(0.45, `hsla(${h2}, 100%, 60%, 0.58)`);
-                      radGrad.addColorStop(0.82, `hsla(${h3}, 100%, 55%, 0.22)`);
-                      radGrad.addColorStop(1, `hsla(${h3}, 100%, 50%, 0)`);
-                      c.fillStyle = radGrad;
-                      c.beginPath();
-                      c.arc(0, 0, gRad * 1.08, 0, Math.PI * 2);
-                      c.fill();
-
-                      // Layer 2: Dual-tone RGB rim highlight for rich depth
-                      c.globalAlpha = Math.min(0.75, alpha * 0.85) * pulse;
-                      c.strokeStyle = `hsla(${h2}, 100%, 65%, 0.65)`;
-                      c.lineWidth = Math.max(1.5, sr * 0.14);
-                      c.beginPath();
-                      c.arc(0, 0, gRad * 0.72, flow * 0.5, flow * 0.5 + Math.PI * 1.15);
-                      c.stroke();
-
-                      c.strokeStyle = `hsla(${h3}, 100%, 62%, 0.55)`;
-                      c.beginPath();
-                      c.arc(0, 0, gRad * 0.88, flow * 0.5 + Math.PI, flow * 0.5 + Math.PI * 2.1);
-                      c.stroke();
-
-                      c.restore();
-                    } else {
-                      c.globalAlpha = alpha;
-                      c.drawImage(getGlowSprite(skin.glow), -gRad, -gRad, gRad * 2, gRad * 2);
-                      c.globalAlpha = 1;
+                    c.globalAlpha = Math.min(0.88, baseA) + 0.06 * Math.sin(t * 6 + idx * 0.5);
+                    c.drawImage(getGlowSprite(skin.glow), -gRad, -gRad, gRad * 2, gRad * 2);
+                    c.globalAlpha = 1;
                     }
-                  }
-
-
-           
-             
-
-
-                  if (bt === 'frillBody') {
+              let rgb5 = null;
+  {
+          const _p5 = Number(skin.price ?? skin.cost ?? 0);
+  const _d5 = String(skin.tier || '').toLowerCase() === 'diamond';
+  if (_p5 > 50000 || _d5) {
+    const _k = String(skin.id ?? skin.name ?? skin.tier ?? _p5);
+    let _s = 0;
+    for (let k = 0; k < _k.length; k++) _s = (_s * 47 + _k.charCodeAt(k)) % 1000000;
+    const _u = (_s + Math.floor(_p5 * 1.618)) % 99991;
+    const _b = (_u * 137.508) % 360;
+    const _g = 44 + (_u % 32);
+    const _w = t * 3.3 + idx * 0.38 + _u * 0.19;
+    rgb5 = c.createLinearGradient(-sr, -sr, sr, sr);
+    rgb5.addColorStop(0.00, `hsl(${(_b + Math.sin(_w) * 22 + 360) % 360}, 100%, 62%)`);
+    rgb5.addColorStop(0.25, `hsl(${(_b + _g + Math.cos(_w * 0.9 + idx * 0.2) * 20 + 360) % 360}, 100%, 60%)`);
+    rgb5.addColorStop(0.50, `hsl(${(_b + _g * 2 + Math.sin(_w * 1.1 - idx * 0.15) * 22 + 360) % 360}, 100%, 58%)`);
+    rgb5.addColorStop(0.75, `hsl(${(_b + _g * 3 + Math.cos(_w * 0.8 + idx * 0.25) * 18 + 360) % 360}, 100%, 60%)`);
+    rgb5.addColorStop(1.00, `hsl(${(_b + _g * 4 + Math.sin(_w * 1.25 + idx * 0.18) * 20 + 360) % 360}, 100%, 56%)`);
+  }
+}
+              
+    
+                       if (bt === 'frillBody') {
                     const wv = Math.sin(t * 10 + idx) * sr * 0.22;
                     if (idx % 2 === 0) {
                       c.fillStyle = skin.accent;
@@ -2211,6 +2176,32 @@ jobs:
                     c.fillStyle = skin.accent; c.beginPath(); c.arc(0, 0, sr * 0.42, 0, Math.PI * 2); c.fill();
                   } else if (bt === 'honeycomb') {
                     c.fillStyle = skin.base; c.strokeStyle = '#7a4500'; c.lineWidth = 1.6;
+                   const pValBody = Number(skin.price ?? skin.cost ?? 0);
+                   const isDiamondBody = String(skin.tier || '').toLowerCase() === 'diamond';
+                   if (pValBody > 50000 || isDiamondBody) {
+                   const keyStr = String(skin.id ?? skin.name ?? skin.tier ?? pValBody);
+                   let seed = 0;
+                   for (let k = 0; k < keyStr.length; k++) seed = (seed * 47 + keyStr.charCodeAt(k)) % 1000000;
+                    const uid = (seed + Math.floor(pValBody * 1.618)) % 99991;
+                  const baseH = (uid * 137.508) % 360;
+                const gap = 44 + (uid % 32);
+                 const wv5 = globalTime * 3.3 + idx * 0.38 + uid * 0.19;
+              const h1 = (baseH + Math.sin(wv5) * 22 + 360) % 360;
+              const h2 = (baseH + gap + Math.cos(wv5 * 0.9 + idx * 0.2) * 20 + 360) % 360;
+            const h3 = (baseH + gap * 2 + Math.sin(wv5 * 1.1 - idx * 0.15) * 22 + 360) % 360;
+              const h4 = (baseH + gap * 3 + Math.cos(wv5 * 0.8 + idx * 0.25) * 18 + 360) % 360;
+            const h5 = (baseH + gap * 4 + Math.sin(wv5 * 1.25 + idx * 0.18) * 20 + 360) % 360;
+           const g5 = c.createLinearGradient(-sr, -sr, sr, sr);
+                  g5.addColorStop(0.00, `hsl(${h1}, 100%, 62%)`);
+             g5.addColorStop(0.25, `hsl(${h2}, 100%, 60%)`);
+             g5.addColorStop(0.50, `hsl(${h3}, 100%, 58%)`);
+              g5.addColorStop(0.75, `hsl(${h4}, 100%, 60%)`);
+          g5.addColorStop(1.00, `hsl(${h5}, 100%, 56%)`);
+          c.fillStyle = g5;
+          }
+ 
+
+                  
                     c.beginPath();
                     for (let k = 0; k < 6; k++) { const a = (Math.PI / 3) * k; k === 0 ? c.moveTo(Math.cos(a) * sr * 1.08, Math.sin(a) * sr * 1.08) : c.lineTo(Math.cos(a) * sr * 1.08, Math.sin(a) * sr * 1.08); }
                     c.closePath(); c.fill(); c.stroke();
@@ -2229,6 +2220,30 @@ jobs:
                   } else if (bt === 'slime') {
                     const sq = 1 + 0.12 * Math.sin(t * 7 + idx * 0.8);
                     c.fillStyle = skin.base; c.globalAlpha = 0.88;
+                          const pValBody = Number(skin.price ?? skin.cost ?? 0);
+                const isDiamondBody = String(skin.tier || '').toLowerCase() === 'diamond';
+                  if (pValBody > 50000 || isDiamondBody) {
+                 const keyStr = String(skin.id ?? skin.name ?? skin.tier ?? pValBody);
+                let seed = 0;
+               for (let k = 0; k < keyStr.length; k++) seed = (seed * 47 + keyStr.charCodeAt(k)) % 1000000;
+               const uid = (seed + Math.floor(pValBody * 1.618)) % 99991;
+             const baseH = (uid * 137.508) % 360;
+               const gap = 44 + (uid % 32);
+            const wv5 = globalTime * 3.3 + idx * 0.38 + uid * 0.19;
+                const h1 = (baseH + Math.sin(wv5) * 22 + 360) % 360;
+            const h2 = (baseH + gap + Math.cos(wv5 * 0.9 + idx * 0.2) * 20 + 360) % 360;
+            const h3 = (baseH + gap * 2 + Math.sin(wv5 * 1.1 - idx * 0.15) * 22 + 360) % 360;
+            const h4 = (baseH + gap * 3 + Math.cos(wv5 * 0.8 + idx * 0.25) * 18 + 360) % 360;
+               const h5 = (baseH + gap * 4 + Math.sin(wv5 * 1.25 + idx * 0.18) * 20 + 360) % 360;
+               const g5 = c.createLinearGradient(-sr, -sr, sr, sr);
+             g5.addColorStop(0.00, `hsl(${h1}, 100%, 62%)`);
+                g5.addColorStop(0.25, `hsl(${h2}, 100%, 60%)`);
+             g5.addColorStop(0.50, `hsl(${h3}, 100%, 58%)`);
+            g5.addColorStop(0.75, `hsl(${h4}, 100%, 60%)`);
+               g5.addColorStop(1.00, `hsl(${h5}, 100%, 56%)`);
+               c.fillStyle = g5;
+            }
+
                     c.beginPath(); c.ellipse(0, 0, sr * sq, sr / sq, 0, 0, Math.PI * 2); c.fill();
                     c.globalAlpha = 1;
                     if (idx % 2 === 0) {
@@ -2255,12 +2270,38 @@ jobs:
                     c.fillStyle = fl; c.fillRect(-sz * 0.36, -sz * 0.38, sz * 0.72, sz * 0.56);
                   } else if (bt === 'pawBody') {
                     c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                   const pValBody = Number(skin.price ?? skin.cost ?? 0);
+                 const isDiamondBody = String(skin.tier || '').toLowerCase() === 'diamond';
+                      if (pValBody > 50000 || isDiamondBody) {
+                           const keyStr = String(skin.id ?? skin.name ?? skin.tier ?? pValBody);
+                   let seed = 0;
+                        for (let k = 0; k < keyStr.length; k++) seed = (seed * 47 + keyStr.charCodeAt(k)) % 1000000;
+                           const uid = (seed + Math.floor(pValBody * 1.618)) % 99991;
+                            const baseH = (uid * 137.508) % 360;
+                         const gap = 44 + (uid % 32);
+                        const wv5 = globalTime * 3.3 + idx * 0.38 + uid * 0.19;
+                          const h1 = (baseH + Math.sin(wv5) * 22 + 360) % 360;
+                        const h2 = (baseH + gap + Math.cos(wv5 * 0.9 + idx * 0.2) * 20 + 360) % 360;
+                          const h3 = (baseH + gap * 2 + Math.sin(wv5 * 1.1 - idx * 0.15) * 22 + 360) % 360;
+                        const h4 = (baseH + gap * 3 + Math.cos(wv5 * 0.8 + idx * 0.25) * 18 + 360) % 360;
+                        const h5 = (baseH + gap * 4 + Math.sin(wv5 * 1.25 + idx * 0.18) * 20 + 360) % 360;
+                         const g5 = c.createLinearGradient(-sr, -sr, sr, sr);
+                          g5.addColorStop(0.00, `hsl(${h1}, 100%, 62%)`);
+                         g5.addColorStop(0.25, `hsl(${h2}, 100%, 60%)`);
+                         g5.addColorStop(0.50, `hsl(${h3}, 100%, 58%)`);
+                        g5.addColorStop(0.75, `hsl(${h4}, 100%, 60%)`);
+                         g5.addColorStop(1.00, `hsl(${h5}, 100%, 56%)`);
+                          c.fillStyle = g5;
+                      }
+              
                     if (idx % 3 === 0) {
                       const fy = Math.sin(t * 6 + idx) * sr * 0.22;
                       c.fillStyle = skin.accent; c.beginPath(); c.arc(0, fy, sr * 0.34, 0, Math.PI * 2); c.fill();
                     }
                   } else if (bt === 'coinBody') {
                     c.fillStyle = skin.base; c.strokeStyle = skin.dark; c.lineWidth = 1.2;
+                    if (rgb5) c.fillStyle = rgb5;
+
                     c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill(); c.stroke();
                     if (idx % 2 === 0) {
                       const sp = Math.abs(Math.cos(t * 5 + idx));
@@ -2269,35 +2310,49 @@ jobs:
                   } else if (bt === 'fluffCloud') {
                     const bnc = 1 + 0.08 * Math.sin(t * 8 + idx);
                     c.fillStyle = skin.base;
+                    if (rgb5) c.fillStyle = rgb5;
+
                     for (let k = 0; k < 6; k++) { const a = (k / 6) * Math.PI * 2; c.beginPath(); c.arc(Math.cos(a) * sr * 0.44 * bnc, Math.sin(a) * sr * 0.44 * bnc, sr * 0.66, 0, Math.PI * 2); c.fill(); }
                   } else if (bt === 'furStitch') {
-                    c.fillStyle = idx % 2 === 0 ? skin.base : skin.mid; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                   
+                    c.fillStyle = idx % 2 === 0 ? skin.base : skin.mid; if (rgb5) c.fillStyle = rgb5;  c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
                     if (idx % 3 === 0) { c.fillStyle = skin.accent; c.beginPath(); c.arc(0, 0, sr * (0.28 + 0.08 * Math.sin(t * 7 + idx)), 0, Math.PI * 2); c.fill(); }
                   } else if (bt === 'carrotTrail') {
-                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr * (1 + 0.09 * Math.sin(t * 9 + idx)), 0, Math.PI * 2); c.fill();
-                    if (idx % 3 === 0) { c.fillStyle = '#ff8c24'; c.beginPath(); c.moveTo(sr * 0.45, 0); c.lineTo(-sr * 0.35, -sr * 0.28); c.lineTo(-sr * 0.35, sr * 0.28); c.closePath(); c.fill(); }
+                    c.fillStyle = skin.base; if (rgb5) c.fillStyle = rgb5;  c.beginPath(); c.arc(0, 0, sr * (1 + 0.09 * Math.sin(t * 9 + idx)), 0, Math.PI * 2); c.fill();
+                    
+                  if (idx % 3 === 0) { c.fillStyle = '#ff8c24'; c.beginPath(); c.moveTo(sr * 0.45, 0); c.lineTo(-sr * 0.35, -sr * 0.28); c.lineTo(-sr * 0.35, sr * 0.28); c.closePath(); c.fill(); }
                   } else if (bt === 'featherWave') {
                     const flt = Math.sin(t * 11 + idx) * sr * 0.2;
                     const fc = ['#ff3b30','#24c94b','#ffe259','#1c8cff'];
                     c.fillStyle = fc[idx % fc.length];
+                   if (rgb5) c.fillStyle = rgb5;
+ 
                     c.beginPath(); c.ellipse(0, flt * 0.3, sr * 1.05, sr * 0.92, 0, 0, Math.PI * 2); c.fill();
                     c.strokeStyle = '#ffffff'; c.lineWidth = 1.3; c.beginPath(); c.arc(-sr * 0.15, 0, sr * 0.55, -0.8, 0.8); c.stroke();
                   } else if (bt === 'cyberCircuit') {
                     const sz = sr * 1.8;
                     c.fillStyle = '#111524'; c.strokeStyle = `hsl(${(t * 180 + idx * 18) % 360}, 100%, 58%)`; c.lineWidth = 2;
+                    if (rgb5) c.fillStyle = rgb5;
+
                     c.fillRect(-sz / 2, -sz / 2, sz, sz); c.strokeRect(-sz / 2, -sz / 2, sz, sz);
                     c.fillStyle = c.strokeStyle; c.beginPath(); c.arc(0, 0, sr * 0.26, 0, Math.PI * 2); c.fill();
                   } else if (bt === 'diamondCheck') {
                     c.fillStyle = idx % 2 === 0 ? skin.base : skin.mid;
+                    if (rgb5) c.fillStyle = rgb5;
+
                     c.beginPath(); c.moveTo(sr * 1.15, 0); c.lineTo(0, -sr * 1.15); c.lineTo(-sr * 1.15, 0); c.lineTo(0, sr * 1.15); c.closePath(); c.fill();
                     if (idx % 3 === 0) { c.fillStyle = '#ff4757'; c.beginPath(); c.arc(Math.cos(t * 5 + idx) * sr * 0.8, Math.sin(t * 5 + idx) * sr * 0.8, sr * 0.18, 0, Math.PI * 2); c.fill(); }
                   } else if (bt === 'neonClaw') {
-                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = skin.base;
+                    if (rgb5) c.fillStyle = rgb5;
+                    c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
                     c.strokeStyle = skin.accent; c.lineWidth = 2; c.globalAlpha = 0.5 + 0.5 * Math.sin(t * 8 + idx);
                     c.beginPath(); c.moveTo(-sr * 0.4, -sr * 0.45); c.lineTo(sr * 0.4, sr * 0.45); c.moveTo(-sr * 0.4, sr * 0.45); c.lineTo(sr * 0.4, -sr * 0.45); c.stroke();
                     c.globalAlpha = 1;
                   } else if (bt === 'saberStripe') {
                     c.fillStyle = (Math.floor(idx / 2) % 2 === 0) ? skin.base : '#4a2704';
+                    if (rgb5) c.fillStyle = rgb5;
+
                     c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
                     if (idx % 3 === 0) { c.fillStyle = '#ffffff'; c.beginPath(); c.arc(0, Math.sin(t * 9 + idx) * sr * 0.6, sr * 0.16, 0, Math.PI * 2); c.fill(); }
                   } else if (bt === 'batWings') {
@@ -2310,10 +2365,15 @@ jobs:
                         c.restore();
                       }
                     }
-                    c.fillStyle = idx % 2 === 0 ? skin.base : skin.mid; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = idx % 2 === 0 ? skin.base : skin.mid;
+                    if (rgb5) c.fillStyle = rgb5; 
+                 c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
                     if (idx % 3 === 0) { c.fillStyle = 'rgba(255,36,66,0.55)'; c.beginPath(); c.arc(0, Math.sin(t * 6 + idx) * sr, sr * 0.25, 0, Math.PI * 2); c.fill(); }
                   } else if (bt === 'spiderLegs') {
-                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = skin.base; 
+                   if (rgb5) c.fillStyle = rgb5; 
+ 
+                    c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
                     if (idx % 2 === 0 && idx <= 12) {
                       const kick = Math.sin(t * 18 + idx * 1.4) * sr * 0.38;
                       c.strokeStyle = '#14111a'; c.lineWidth = Math.max(2, sr * 0.18); c.lineCap = 'round';
@@ -2321,17 +2381,25 @@ jobs:
                     }
                     c.fillStyle = skin.accent; c.beginPath(); c.arc(0, 0, sr * 0.32, 0, Math.PI * 2); c.fill();
                   } else if (bt === 'suckerRings') {
-                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = skin.base; 
+                    if (rgb5) c.fillStyle = rgb5; 
+
+                    c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
                     if (idx % 2 === 0) {
                       const rr = sr * (0.42 + 0.12 * Math.sin(t * 8 + idx));
                       c.strokeStyle = skin.accent; c.lineWidth = 2; c.beginPath(); c.arc(0, 0, rr, 0, Math.PI * 2); c.stroke();
                     }
                   } else if (bt === 'ribcage') {
-                    c.fillStyle = skin.dark; c.beginPath(); c.arc(0, 0, sr * 0.88, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = skin.dark;
+                    if (rgb5) c.fillStyle = rgb5; 
+                   c.beginPath(); c.arc(0, 0, sr * 0.88, 0, Math.PI * 2); c.fill();
                     c.strokeStyle = '#f2f7ff'; c.lineWidth = Math.max(2.2, sr * 0.22); c.lineCap = 'round';
                     if (idx % 2 === 0) { c.beginPath(); c.moveTo(0, -sr * 0.94); c.lineTo(0, sr * 0.94); c.stroke(); c.fillStyle = '#59f4ff'; c.beginPath(); c.arc(0, 0, sr * 0.28, 0, Math.PI * 2); c.fill(); }
                   } else if (bt === 'wireBulbs') {
-                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr * 0.78, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = skin.base;
+                    if (rgb5) c.fillStyle = rgb5;
+
+                    c.beginPath(); c.arc(0, 0, sr * 0.78, 0, Math.PI * 2); c.fill();
                     const bc = ['#ff3b30','#ffe259','#4de2f0','#ff59d6'];
                     const on = Math.sin(t * 10 + idx * 1.2) > -0.2;
                     c.fillStyle = bc[idx % bc.length]; c.globalAlpha = on ? 1 : 0.35;
@@ -2339,22 +2407,32 @@ jobs:
                     c.globalAlpha = 1;
                   } else if (bt === 'pineNeedles') {
                     c.fillStyle = skin.base; c.strokeStyle = skin.dark; c.lineWidth = 1.3;
-                    c.beginPath();
+                  if (rgb5) c.fillStyle = rgb5;
+
+                   c.beginPath();
                     for (let k = 0; k < 10; k++) { const a = (k / 10) * Math.PI * 2, rad = k % 2 === 0 ? sr * 1.25 : sr * 0.76; k === 0 ? c.moveTo(Math.cos(a) * rad, Math.sin(a) * rad) : c.lineTo(Math.cos(a) * rad, Math.sin(a) * rad); }
                     c.closePath(); c.fill(); c.stroke();
                     if (idx % 2 === 0) { c.fillStyle = (Math.floor(t * 4 + idx) % 2 === 0) ? '#ff3b30' : '#ffe259'; c.beginPath(); c.arc(0, 0, sr * 0.3, 0, Math.PI * 2); c.fill(); }
                   } else if (bt === 'arcaneRunes') {
                     c.fillStyle = skin.base; c.strokeStyle = skin.accent; c.lineWidth = 1.6;
+                   if (rgb5) c.fillStyle = rgb5;
+ 
                     c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill(); c.stroke();
                     if (idx % 3 === 0) {
                       const oa = t * 5 + idx;
                       c.fillStyle = '#ffe259'; c.beginPath(); c.arc(Math.cos(oa) * sr * 1.15, Math.sin(oa) * sr * 1.15, sr * 0.24, 0, Math.PI * 2); c.fill();
                     }
                   } else if (bt === 'emeraldScales') {
-                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = skin.base; 
+                   if (rgb5) c.fillStyle = rgb5;
+ 
+                    c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
                     c.fillStyle = skin.accent; c.beginPath(); c.moveTo(sr * 0.48, 0); c.lineTo(0, -sr * 0.48); c.lineTo(-sr * 0.48, 0); c.lineTo(0, sr * 0.48); c.closePath(); c.fill();
                   } else if (bt === 'dinoSpikes') {
-                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = skin.base;
+                    if (rgb5) c.fillStyle = rgb5;
+
+                    c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
                     if (idx % 2 === 0) {
                       c.fillStyle = '#69f03a';
                       for (const s of [-1, 1]) { c.beginPath(); c.moveTo(sr * 0.3, s * sr * 0.8); c.lineTo(0, s * sr * 1.5); c.lineTo(-sr * 0.4, s * sr * 0.8); c.closePath(); c.fill(); }
@@ -2362,12 +2440,16 @@ jobs:
                   } else if (bt === 'lavaArmor') {
                     const sz = sr * 1.82;
                     c.fillStyle = '#2e1007'; c.strokeStyle = '#ff6b1a'; c.lineWidth = 2;
+                    if (rgb5) c.fillStyle = rgb5;
+
                     c.beginPath(); c.roundRect ? c.roundRect(-sz / 2, -sz / 2, sz, sz, sr * 0.32) : c.rect(-sz / 2, -sz / 2, sz, sz); c.fill(); c.stroke();
                     c.fillStyle = '#ffe259'; c.globalAlpha = 0.5 + 0.5 * Math.sin(t * 10 + idx);
                     c.beginPath(); c.arc(0, 0, sr * 0.32, 0, Math.PI * 2); c.fill(); c.globalAlpha = 1;
                   } else if (bt === 'ghostWisp') {
                     c.globalAlpha = 0.55 + 0.28 * Math.sin(t * 7 + idx * 0.6);
-                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr * 1.05, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = skin.base;
+                    if (rgb5) c.fillStyle = rgb5;
+                    c.beginPath(); c.arc(0, 0, sr * 1.05, 0, Math.PI * 2); c.fill();
                     c.fillStyle = '#ffffff'; c.beginPath(); c.arc(0, 0, sr * 0.42, 0, Math.PI * 2); c.fill();
                     c.globalAlpha = 1;
                   } else if (bt === 'blazeMane' || bt === 'hellSpikes' || bt === 'spectralEmerald') {
@@ -2375,7 +2457,9 @@ jobs:
                     c.fillStyle = skin.accent; c.globalAlpha = 0.65;
                     for (const s of [-1, 1]) { c.beginPath(); c.arc(-sr * 0.2, s * sr * (0.95 + 0.35 * fl), sr * 0.46 * fl, 0, Math.PI * 2); c.fill(); }
                     c.globalAlpha = 1;
-                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = skin.base;
+                    if (rgb5) c.fillStyle = rgb5; 
+                    c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
                     c.fillStyle = skin.accent; c.beginPath(); c.arc(0, 0, sr * 0.38 * fl, 0, Math.PI * 2); c.fill();
                   } else if (bt === 'aquaFins') {
                     const sw = Math.sin(t * 9 + idx) * sr * 0.2;
@@ -2383,10 +2467,16 @@ jobs:
                       c.fillStyle = '#8cf5ff';
                       for (const s of [-1, 1]) { c.beginPath(); c.moveTo(sr * 0.4, s * sr * 0.8); c.quadraticCurveTo(sw, s * sr * 1.65, -sr * 0.7, s * sr * 1.0); c.closePath(); c.fill(); }
                     }
-                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = skin.base;
+                    if (rgb5) c.fillStyle = rgb5; 
+
+                    c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
                     c.strokeStyle = 'rgba(255,255,255,0.65)'; c.lineWidth = 1.5; c.beginPath(); c.arc(0, 0, sr * 0.55, 0, Math.PI * 2); c.stroke();
                   } else {
-                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = skin.base; 
+                    if (rgb5) c.fillStyle = rgb5; 
+
+                    c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
                   }
                                   const maxQ = isMaxGfx();
                   const isMythic = skin.tier === 'Mythic';
