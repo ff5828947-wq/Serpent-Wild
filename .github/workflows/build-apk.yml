@@ -1,4 +1,4 @@
-name: Build Serpent-Wild v27 PlayStore-Ready AAB & APK
+name: Build Serpent-Wild v29 PlayStore-Ready AAB & APK
 
 on:
   push:
@@ -142,7 +142,7 @@ jobs:
               wf.writeframes(data)
           PYEOF
 
-      - name: Generate Serpent-Wild v27 PlayStore-Ready Project
+      - name: Generate Serpent-Wild v29 PlayStore-Ready Project
         run: |
           mkdir -p app/src/main/java/com/apexwild/serpent app/src/main/assets app/src/main/res/values
 
@@ -202,8 +202,8 @@ jobs:
                   applicationId = "com.apexwild.serpent.royale"
                   minSdk = 26
                   targetSdk = 35
-                  versionCode = 28
-                  versionName = "1.0.1"
+                  versionCode = 29
+                  versionName = "1.0.2"
               }
               signingConfigs {
                   create("release") {
@@ -661,10 +661,43 @@ jobs:
                       }
                   }
               }
+              private fun isSignatureValid(): Boolean {
+                  return try {
+                      if (packageName != "com.apexwild.serpent.royale") return false
+                      val installer = try {
+                          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                              packageManager.getInstallSourceInfo(packageName).installingPackageName
+                          } else {
+                              @Suppress("DEPRECATION")
+                              packageManager.getInstallerPackageName(packageName)
+                          }
+                      } catch (_: Exception) { null }
+                      if (installer == "com.amazon.venezia" || installer == "com.android.vending") return true
+                      val expected = "__EXPECTED_SIG_SHA256__"
+                      if (expected.startsWith("__")) return true
+                      val sigs = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                          packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNING_CERTIFICATES)
+                              .signingInfo?.apkContentsSigners
+                      } else {
+                          @Suppress("DEPRECATION")
+                          packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNATURES).signatures
+                      } ?: return false
+                      val md = java.security.MessageDigest.getInstance("SHA-256")
+                      sigs.any { sig ->
+                          val hex = md.digest(sig.toByteArray()).joinToString("") { "%02X".format(it) }
+                          hex.equals(expected, ignoreCase = true)
+                      }
+                  } catch (_: Exception) { false }
+              }
 
               @SuppressLint("SetJavaScriptEnabled")
               override fun onCreate(savedInstanceState: Bundle?) {
                   super.onCreate(savedInstanceState)
+                                    if (!isSignatureValid()) {
+                      finishAffinity()
+                      return
+                  }
+
                   requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
                   window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                   hideSystemBars()
@@ -1732,38 +1765,69 @@ jobs:
                   boostHeld: false, keys: { up: false, down: false, left: false, right: false, boost: false }
                 };
 
+                                function isMaxGfx() {
+                  return profile.settings.gfx !== 'medium' && profile.settings.gfx !== 'low';
+                }
+
                 function resizeCanvas() {
                   appW = window.innerWidth; appH = window.innerHeight;
-                  dpr = Math.min(window.devicePixelRatio || 1, profile.settings.gfx === 'low' ? 1 : 1.5);
+                  dpr = Math.min(window.devicePixelRatio || 1, isMaxGfx() ? 1.75 : 1.1);
                   canvas.width = Math.max(1, Math.floor(appW * dpr));
                   canvas.height = Math.max(1, Math.floor(appH * dpr));
                 }
 
                 function buildFloorPattern(floorId) {
                   const fl = ARENA_FLOORS.find(f => f.id === floorId) || ARENA_FLOORS[0];
+                  const maxQ = isMaxGfx();
                   const t = document.createElement('canvas');
                   t.width = 160; t.height = 160;
                   const c = t.getContext('2d');
-                  c.fillStyle = fl.bg; c.fillRect(0, 0, 160, 160);
 
-                  c.strokeStyle = fl.line; c.lineWidth = 2;
+                  const bgGrad = c.createLinearGradient(0, 0, 160, 160);
+                  bgGrad.addColorStop(0, fl.bg);
+                  bgGrad.addColorStop(0.5, fl.hex);
+                  bgGrad.addColorStop(1, fl.bg);
+                  c.fillStyle = bgGrad;
+                  c.fillRect(0, 0, 160, 160);
+
+                  if (maxQ) {
+                    for (let i = 0; i < 48; i++) {
+                      const gx = (i * 37) % 160, gy = (i * 61) % 160;
+                      c.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.035)' : 'rgba(0,0,0,0.08)';
+                      c.beginPath(); c.arc(gx, gy, 2 + (i % 4), 0, Math.PI * 2); c.fill();
+                    }
+                  }
+
                   const r = 40;
                   for (let y = 0; y <= 160; y += 69) {
                     for (let x = 0; x <= 160; x += 80) {
                       const ox = (Math.floor(y / 69) % 2) * 40;
+                      const cx = x + ox, cy = y;
                       c.beginPath();
                       for (let i = 0; i < 6; i++) {
                         const a = (Math.PI / 3) * i;
-                        const px = x + ox + Math.cos(a) * r, py = y + Math.sin(a) * r;
+                        const px = cx + Math.cos(a) * r, py = cy + Math.sin(a) * r;
                         i === 0 ? c.moveTo(px, py) : c.lineTo(px, py);
                       }
-                      c.closePath(); c.stroke();
+                      c.closePath();
+                      if (maxQ) {
+                        const hg = c.createRadialGradient(cx - 8, cy - 8, 4, cx, cy, r);
+                        hg.addColorStop(0, 'rgba(255,255,255,0.06)');
+                        hg.addColorStop(1, 'rgba(0,0,0,0.12)');
+                        c.fillStyle = hg; c.fill();
+                      }
+                      c.strokeStyle = fl.line; c.lineWidth = maxQ ? 2.2 : 1.6; c.stroke();
                     }
                   }
+
                   if (fl.id === 'clover') {
-                    for (let i = 0; i < 14; i++) {
-                      const cx = rand(14, 146), cy = rand(14, 146), sz = rand(4, 7);
-                      c.fillStyle = i % 2 === 0 ? 'rgba(98, 214, 64, 0.24)' : 'rgba(18, 92, 24, 0.34)';
+                    for (let i = 0; i < (maxQ ? 18 : 10); i++) {
+                      const cx = rand(14, 146), cy = rand(14, 146), sz = rand(4, 7.5);
+                      if (maxQ) {
+                        c.fillStyle = 'rgba(0,0,0,0.22)';
+                        c.beginPath(); c.arc(cx + 2, cy + 3, sz * 1.1, 0, Math.PI * 2); c.fill();
+                      }
+                      c.fillStyle = i % 2 === 0 ? 'rgba(112, 232, 74, 0.28)' : 'rgba(16, 86, 22, 0.38)';
                       for (let k = 0; k < 4; k++) {
                         const a = (Math.PI / 2) * k + 0.4;
                         c.beginPath(); c.arc(cx + Math.cos(a) * sz * 0.7, cy + Math.sin(a) * sz * 0.7, sz * 0.65, 0, Math.PI * 2); c.fill();
@@ -1772,6 +1836,7 @@ jobs:
                   }
                   floorPattern = ctx.createPattern(t, 'repeat');
                 }
+
 
                 function drawSkinAccessory(c, skin, hr, layer) {
                   const acc = skin.acc;
@@ -1893,13 +1958,20 @@ jobs:
 
                   drawSkinAccessory(c, skin, hr, 'back');
 
-                  if (skin.glow) {
+                                    if (skin.glow) {
+                    const isTopTier = skin.tier === 'Mythic' || skin.tier === 'Legendary';
+                    const gRad = hr * (isTopTier ? 1.55 : 1.32);
                     c.save();
-                    c.fillStyle = skin.glow;
-                    c.globalAlpha = 0.24 + 0.1 * Math.sin(globalTime * 7);
-                    c.beginPath(); c.arc(0, 0, hr * 1.48, 0, Math.PI * 2); c.fill();
+                    c.globalCompositeOperation = 'screen';
+                    c.globalAlpha = (isTopTier ? 0.42 : 0.28) + 0.08 * Math.sin(globalTime * 6);
+                    const gg = c.createRadialGradient(0, 0, hr * 0.35, 0, 0, gRad);
+                    gg.addColorStop(0, skin.glow);
+                    gg.addColorStop(1, 'rgba(0,0,0,0)');
+                    c.fillStyle = gg;
+                    c.beginPath(); c.arc(0, 0, gRad, 0, Math.PI * 2); c.fill();
                     c.restore();
                   }
+
 
                   const hg = c.createRadialGradient(hr * 0.18, -hr * 0.25, hr * 0.1, 0, 0, hr * 1.25);
                   hg.addColorStop(0, headCol); hg.addColorStop(0.75, headMid); hg.addColorStop(1, skin.dark);
@@ -2016,12 +2088,22 @@ jobs:
                     c.restore(); return;
                   }
 
-                  if (skin.glow && idx % 2 === 0) {
-                    const pulse = 0.16 + 0.08 * Math.sin(t * 6 + idx * 0.5);
-                    c.fillStyle = skin.glow; c.globalAlpha = pulse;
-                    c.beginPath(); c.arc(0, 0, sr * 1.38, 0, Math.PI * 2); c.fill();
-                    c.globalAlpha = 1;
+                                    if (skin.glow && idx % 2 === 0) {
+                    const isMythic = skin.tier === 'Mythic';
+                    const isLeg = skin.tier === 'Legendary';
+                    const gRad = sr * (isMythic ? 1.52 : (isLeg ? 1.42 : 1.28));
+                    const pulse = (isMythic ? 0.34 : (isLeg ? 0.26 : 0.18)) + 0.06 * Math.sin(t * 6 + idx * 0.5);
+                    c.save();
+                    c.globalCompositeOperation = 'screen';
+                    c.globalAlpha = pulse;
+                    const bg = c.createRadialGradient(0, 0, sr * 0.3, 0, 0, gRad);
+                    bg.addColorStop(0, skin.glow);
+                    bg.addColorStop(1, 'rgba(0,0,0,0)');
+                    c.fillStyle = bg;
+                    c.beginPath(); c.arc(0, 0, gRad, 0, Math.PI * 2); c.fill();
+                    c.restore();
                   }
+
 
                   if (bt === 'frillBody') {
                     const wv = Math.sin(t * 10 + idx) * sr * 0.22;
@@ -2210,13 +2292,37 @@ jobs:
                   } else {
                     c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
                   }
-                              const sh = c.createRadialGradient(sr * 0.15, -sr * 0.35, sr * 0.08, 0, 0, sr * 1.05);
-                  sh.addColorStop(0, 'rgba(255,255,255,0.34)');
-                  sh.addColorStop(0.45, 'rgba(255,255,255,0.03)');
-                  sh.addColorStop(0.82, 'rgba(0,0,0,0.16)');
-                  sh.addColorStop(1, 'rgba(0,0,0,0.38)');
+                                  const maxQ = isMaxGfx();
+                  const isMythic = skin.tier === 'Mythic';
+                  const isLeg = skin.tier === 'Legendary';
+                  const isEpic = skin.tier === 'Epic';
+
+                  const sh = c.createRadialGradient(sr * 0.18, -sr * 0.36, sr * 0.06, 0, 0, sr * 1.05);
+                  sh.addColorStop(0, maxQ ? 'rgba(255,255,255,0.44)' : 'rgba(255,255,255,0.32)');
+                  sh.addColorStop(0.42, 'rgba(255,255,255,0.04)');
+                  sh.addColorStop(0.78, 'rgba(0,0,0,0.18)');
+                  sh.addColorStop(1, maxQ ? 'rgba(0,0,0,0.46)' : 'rgba(0,0,0,0.34)');
                   c.fillStyle = sh;
                   c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+
+                  if (isEpic || isLeg || isMythic) {
+                    const wave = 0.5 + 0.5 * Math.sin(t * (isMythic ? 9 : 6.5) - idx * 0.55);
+                    c.strokeStyle = skin.accent || skin.glow || '#ffffff';
+                    c.globalAlpha = (isMythic ? 0.58 : (isLeg ? 0.44 : 0.30)) * wave;
+                    c.lineWidth = isMythic ? 2.2 : 1.5;
+                    c.beginPath(); c.arc(0, 0, sr * 0.94, 0, Math.PI * 2); c.stroke();
+                    c.globalAlpha = 1;
+                  }
+
+                  if ((isLeg || isMythic) && idx % 3 === 0) {
+                    const orbA = t * (isMythic ? 5.5 : 3.8) + idx * 1.1;
+                    const ox = Math.cos(orbA) * sr * 1.18, oy = Math.sin(orbA) * sr * 1.18;
+                    c.fillStyle = isMythic ? '#ffffff' : (skin.accent || '#ffe259');
+                    c.globalAlpha = 0.78;
+                    c.beginPath(); c.arc(ox, oy, sr * (isMythic ? 0.22 : 0.16), 0, Math.PI * 2); c.fill();
+                    c.globalAlpha = 1;
+                  }
+              
      
 
                   c.restore();
@@ -2250,7 +2356,8 @@ jobs:
                   }
 
                                  getRadius() { return clamp(7.8 + Math.pow(Math.max(10, this.score), 0.31) * 1.55, 9, 72) * this.scale; }
-                  getSegCount() { return clamp(Math.floor(14 + Math.pow(Math.max(10, this.score), 0.46) * 1.48), 14, 320); }
+                    getSegCount() { return clamp(Math.floor(14 + Math.pow(Math.max(10, this.score), 0.40) * 1.12), 14, 320); }
+
    
                   say(txt) { this.bubbleText = txt; this.bubbleTimer = 2.6; }
 
@@ -2441,7 +2548,8 @@ jobs:
                   victim.alive = false;
                   const fv = FOOD_VARIETIES.find(f => f.id === profile.food) || FOOD_VARIETIES[0];
                   const dropStep = Math.max(2, Math.floor(victim.segments.length / 24));
-                  const chunkVal = Math.max(22, Math.min(480, Math.round(victim.score * 0.08)));
+                  const chunkVal = Math.max(12, Math.min(180, Math.round(victim.score * 0.032)));
+   
                                     const glowCols = [victim.skin.base, victim.skin.accent || '#ffe259', '#ff59d6', '#4de2f0', '#8cff3b'];
                   for (let i = 0; i < victim.segments.length; i += dropStep) {
                     const sg = victim.segments[i];
@@ -2613,25 +2721,27 @@ jobs:
 
                   for (const w of worms) w.update(dt);
 
-                  for (const w of worms) {
+                                    for (const w of worms) {
                     if (!w.alive || w.spawnShield > 0) continue;
                     const rW = w.getRadius();
-                    const noseX = w.x + Math.cos(w.angle) * (rW * 0.35);
-                    const noseY = w.y + Math.sin(w.angle) * (rW * 0.35);
-                    const hitW = rW * 0.48;
+                    const noseX = w.x + Math.cos(w.angle) * (rW * 0.72);
+                    const noseY = w.y + Math.sin(w.angle) * (rW * 0.72);
+                    const hitW = rW * 0.56;
                     for (const o of worms) {
                       if (o === w || !o.alive || o.spawnShield > 0) continue;
-                      if (distSq(noseX, noseY, o.x, o.y) > 1600 * 1600) continue;
-                      const hitO = o.getRadius() * 0.64;
+                      const rO = o.getRadius();
+                      const maxReach = o.segments.length * rO * 0.5 + 320;
+                      if (distSq(noseX, noseY, o.x, o.y) > maxReach * maxReach) continue;
+                      const hitO = rO * 0.90;
                       const hitSq = (hitW + hitO) * (hitW + hitO);
                       let hit = false;
-                      const step = o.segments.length > 100 ? 2 : 1;
-                      for (let k = 2; k < o.segments.length; k += step) {
+                      for (let k = 1; k < o.segments.length; k++) {
                         if (distSq(noseX, noseY, o.segments[k].x, o.segments[k].y) < hitSq) { hit = true; break; }
                       }
                       if (hit) { killWorm(w, o, `Crashed into ${o.name}`); break; }
                     }
                   }
+
 
                   const magR = (buffs.magnet || 0) > 0 ? 260 : 85;
                   const mult = (buffs.x5 || 0) > 0 ? 5 : 1;
@@ -2809,11 +2919,12 @@ jobs:
                     wsPreviewWorm.draw(wsCtx, false);
                   }
 
-                  if (screenState !== 'playing') {
+                                   if (screenState !== 'playing') {
                     if (lobbyWorm) {
-                      const t = globalTime * 0.95;
-                      const rx = Math.min(appW * 0.14, 110), ry = Math.min(appH * 0.14, 62);
-                      const nx = appW * 0.5 + Math.cos(t) * rx, ny = appH * 0.48 + Math.sin(t * 2) * (ry * 0.6);
+                      const t = globalTime * 1.35;
+                      const rx = appW * 0.42, ry = appH * 0.38;
+                      const nx = appW * 0.5 + Math.sin(t * 0.85) * rx;
+                      const ny = appH * 0.5 + Math.sin(t * 1.35) * ry * 0.78 + Math.cos(t * 0.55) * (ry * 0.22);
                       lobbyWorm.angle = Math.atan2(ny - lobbyWorm.y, nx - lobbyWorm.x);
                       lobbyWorm.x = nx; lobbyWorm.y = ny; lobbyWorm.segments[0].x = nx; lobbyWorm.segments[0].y = ny;
                       lobbyWorm.blinkTimer -= dt;
@@ -2828,12 +2939,19 @@ jobs:
                       if (lobbyWorm.bubbleTimer > 0) lobbyWorm.bubbleTimer -= dt;
                       for (let i = 1; i < lobbyWorm.segments.length; i++) {
                         const p = lobbyWorm.segments[i - 1], c = lobbyWorm.segments[i], dx = c.x - p.x, dy = c.y - p.y, d = Math.hypot(dx, dy) || 1;
-                        if (d > 5.5) { c.x = p.x + (dx / d) * 5.5; c.y = p.y + (dy / d) * 5.5; }
+                        if (d > 6.2) { c.x = p.x + (dx / d) * 6.2; c.y = p.y + (dy / d) * 6.2; }
                       }
                       lobbyWorm.draw(ctx, false);
                     }
+                    if (isMaxGfx()) {
+                      const lv = ctx.createRadialGradient(appW * 0.5, appH * 0.5, appW * 0.25, appW * 0.5, appH * 0.5, appW * 0.78);
+                      lv.addColorStop(0, 'rgba(0,0,0,0)');
+                      lv.addColorStop(1, 'rgba(0,12,6,0.42)');
+                      ctx.fillStyle = lv; ctx.fillRect(0, 0, appW, appH);
+                    }
                     return;
                   }
+ 
 
                   ctx.save();
                   ctx.translate(appW / 2, appH / 2);
@@ -2927,6 +3045,14 @@ jobs:
                   }
  
                   ctx.restore();
+                                    if (isMaxGfx()) {
+                    const vg = ctx.createRadialGradient(appW * 0.5, appH * 0.5, appW * 0.28, appW * 0.5, appH * 0.5, appW * 0.78);
+                    vg.addColorStop(0, 'rgba(255,255,255,0.03)');
+                    vg.addColorStop(0.65, 'rgba(0,0,0,0)');
+                    vg.addColorStop(1, 'rgba(0,10,4,0.44)');
+                    ctx.fillStyle = vg; ctx.fillRect(0, 0, appW, appH);
+                  }
+
                 }
 
                 function mainLoop(ts) {
@@ -3263,22 +3389,27 @@ jobs:
                     document.getElementById('sgVib').onclick = () => { profile.settings.vib = !profile.settings.vib; saveProfile(); renderSettingsModal(); Sound.play('click'); };
                     document.getElementById('sgNotif').onclick = () => { profile.settings.notifs = !profile.settings.notifs; saveProfile(); if (window.AndroidAudio) window.AndroidAudio.setNotifications(profile.settings.notifs); renderSettingsModal(); Sound.play('click'); };
                     document.getElementById('sgPriv').onclick = () => { document.getElementById('privacyModal').classList.add('open'); Sound.play('click'); };
-                  } else if (setTab === 'arena') {
+                                    } else if (setTab === 'arena') {
+                    const maxOn = isMaxGfx();
                     body.innerHTML = `
-                      <div class="setting-row"><div><div style="font-size:12px;font-weight:800;">Graphics Quality</div></div><div style="display:flex;gap:5px;"><button class="chip ${profile.settings.gfx === 'low' ? 'selected' : ''}" id="saLow">LOW</button><button class="chip ${profile.settings.gfx !== 'low' ? 'selected' : ''}" id="saHigh">HIGH</button></div></div>
+                      <div class="setting-row"><div><div style="font-size:12px;font-weight:800;">Graphics Quality</div><div style="font-size:9.5px;color:#b8d8f8;">Max = Realistic 3D Lighting &amp; Shadows • Medium = Smooth 60 FPS</div></div><div style="display:flex;gap:5px;"><button class="chip ${!maxOn ? 'selected' : ''}" id="saMed">MEDIUM</button><button class="chip ${maxOn ? 'selected' : ''}" id="saMax">MAX</button></div></div>
                       <div class="setting-row"><div><div style="font-size:12px;font-weight:800;">Show Player Names</div></div><button class="chip ${profile.settings.showNames ? 'selected' : ''}" id="saNames">${profile.settings.showNames ? 'ON' : 'OFF'}</button></div>`;
-                    document.getElementById('saLow').onclick = () => { profile.settings.gfx = 'low'; saveProfile(); resizeCanvas(); renderSettingsModal(); Sound.play('click'); };
-                    document.getElementById('saHigh').onclick = () => { profile.settings.gfx = 'high'; saveProfile(); resizeCanvas(); renderSettingsModal(); Sound.play('click'); };
+                    document.getElementById('saMed').onclick = () => { profile.settings.gfx = 'medium'; saveProfile(); resizeCanvas(); buildFloorPattern(profile.floor); renderSettingsModal(); Sound.play('click'); };
+                    document.getElementById('saMax').onclick = () => { profile.settings.gfx = 'max'; saveProfile(); resizeCanvas(); buildFloorPattern(profile.floor); renderSettingsModal(); Sound.play('click'); };
                     document.getElementById('saNames').onclick = () => { profile.settings.showNames = !profile.settings.showNames; saveProfile(); renderSettingsModal(); Sound.play('click'); };
-                  } else if (setTab === 'controls') {
+
+                                  } else if (setTab === 'controls') {
                     body.innerHTML = `
                       <div class="setting-row"><div><div style="font-size:12px;font-weight:800;">Joystick Mode</div></div><div style="display:flex;gap:5px;"><button class="chip ${profile.settings.joy === 'floating' ? 'selected' : ''}" id="scFloat">FLOATING</button><button class="chip ${profile.settings.joy === 'fixed' ? 'selected' : ''}" id="scFix">FIXED</button></div></div>
-                      <div class="setting-row"><div><div style="font-size:12px;font-weight:800;">Joystick Size</div></div><div style="display:flex;gap:5px;"><button class="chip ${profile.settings.joySize === 'small' ? 'selected' : ''}" id="scSm">SMALL</button><button class="chip ${profile.settings.joySize === 'normal' ? 'selected' : ''}" id="scNm">NORMAL</button><button class="chip ${profile.settings.joySize === 'large' ? 'selected' : ''}" id="scLg">LARGE</button></div></div>`;
+                      <div class="setting-row"><div><div style="font-size:12px;font-weight:800;">Joystick Size</div></div><div style="display:flex;gap:5px;"><button class="chip ${profile.settings.joySize === 'small' ? 'selected' : ''}" id="scSm">SMALL</button><button class="chip ${profile.settings.joySize === 'normal' ? 'selected' : ''}" id="scNm">NORMAL</button><button class="chip ${profile.settings.joySize === 'large' ? 'selected' : ''}" id="scLg">LARGE</button></div></div>
+                      <div class="setting-row"><div><div style="font-size:12px;font-weight:800;">Custom HUD Layout</div><div style="font-size:9.5px;color:#b8d8f8;">Drag, resize &amp; set opacity of Boost, Potions, Map &amp; Leaderboard</div></div><button class="btn-gold" id="scHudEdit" type="button" style="padding:6px 12px;font-size:10.5px;">🎛️ CUSTOMIZE HUD</button></div>`;
                     document.getElementById('scFloat').onclick = () => { profile.settings.joy = 'floating'; saveProfile(); refreshLobbyUI(); renderSettingsModal(); Sound.play('click'); };
                     document.getElementById('scFix').onclick = () => { profile.settings.joy = 'fixed'; saveProfile(); refreshLobbyUI(); renderSettingsModal(); Sound.play('click'); };
                     document.getElementById('scSm').onclick = () => { profile.settings.joySize = 'small'; saveProfile(); refreshLobbyUI(); renderSettingsModal(); Sound.play('click'); };
                     document.getElementById('scNm').onclick = () => { profile.settings.joySize = 'normal'; saveProfile(); refreshLobbyUI(); renderSettingsModal(); Sound.play('click'); };
                     document.getElementById('scLg').onclick = () => { profile.settings.joySize = 'large'; saveProfile(); refreshLobbyUI(); renderSettingsModal(); Sound.play('click'); };
+                    document.getElementById('scHudEdit').onclick = () => { document.getElementById('settingsModal').classList.remove('open'); window.openHudEditor && window.openHudEditor(); Sound.play('click'); };
+  
                   } else {
                     const grid = document.createElement('div'); grid.className = 'lang-grid';
                     LANGUAGES.forEach(lg => {
@@ -3654,6 +3785,167 @@ jobs:
                   if (e.code === 'KeyD' || e.code === 'ArrowRight') ctrl.keys.right = false;
                   if (e.code === 'Space') ctrl.keys.boost = false;
                 });
+                const HUD_ITEMS = [
+                  { id: 'btnBoost',     label: '⚡ Boost Button' },
+                  { id: 'quickPotions', label: '🧪 Quick Potions' },
+                  { id: 'hudTopLeft',   label: '🗺️ Score & Map' },
+                  { id: 'hudTopRight',  label: '🏆 Leaderboard' }
+                ];
+
+                function applyHudLayout() {
+                  const lay = profile.hudLayout || {};
+                  HUD_ITEMS.forEach(item => {
+                    const el = document.getElementById(item.id);
+                    if (!el) return;
+                    const cfg = lay[item.id];
+                    if (cfg) {
+                      el.style.left = `${cfg.x}%`;
+                      el.style.top = `${cfg.y}%`;
+                      el.style.right = 'auto';
+                      el.style.bottom = 'auto';
+                      el.style.transform = `scale(${cfg.scale || 1})`;
+                      el.style.transformOrigin = 'top left';
+                      el.style.opacity = cfg.opacity != null ? cfg.opacity : 1;
+                    } else {
+                      el.style.left = ''; el.style.top = ''; el.style.right = ''; el.style.bottom = '';
+                      el.style.transform = ''; el.style.transformOrigin = ''; el.style.opacity = '';
+                    }
+                  });
+                }
+
+                (function initHudEditor() {
+                  const st = document.createElement('style');
+                  st.textContent = `
+                    #hud[data-hud-edit="1"] { z-index: 146 !important; display: block !important; }
+                    #hud[data-hud-edit="1"] #btnBoost,
+                    #hud[data-hud-edit="1"] #quickPotions,
+                    #hud[data-hud-edit="1"] #hudTopLeft,
+                    #hud[data-hud-edit="1"] #hudTopRight {
+                      pointer-events: auto !important; touch-action: none !important;
+                      outline: 2px dashed rgba(255,226,89,0.85); outline-offset: 4px; border-radius: 12px;
+                    }
+                    #hud[data-hud-edit="1"] #btnBoost *,
+                    #hud[data-hud-edit="1"] #quickPotions *,
+                    #hud[data-hud-edit="1"] #hudTopLeft *,
+                    #hud[data-hud-edit="1"] #hudTopRight * { pointer-events: none !important; }
+                    #hud[data-hud-edit="1"] .hud-sel { outline: 3px solid #69f03a !important; box-shadow: 0 0 18px rgba(105,240,58,0.65); }
+                    #hudEditBg { position: fixed; inset: 0; z-index: 145; display: none; background: rgba(4, 16, 12, 0.58); }
+                    #hudEditBar {
+                      position: fixed; top: 8px; left: 50%; transform: translateX(-50%); z-index: 150; display: none;
+                      padding: 7px 11px; border-radius: 14px; align-items: center; gap: 9px; flex-wrap: wrap; justify-content: center;
+                      max-width: 96vw; font-size: 10.5px; font-weight: 900;
+                    }
+                    #hudEditBar input[type="range"] { width: 78px; accent-color: #69f03a; }
+                  `;
+                  document.head.appendChild(st);
+
+                  const bg = document.createElement('div'); bg.id = 'hudEditBg'; document.body.appendChild(bg);
+                  const bar = document.createElement('div'); bar.id = 'hudEditBar'; bar.className = 'wz-panel';
+                  bar.innerHTML = `
+                    <span id="heSelLbl" style="color:#ffe259;">Tap any control</span>
+                    <label style="display:flex;align-items:center;gap:4px;">Size <input id="heSize" type="range" min="0.6" max="1.5" step="0.05" value="1"></label>
+                    <label style="display:flex;align-items:center;gap:4px;">Opacity <input id="heOp" type="range" min="0.3" max="1" step="0.05" value="1"></label>
+                    <button class="btn-ghost" id="heReset" type="button" style="padding:5px 9px;font-size:10px;">↺ Reset</button>
+                    <button class="btn-inr" id="heSave" type="button" style="padding:5px 11px;font-size:10.5px;">💾 SAVE</button>
+                  `;
+                  document.body.appendChild(bar);
+
+                  const hudEl = document.getElementById('hud');
+                  let selId = 'btnBoost', draft = {}, drag = null, wasLobby = false;
+
+                  function ensureCfg(id) {
+                    if (!draft[id]) {
+                      const el = document.getElementById(id);
+                      const r = el.getBoundingClientRect();
+                      draft[id] = { x: +(r.left / appW * 100).toFixed(1), y: +(r.top / appH * 100).toFixed(1), scale: 1, opacity: 1 };
+                    }
+                    return draft[id];
+                  }
+
+                  function selectItem(id) {
+                    selId = id;
+                    HUD_ITEMS.forEach(it => {
+                      const el = document.getElementById(it.id);
+                      if (el) el.classList.toggle('hud-sel', it.id === id);
+                    });
+                    const meta = HUD_ITEMS.find(it => it.id === id);
+                    document.getElementById('heSelLbl').textContent = meta ? meta.label : id;
+                    const cfg = ensureCfg(id);
+                    document.getElementById('heSize').value = cfg.scale || 1;
+                    document.getElementById('heOp').value = cfg.opacity != null ? cfg.opacity : 1;
+                  }
+
+                  function renderDraft() {
+                    const prev = profile.hudLayout;
+                    profile.hudLayout = draft;
+                    applyHudLayout();
+                    profile.hudLayout = prev;
+                  }
+
+                  HUD_ITEMS.forEach(it => {
+                    const el = document.getElementById(it.id);
+                    if (!el) return;
+                    el.addEventListener('pointerdown', e => {
+                      if (hudEl.dataset.hudEdit !== '1') return;
+                      e.preventDefault(); e.stopPropagation();
+                      selectItem(it.id);
+                      const cfg = ensureCfg(it.id);
+                      drag = { id: it.id, sx: e.clientX, sy: e.clientY, bx: cfg.x, by: cfg.y };
+                    });
+                  });
+
+                  window.addEventListener('pointermove', e => {
+                    if (!drag || hudEl.dataset.hudEdit !== '1') return;
+                    const cfg = ensureCfg(drag.id);
+                    cfg.x = +clamp(drag.bx + ((e.clientX - drag.sx) / appW) * 100, 0, 90).toFixed(1);
+                    cfg.y = +clamp(drag.by + ((e.clientY - drag.sy) / appH) * 100, 0, 88).toFixed(1);
+                    renderDraft();
+                  });
+                  window.addEventListener('pointerup', () => { drag = null; });
+                  window.addEventListener('pointercancel', () => { drag = null; });
+
+                  document.getElementById('heSize').addEventListener('input', e => {
+                    if (!selId) return;
+                    ensureCfg(selId).scale = parseFloat(e.target.value);
+                    renderDraft();
+                  });
+                  document.getElementById('heOp').addEventListener('input', e => {
+                    if (!selId) return;
+                    ensureCfg(selId).opacity = parseFloat(e.target.value);
+                    renderDraft();
+                  });
+                  document.getElementById('heReset').addEventListener('click', () => {
+                    draft = {};
+                    profile.hudLayout = {};
+                    saveProfile();
+                    applyHudLayout();
+                    selectItem(selId);
+                    Sound.play('click');
+                  });
+                  document.getElementById('heSave').addEventListener('click', () => {
+                    profile.hudLayout = draft;
+                    saveProfile();
+                    applyHudLayout();
+                    hudEl.dataset.hudEdit = '0';
+                    HUD_ITEMS.forEach(it => { const el = document.getElementById(it.id); if (el) el.classList.remove('hud-sel'); });
+                    bg.style.display = 'none';
+                    bar.style.display = 'none';
+                    if (wasLobby) { hudEl.style.display = 'none'; document.getElementById('lobbyScreen').style.display = 'block'; }
+                    Sound.play('buy');
+                  });
+
+                  window.openHudEditor = () => {
+                    wasLobby = screenState !== 'playing';
+                    draft = JSON.parse(JSON.stringify(profile.hudLayout || {}));
+                    if (wasLobby) document.getElementById('lobbyScreen').style.display = 'none';
+                    bg.style.display = 'block';
+                    bar.style.display = 'flex';
+                    hudEl.dataset.hudEdit = '1';
+                    applyHudLayout();
+                    selectItem('btnBoost');
+                  };
+                })();
+                applyHudLayout();
 
                 window.addEventListener('resize', resizeCanvas);
                 resizeCanvas();
@@ -3687,6 +3979,9 @@ jobs:
               -storepass "$STORE_PASS" -keypass "$KEY_PASS" \
               -dname "CN=Apex Wild Studios, OU=Games, O=SerpentWild, L=India, S=IN, C=IN"
           fi
+                    SIG_SHA256=$(keytool -list -v -keystore app/serpent-release.jks -alias "$KEY_ALIAS" -storepass "$STORE_PASS" | grep "SHA256:" | head -n 1 | awk '{print $2}' | tr -d ':')
+          sed -i "s/__EXPECTED_SIG_SHA256__/$SIG_SHA256/g" app/src/main/java/com/apexwild/serpent/MainActivity.kt
+
 
       - name: Build Play Store Signed AAB & Release APK
         env:
@@ -3698,7 +3993,7 @@ jobs:
       - name: Upload Play Store Ready Bundle (AAB + APK + Mapping + Keystore)
         uses: actions/upload-artifact@v4
         with:
-          name: Serpent-Wild-v27-PlayStore-Ready
+          name: Serpent-Wild-v29-PlayStore-Ready
           path: |
             app/build/outputs/bundle/release/app-release.aab
             app/build/outputs/apk/release/app-release.apk
