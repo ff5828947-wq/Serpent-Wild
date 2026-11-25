@@ -2131,14 +2131,73 @@ jobs:
                     c.restore(); return;
                   }
 
-                                         if (skin.glow && idx % 2 === 0) {
+                                           if (skin.glow && idx % 2 === 0) {
                     const isMythic = skin.tier === 'Mythic';
                     const isLeg = skin.tier === 'Legendary';
-                    const gRad = sr * (isMythic ? 1.52 : (isLeg ? 1.42 : 1.28));
-                    c.globalAlpha = (isMythic ? 0.34 : (isLeg ? 0.26 : 0.18)) + 0.06 * Math.sin(t * 6 + idx * 0.5);
-                    c.drawImage(getGlowSprite(skin.glow), -gRad, -gRad, gRad * 2, gRad * 2);
-                    c.globalAlpha = 1;
+                    const isDiamond = String(skin.tier || '').toLowerCase() === 'diamond';
+                    const pVal = Number(skin.price ?? skin.cost ?? 0);
+                    const pBoost = pVal <= 3000
+                      ? (Math.max(0, pVal) / 3000) * 0.25
+                      : 0.25 + Math.min(0.35, ((pVal - 3000) / (100000 - 3000)) * 0.35);
+                    const gRad = sr * ((isMythic ? 1.52 : (isLeg ? 1.42 : 1.28)) + pBoost);
+                    const baseA = (isMythic ? 0.34 : (isLeg ? 0.26 : 0.18)) + pBoost * 0.45;
+                    const alpha = Math.min(0.88, baseA) + 0.06 * Math.sin(t * 6 + idx * 0.5);
+
+                    if (pVal > 50000 || isDiamond) {
+                      const keyStr = String(skin.id ?? skin.name ?? skin.glow ?? skin.tier ?? pVal);
+                      let seed = 0;
+                      for (let k = 0; k < keyStr.length; k++) {
+                        seed = (seed * 37 + keyStr.charCodeAt(k)) % 100000;
+                      }
+                      const snakeUid = (seed + Math.floor(pVal * 1.13)) % 9973;
+                      const baseHue = (snakeUid * 137.508) % 360;
+                      const span = 55 + (snakeUid % 45);
+                      const flow = globalTime * 3.1 + idx * 0.34 + snakeUid * 0.17;
+
+                      // Multiple RGB hues per segment (unique to each snake)
+                      const h1 = (baseHue + Math.sin(flow) * span + 360) % 360;
+                      const h2 = (baseHue + 95 + Math.cos(flow * 0.85 + idx * 0.2) * (span * 0.75) + 360) % 360;
+                      const h3 = (baseHue + 205 + Math.sin(flow * 1.15 - idx * 0.15) * (span * 0.65) + 360) % 360;
+                      const pulse = 0.9 + 0.1 * Math.sin(globalTime * 5 + idx * 0.45);
+
+                      c.save();
+                      c.globalCompositeOperation = 'lighter';
+                      c.globalAlpha = Math.min(0.94, alpha * 1.25) * pulse;
+
+                      // Layer 1: Multi-hue radial aura
+                      const radGrad = c.createRadialGradient(0, 0, sr * 0.15, 0, 0, gRad * 1.08);
+                      radGrad.addColorStop(0, `hsla(${h1}, 100%, 72%, 0.9)`);
+                      radGrad.addColorStop(0.45, `hsla(${h2}, 100%, 60%, 0.58)`);
+                      radGrad.addColorStop(0.82, `hsla(${h3}, 100%, 55%, 0.22)`);
+                      radGrad.addColorStop(1, `hsla(${h3}, 100%, 50%, 0)`);
+                      c.fillStyle = radGrad;
+                      c.beginPath();
+                      c.arc(0, 0, gRad * 1.08, 0, Math.PI * 2);
+                      c.fill();
+
+                      // Layer 2: Dual-tone RGB rim highlight for rich depth
+                      c.globalAlpha = Math.min(0.75, alpha * 0.85) * pulse;
+                      c.strokeStyle = `hsla(${h2}, 100%, 65%, 0.65)`;
+                      c.lineWidth = Math.max(1.5, sr * 0.14);
+                      c.beginPath();
+                      c.arc(0, 0, gRad * 0.72, flow * 0.5, flow * 0.5 + Math.PI * 1.15);
+                      c.stroke();
+
+                      c.strokeStyle = `hsla(${h3}, 100%, 62%, 0.55)`;
+                      c.beginPath();
+                      c.arc(0, 0, gRad * 0.88, flow * 0.5 + Math.PI, flow * 0.5 + Math.PI * 2.1);
+                      c.stroke();
+
+                      c.restore();
+                    } else {
+                      c.globalAlpha = alpha;
+                      c.drawImage(getGlowSprite(skin.glow), -gRad, -gRad, gRad * 2, gRad * 2);
+                      c.globalAlpha = 1;
+                    }
                   }
+
+
+           
              
 
 
@@ -2787,10 +2846,10 @@ jobs:
                       if (d2 < magR * magR) { f.x = lerp(f.x, player.x, dt * 8.5); f.y = lerp(f.y, player.y, dt * 8.5); }
                     }
                     for (const w of worms) {
-                      if (!w.alive) continue;
+                      if (!w.alive || Math.abs(w.x - f.x) > 55 || Math.abs(w.y - f.y) > 55) continue; 
                       const er = w.getRadius() * 1.28 + f.r;
                       if (distSq(w.x, w.y, f.x, f.y) < er * er) {
-                        const gain = f.val * (w.isPlayer ? mult : 1);
+                        const gain = f.val * 1.3 * (w.isPlayer ? mult : 1);
                         w.score += gain;
                         w.mouthOpen = 0.85;
                         if (w.isPlayer) {
@@ -2799,7 +2858,7 @@ jobs:
                             floatTexts.push({ x: f.x, y: f.y - 12, text: `+${gain}`, color: gain >= 50 ? '#ffe259' : '#a8ff78', life: 0.72, maxLife: 0.72, big: gain >= 50 });
                           }
                         }
-                        foods.splice(i, 1); break;
+                        foods[i] = foods[foods.length - 1]; foods.pop(); break;  
                       }
                     }
                   }
@@ -2847,7 +2906,7 @@ jobs:
 
                   hudTick -= dt;
                   if (hudTick <= 0 && player) {
-                    hudTick = 0.12;
+                         hudTick = 0.45;
                     document.getElementById('hudScoreBig').textContent = Math.floor(player.score).toLocaleString();
                     document.getElementById('hudKillsPill').textContent = `💀 ${matchKills}`;
                     document.getElementById('hudCoinsRun').textContent = `🪙 ${matchCoins}`;
@@ -3069,7 +3128,7 @@ jobs:
                     if (!near(ep.x, ep.y)) continue;
                     ctx.save();
                     ctx.globalAlpha = clamp(ep.life / ep.maxLife, 0, 1);
-                    ctx.font = '32px sans-serif';
+                    ctx.font = '50px sans-serif';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText(ep.emoji, ep.x, ep.y);
