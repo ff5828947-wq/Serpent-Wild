@@ -2145,25 +2145,25 @@ jobs:
                     c.globalAlpha = 1;
                     }
               let rgb5 = null;
-  {
-          const _p5 = Number(skin.price ?? skin.cost ?? 0);
-  const _d5 = String(skin.tier || '').toLowerCase() === 'diamond';
-  if (_p5 > 50000 || _d5) {
-    const _k = String(skin.id ?? skin.name ?? skin.tier ?? _p5);
-    let _s = 0;
-    for (let k = 0; k < _k.length; k++) _s = (_s * 47 + _k.charCodeAt(k)) % 1000000;
-    const _u = (_s + Math.floor(_p5 * 1.618)) % 99991;
-    const _b = (_u * 137.508) % 360;
-    const _g = 44 + (_u % 32);
-    const _w = t * 3.3 + idx * 0.38 + _u * 0.19;
-    rgb5 = c.createLinearGradient(-sr, -sr, sr, sr);
-    rgb5.addColorStop(0.00, `hsl(${(_b + Math.sin(_w) * 22 + 360) % 360}, 100%, 62%)`);
-    rgb5.addColorStop(0.25, `hsl(${(_b + _g + Math.cos(_w * 0.9 + idx * 0.2) * 20 + 360) % 360}, 100%, 60%)`);
-    rgb5.addColorStop(0.50, `hsl(${(_b + _g * 2 + Math.sin(_w * 1.1 - idx * 0.15) * 22 + 360) % 360}, 100%, 58%)`);
-    rgb5.addColorStop(0.75, `hsl(${(_b + _g * 3 + Math.cos(_w * 0.8 + idx * 0.25) * 18 + 360) % 360}, 100%, 60%)`);
-    rgb5.addColorStop(1.00, `hsl(${(_b + _g * 4 + Math.sin(_w * 1.25 + idx * 0.18) * 20 + 360) % 360}, 100%, 56%)`);
-  }
-}
+          {   
+             const _p5 = Number(skin.price ?? skin.cost ?? 0);
+             const _d5 = String(skin.tier || '').toLowerCase() === 'diamond';
+               if (_p5 > 50000 || _d5) {
+             const _k = String(skin.id ?? skin.name ?? skin.tier ?? _p5);
+               let _s = 0;
+                for (let k = 0; k < _k.length; k++) _s = (_s * 47 + _k.charCodeAt(k)) % 1000000;
+                 const _u = (_s + Math.floor(_p5 * 1.618)) % 99991;
+                  const _b = (_u * 137.508) % 360;
+                    const _g = 44 + (_u % 32);
+                   const _w = t * 3.3 + idx * 0.38 + _u * 0.19;
+                rgb5 = c.createLinearGradient(-sr, -sr, sr, sr);
+                 rgb5.addColorStop(0.00, `hsl(${(_b + Math.sin(_w) * 22 + 360) % 360}, 100%, 62%)`);
+               rgb5.addColorStop(0.25, `hsl(${(_b + _g + Math.cos(_w * 0.9 + idx * 0.2) * 20 + 360) % 360}, 100%, 60%)`);
+                rgb5.addColorStop(0.50, `hsl(${(_b + _g * 2 + Math.sin(_w * 1.1 - idx * 0.15) * 22 + 360) % 360}, 100%, 58%)`);
+             rgb5.addColorStop(0.75, `hsl(${(_b + _g * 3 + Math.cos(_w * 0.8 + idx * 0.25) * 18 + 360) % 360}, 100%, 60%)`);
+               rgb5.addColorStop(1.00, `hsl(${(_b + _g * 4 + Math.sin(_w * 1.25 + idx * 0.18) * 20 + 360) % 360}, 100%, 56%)`);
+           }
+          }
               
     
                        if (bt === 'frillBody') {
@@ -2367,7 +2367,7 @@ jobs:
                     }
                     c.fillStyle = idx % 2 === 0 ? skin.base : skin.mid;
                     if (rgb5) c.fillStyle = rgb5; 
-                 c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                   c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
                     if (idx % 3 === 0) { c.fillStyle = 'rgba(255,36,66,0.55)'; c.beginPath(); c.arc(0, Math.sin(t * 6 + idx) * sr, sr * 0.25, 0, Math.PI * 2); c.fill(); }
                   } else if (bt === 'spiderLegs') {
                     c.fillStyle = skin.base; 
