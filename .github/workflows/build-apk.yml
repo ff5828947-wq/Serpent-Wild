@@ -1045,13 +1045,17 @@ jobs:
               }
               #hudTopRight { position: absolute; top: 8px; right: max(10px, env(safe-area-inset-right)); display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
               .hud-tools { display: flex; gap: 5px; pointer-events: auto; }
-              #arenaLeaderBox {
-                width: 162px; padding: 5px 8px; border-radius: 11px;
-                background: rgba(8, 22, 16, 0.72); border: 1.5px solid rgba(145, 235, 118, 0.45);
-                font-size: 8.8px; font-weight: 800; display: flex; flex-direction: column; gap: 1.5px;
+                            #arenaLeaderBox {
+                width: 178px; padding: 6px 8px; border-radius: 11px;
+                background: rgba(8, 22, 16, 0.78); border: 1.5px solid rgba(145, 235, 118, 0.5);
+                font-size: 8.8px; font-weight: 800; display: flex; flex-direction: column; gap: 2px;
+                box-shadow: 0 4px 14px rgba(0,0,0,0.45);
               }
-              .alb-row { display: flex; justify-content: space-between; gap: 5px; color: #e2f5dc; }
-              .alb-row.me { color: #ffe259; font-weight: 900; background: rgba(255,210,63,0.18); padding: 1px 4px; border-radius: 4px; }
+              .alb-hdr { font-size: 8.5px; font-weight: 900; color: #a8ff78; border-bottom: 1px solid rgba(255,255,255,0.16); padding-bottom: 2px; margin-bottom: 2px; text-align: center; }
+              .alb-row { display: flex; justify-content: space-between; gap: 5px; color: #e2f5dc; padding: 1px 3px; border-radius: 4px; }
+              .alb-row.me { color: #ffffff; font-weight: 900; background: rgba(62, 201, 24, 0.55); border: 1px solid #8cff3b; }
+              .alb-sep { height: 1px; background: rgba(255,255,255,0.22); margin: 2px 0; }
+
 
               #quickPotions { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; pointer-events: auto; }
               .qp-btn {
@@ -1617,8 +1621,33 @@ jobs:
                 recordPlayToday();
                 const saveProfile = () => { try { localStorage.setItem('serpent_wild_v26_wz', JSON.stringify(profile)); } catch (e) {} };
                 saveProfile();
+                const getRealPlayersBoard = (mode) => {
+                  try {
+                    const raw = localStorage.getItem('serpent_real_world_lb_v1');
+                    const db = raw ? JSON.parse(raw) : { infinity: [], time: [], treasure: [] };
+                    return Array.isArray(db[mode]) ? db[mode] : [];
+                  } catch (e) { return []; }
+                };
+                const syncRealPlayerScore = (mode, score) => {
+                  if (!score || score <= 0) return;
+                  try {
+                    const raw = localStorage.getItem('serpent_real_world_lb_v1');
+                    const db = raw ? JSON.parse(raw) : { infinity: [], time: [], treasure: [] };
+                    if (!Array.isArray(db[mode])) db[mode] = [];
+                    const idx = db[mode].findIndex(p => p.id === 'local_real_player');
+                    const entry = { id: 'local_real_player', name: profile.name, score: Math.floor(score), country: '🇮🇳', real: true };
+                    if (idx >= 0) { if (entry.score > db[mode][idx].score) db[mode][idx] = entry; else db[mode][idx].name = profile.name; }
+                    else db[mode].push(entry);
+                    db[mode].sort((a, b) => b.score - a.score);
+                    localStorage.setItem('serpent_real_world_lb_v1', JSON.stringify(db));
+                  } catch (e) {}
+                };
+                const isWorldChampion = () => {
+                  const list = getRealPlayersBoard('infinity');
+                  return list.length > 0 && list[0].id === 'local_real_player' && list[0].score >= 10000;
+                };
 
-                const isWorldChampion = () => (profile.bestScores.infinity || 0) >= WORLD_BOTS.infinity[0].score;
+                
                 const rand = (a, b) => a + Math.random() * (b - a);
                 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
                 const lerp = (a, b, t) => a + (b - a) * t;
@@ -1690,6 +1719,8 @@ jobs:
                 let screenState = 'intro';
                 let floorPattern = null, globalTime = 0, lastFrame = 0, hudTick = 0;
                 let worms = [], foods = [], potions = [], chests = [], particles = [], floatTexts = [];
+                              let emojiPopups = [];
+
                 let player = null, lobbyWorm = null, wsPreviewWorm = null;
                 let buffs = {};
                 let matchStartMs = 0, matchKills = 0, matchCoins = 0, matchTimer = 300, pendingStartBonus = 0;
@@ -2179,8 +2210,14 @@ jobs:
                   } else {
                     c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
                   }
-                 c.fillStyle = 'rgba(255,255,255,0.18)';
-                 c.beginPath(); c.arc(sr * 0.12, -sr * 0.28, sr * 0.34, 0, Math.PI * 2); c.fill();
+                              const sh = c.createRadialGradient(sr * 0.15, -sr * 0.35, sr * 0.08, 0, 0, sr * 1.05);
+                  sh.addColorStop(0, 'rgba(255,255,255,0.34)');
+                  sh.addColorStop(0.45, 'rgba(255,255,255,0.03)');
+                  sh.addColorStop(0.82, 'rgba(0,0,0,0.16)');
+                  sh.addColorStop(1, 'rgba(0,0,0,0.38)');
+                  c.fillStyle = sh;
+                  c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+     
 
                   c.restore();
                 }
@@ -2212,8 +2249,9 @@ jobs:
                     for (let i = 0; i < cnt; i++) this.segments.push({ x: x - Math.cos(this.angle) * i * 4.5, y: y - Math.sin(this.angle) * i * 4.5 });
                   }
 
-                  getRadius() { return clamp(9.5 + Math.pow(Math.max(10, this.score), 0.25) * 1.65, 10, 42) * this.scale; }
-                  getSegCount() { return clamp(Math.floor(14 + Math.pow(Math.max(10, this.score), 0.43) * 1.35), 14, 210); }
+                                 getRadius() { return clamp(7.8 + Math.pow(Math.max(10, this.score), 0.31) * 1.55, 9, 72) * this.scale; }
+                  getSegCount() { return clamp(Math.floor(14 + Math.pow(Math.max(10, this.score), 0.46) * 1.48), 14, 320); }
+   
                   say(txt) { this.bubbleText = txt; this.bubbleTimer = 2.6; }
 
                   updateAI(dt) {
@@ -2311,13 +2349,15 @@ jobs:
                       c.beginPath(); c.arc(seg.x + 3, seg.y + 5, r * taper, 0, Math.PI * 2); c.fill();
                     }
 
-                    if (this.boosting) {
-                      c.fillStyle = '#ffe259'; c.globalAlpha = 0.2;
-                      for (let i = len - 1; i >= 0; i -= 3) {
-                        c.beginPath(); c.arc(this.segments[i].x, this.segments[i].y, r * 1.25, 0, Math.PI * 2); c.fill();
+                                        if (this.boosting) {
+                      const aura = 0.22 + 0.08 * Math.sin(globalTime * 16);
+                      c.fillStyle = '#ffffff'; c.globalAlpha = aura;
+                      for (let i = len - 1; i >= 0; i -= 2) {
+                        c.beginPath(); c.arc(this.segments[i].x, this.segments[i].y, r * 1.34, 0, Math.PI * 2); c.fill();
                       }
                       c.globalAlpha = 1;
                     }
+
 
                     for (let i = len - 1; i >= 1; i--) {
                       const seg = this.segments[i], prev = this.segments[i - 1];
@@ -2402,11 +2442,22 @@ jobs:
                   const fv = FOOD_VARIETIES.find(f => f.id === profile.food) || FOOD_VARIETIES[0];
                   const dropStep = Math.max(2, Math.floor(victim.segments.length / 24));
                   const chunkVal = Math.max(22, Math.min(480, Math.round(victim.score * 0.08)));
+                                    const glowCols = [victim.skin.base, victim.skin.accent || '#ffe259', '#ff59d6', '#4de2f0', '#8cff3b'];
                   for (let i = 0; i < victim.segments.length; i += dropStep) {
                     const sg = victim.segments[i];
                     const icon = fv.items[i % fv.items.length];
-                    foods.push({ x: sg.x + rand(-14, 14), y: sg.y + rand(-14, 14), val: chunkVal, r: 17, icon, col: victim.skin.base, orb: icon === 'orb', big: true });
+                    foods.push({
+                      x: sg.x + rand(-12, 12), y: sg.y + rand(-12, 12), val: chunkVal, r: 18, icon,
+                      col: glowCols[i % glowCols.length], orb: true, big: true, killDrop: true, phase: rand(0, 6.28)
+                    });
                   }
+                  const sadEmojis = ['😭', '🫠', '😵', '💀'];
+                  emojiPopups.push({ x: victim.x, y: victim.y - victim.getRadius() - 10, emoji: sadEmojis[Math.floor(Math.random() * sadEmojis.length)], life: 1.8, maxLife: 1.8 });
+                  if (killer && killer !== victim && killer.alive) {
+                    const winEmojis = ['😈', '💪', '😎', '🔥'];
+                    killer.say(winEmojis[Math.floor(Math.random() * winEmojis.length)]);
+                  }
+
                   for (let i = 0; i < 16; i++) {
                     const a = rand(0, 6.28), sp = rand(40, 170);
                     particles.push({ x: victim.x, y: victim.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 0.55, maxLife: 0.55, r: rand(3, 6), col: victim.skin.base });
@@ -2483,6 +2534,7 @@ jobs:
 
                   buildFloorPattern(profile.floor);
                   worms = []; foods = []; potions = []; chests = []; particles = []; floatTexts = [];
+                  emojiPopups = [];
 
                   const pSkin = SKINS.find(s => s.id === profile.skin) || SKINS[0];
                   const startScore = 100 + (bonusScore || pendingStartBonus);
@@ -2495,14 +2547,16 @@ jobs:
                   player.say(exprObj.text);
                   worms.push(player);
 
+                                    const shuffledSkins = [...SKINS].sort(() => Math.random() - 0.5);
                   for (let i = 1; i < TOTAL_WORMS; i++) {
                     const pt = randInArena(450);
-                    const sk = SKINS[Math.floor(Math.random() * SKINS.length)];
+                    const sk = shuffledSkins[(i - 1) % shuffledSkins.length];
                     const ey = EXTRA_EYES[Math.floor(Math.random() * EXTRA_EYES.length)].id;
                     const lp = EXTRA_LIPS[Math.floor(Math.random() * EXTRA_LIPS.length)].id;
-                    const sc = i < 5 ? Math.floor(rand(8000, 38000)) : Math.floor(rand(140, 4500));
+                    const sc = i === 1 ? Math.floor(rand(95000, 180000)) : (i < 5 ? Math.floor(rand(18000, 58000)) : Math.floor(rand(120, 4200)));
                     worms.push(new Worm({ name: AI_NAMES[i % AI_NAMES.length] + (i > 25 ? i : ''), skin: sk, eye: ey, lip: lp, x: pt.x, y: pt.y, score: sc }));
                   }
+
 
                   spawnFood(320, true);
                   spawnFood(340, false);
@@ -2529,6 +2583,7 @@ jobs:
                   if (elapsedSec > (profile.stats.bestTimeSec || 0)) profile.stats.bestTimeSec = elapsedSec;
                   if (finalScore > (profile.bestScores[profile.mode] || 0)) profile.bestScores[profile.mode] = finalScore;
                   saveProfile();
+                  syncRealPlayerScore(profile.mode, finalScore);
 
                   document.getElementById('resTitle').textContent = profile.mode === 'time' && matchTimer <= 0 ? 'TIME UP!' : 'GAME OVER!';
                   document.getElementById('resSub').textContent = subText;
@@ -2637,12 +2692,15 @@ jobs:
                   for (let i = particles.length - 1; i >= 0; i--) { const p = particles[i]; p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt; if (p.life <= 0) particles.splice(i, 1); }
                   for (let i = floatTexts.length - 1; i >= 0; i--) { const ft = floatTexts[i]; ft.y -= 34 * dt; ft.life -= dt; if (ft.life <= 0) floatTexts.splice(i, 1); }
 
+                                 for (let i = emojiPopups.length - 1; i >= 0; i--) { const ep = emojiPopups[i]; ep.y -= 18 * dt; ep.life -= dt; if (ep.life <= 0) emojiPopups.splice(i, 1); }
+
                   if (player && player.alive) {
-                    camera.x = lerp(camera.x, player.x, clamp(dt * 8, 0, 1));
+                            camera.x = lerp(camera.x, player.x, clamp(dt * 8, 0, 1));
                     camera.y = lerp(camera.y, player.y, clamp(dt * 8, 0, 1));
-                    const sizeZoom = clamp(1.06 - Math.pow(player.score, 0.16) * 0.06, 0.58, 1.0);
-                    const targetZoom = (buffs.zoom || 0) > 0 ? Math.max(0.46, sizeZoom - 0.18) : sizeZoom;
-                    camera.zoom = lerp(camera.zoom, targetZoom, clamp(dt * 4, 0, 1));
+                    const sizeZoom = clamp(1.14 - Math.pow(player.score, 0.21) * 0.068, 0.48, 1.08);
+                    const targetZoom = (buffs.zoom || 0) > 0 ? Math.max(0.38, sizeZoom - 0.16) : sizeZoom;
+                    camera.zoom = lerp(camera.zoom, targetZoom, clamp(dt * 3.5, 0, 1));
+                         
                   }
 
                   hudTick -= dt;
@@ -2661,10 +2719,17 @@ jobs:
                     bRow.innerHTML = POTIONS.filter(p => (buffs[p.id] || 0) > 0)
                       .map(p => `<span class="buff-tag">${p.icon} ${Math.ceil(buffs[p.id])}s</span>`).join('');
 
-                    const sorted = worms.filter(w => w.alive).sort((a, b) => b.score - a.score);
-                    document.getElementById('arenaLeaderBox').innerHTML = sorted.slice(0, 10).map((w, i) =>
-                      `<div class="alb-row${w.isPlayer ? ' me' : ''}"><span>${i === 0 ? '👑' : (i + 1) + '.'} ${w.name.slice(0, 10)}</span><span>${Math.floor(w.score).toLocaleString()}</span></div>`
+                                   const sorted = worms.filter(w => w.alive).sort((a, b) => b.score - a.score);
+                    const myIdx = sorted.findIndex(w => w.isPlayer);
+                    let lbHtml = `<div class="alb-hdr">Top players (in arena: ${sorted.length})</div>`;
+                    lbHtml += sorted.slice(0, 9).map((w, i) =>
+                      `<div class="alb-row${w.isPlayer ? ' me' : ''}"><span>${i === 0 ? '👑' : (i + 1) + '.'} ${w.name.slice(0, 11)}</span><span>${Math.floor(w.score).toLocaleString()}</span></div>`
                     ).join('');
+                    if (myIdx >= 9 && player.alive) {
+                      lbHtml += `<div class="alb-sep"></div><div class="alb-row me"><span>${myIdx + 1}. ${player.name.slice(0, 11)}</span><span>${Math.floor(player.score).toLocaleString()}</span></div>`;
+                    }
+                    document.getElementById('arenaLeaderBox').innerHTML = lbHtml;
+     
 
                     drawMinimap();
                   }
@@ -2793,13 +2858,21 @@ jobs:
                   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                   for (const f of foods) {
                     if (!near(f.x, f.y)) continue;
-                    if (f.orb) {
-                      if (f.big) {
-                        ctx.fillStyle = 'rgba(255, 226, 89, 0.28)';
-                        ctx.beginPath(); ctx.arc(f.x, f.y, f.r * 1.25, 0, Math.PI * 2); ctx.fill();
-                      }
-                      ctx.fillStyle = f.col; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * 0.78, 0, Math.PI * 2); ctx.fill();
-                      ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.beginPath(); ctx.arc(f.x - 3, f.y - 3, f.r * 0.28, 0, Math.PI * 2); ctx.fill();
+                                if (f.orb) {
+                    const pulse = f.killDrop ? (1 + 0.16 * Math.sin(globalTime * 7 + (f.phase || 0))) : 1;
+                    const fr = f.r * pulse;
+                    if (f.big || f.killDrop) {
+                      ctx.save();
+                      ctx.fillStyle = f.col || '#ffe259';
+                      ctx.globalAlpha = f.killDrop ? 0.34 : 0.24;
+                      ctx.beginPath(); ctx.arc(f.x, f.y, fr * 1.75, 0, Math.PI * 2); ctx.fill();
+                      ctx.globalAlpha = f.killDrop ? 0.55 : 0.35;
+                      ctx.beginPath(); ctx.arc(f.x, f.y, fr * 1.28, 0, Math.PI * 2); ctx.fill();
+                      ctx.restore();
+                    }
+                    ctx.fillStyle = f.col; ctx.beginPath(); ctx.arc(f.x, f.y, fr, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = 'rgba(255,255,255,0.68)'; ctx.beginPath(); ctx.arc(f.x - fr * 0.26, f.y - fr * 0.28, fr * 0.36, 0, Math.PI * 2); ctx.fill();
+      
                     } else {
                       const sp = getFoodSprite(f.icon, f.r, f.big);
                       ctx.drawImage(sp, f.x - sp.width / 2, f.y - sp.height / 2);
@@ -2842,6 +2915,17 @@ jobs:
                     ctx.fillStyle = ft.color; ctx.fillText(ft.text, ft.x, ft.y);
                   }
                   ctx.globalAlpha = 1;
+                                  for (const ep of emojiPopups) {
+                    if (!near(ep.x, ep.y)) continue;
+                    ctx.save();
+                    ctx.globalAlpha = clamp(ep.life / ep.maxLife, 0, 1);
+                    ctx.font = '32px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(ep.emoji, ep.x, ep.y);
+                    ctx.restore();
+                  }
+ 
                   ctx.restore();
                 }
 
@@ -3413,10 +3497,16 @@ jobs:
                 let wlMode = 'infinity';
                 function renderWorldLeaderboard() {
                   document.querySelectorAll('[data-wlm]').forEach(b => b.classList.toggle('selected', b.dataset.wlm === wlMode));
-                  const bots = WORLD_BOTS[wlMode] || WORLD_BOTS.infinity;
-                  const entries = bots.map(b => ({ ...b, isMe: false }));
-                  entries.push({ name: profile.name, score: profile.bestScores[wlMode] || 0, country: '🇮🇳', isMe: true });
+                                 let realData = {};
+                  try { realData = JSON.parse(localStorage.getItem('serpent_real_world_lb_v1') || '{}') || {}; } catch (e) {}
+                  const rawList = Array.isArray(realData) ? realData : (Array.isArray(realData[wlMode]) ? realData[wlMode] : []);
+                  const entries = rawList.map(p => ({ ...p, score: Number(p.score) || 0, isMe: p.name === profile.name }));
+                  const myBest = profile.bestScores[wlMode] || 0;
+                  const meEntry = entries.find(e => e.isMe);
+                  if (meEntry) { if (myBest > meEntry.score) meEntry.score = myBest; }
+                  else { entries.push({ name: profile.name, score: myBest, isMe: true }); }
                   entries.sort((a, b) => b.score - a.score);
+   
                   document.getElementById('worldList').innerHTML = entries.map((e, idx) => {
                     const isTop1 = idx === 0;
                     const badge = isTop1 ? `<span class="world-champ-title">👑 WORLD CHAMPION</span>` : '';
