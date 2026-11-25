@@ -1769,8 +1769,24 @@ jobs:
                   return profile.settings.gfx !== 'medium' && profile.settings.gfx !== 'low';
                 }
 
-                                let cachedGameVg = null;
+                              let cachedVgCvs = null;
                 let shadeMaxCvs = null, shadeMedCvs = null;
+                const glowCache = {};
+
+                function getGlowSprite(col) {
+                  if (glowCache[col]) return glowCache[col];
+                  const s = 64, r = s / 2;
+                  const oc = document.createElement('canvas');
+                  oc.width = s; oc.height = s;
+                  const g = oc.getContext('2d');
+                  const gg = g.createRadialGradient(r, r, r * 0.2, r, r, r);
+                  gg.addColorStop(0, col);
+                  gg.addColorStop(1, 'rgba(0,0,0,0)');
+                  g.fillStyle = gg;
+                  g.beginPath(); g.arc(r, r, r, 0, Math.PI * 2); g.fill();
+                  glowCache[col] = oc;
+                  return oc;
+                }
 
                 function getShadeSprite(maxQ) {
                   if (maxQ && shadeMaxCvs) return shadeMaxCvs;
@@ -1792,14 +1808,22 @@ jobs:
 
                 function resizeCanvas() {
                   appW = window.innerWidth; appH = window.innerHeight;
-                  dpr = Math.min(window.devicePixelRatio || 1, isMaxGfx() ? 1.25 : 1.0);
+                  dpr = Math.min(window.devicePixelRatio || 1, isMaxGfx() ? 1.1 : 1.0);
                   canvas.width = Math.max(1, Math.floor(appW * dpr));
                   canvas.height = Math.max(1, Math.floor(appH * dpr));
-                  cachedGameVg = ctx.createRadialGradient(appW * 0.5, appH * 0.5, appW * 0.28, appW * 0.5, appH * 0.5, appW * 0.78);
-                  cachedGameVg.addColorStop(0, 'rgba(255,255,255,0.03)');
-                  cachedGameVg.addColorStop(0.65, 'rgba(0,0,0,0)');
-                  cachedGameVg.addColorStop(1, 'rgba(0,10,4,0.44)');
+                  if (!cachedVgCvs) {
+                    const vc = document.createElement('canvas');
+                    vc.width = 128; vc.height = 128;
+                    const vgCtx = vc.getContext('2d');
+                    const vg = vgCtx.createRadialGradient(64, 64, 34, 64, 64, 96);
+                    vg.addColorStop(0, 'rgba(255,255,255,0.03)');
+                    vg.addColorStop(0.65, 'rgba(0,0,0,0)');
+                    vg.addColorStop(1, 'rgba(0,10,4,0.44)');
+                    vgCtx.fillStyle = vg; vgCtx.fillRect(0, 0, 128, 128);
+                    cachedVgCvs = vc;
+                  }
                 }
+                  
 
 
                 function buildFloorPattern(floorId) {
@@ -1984,19 +2008,14 @@ jobs:
 
                   drawSkinAccessory(c, skin, hr, 'back');
 
-                                    if (skin.glow) {
+                                 if (skin.glow) {
                     const isTopTier = skin.tier === 'Mythic' || skin.tier === 'Legendary';
                     const gRad = hr * (isTopTier ? 1.55 : 1.32);
-                    c.save();
-                    c.globalCompositeOperation = 'screen';
                     c.globalAlpha = (isTopTier ? 0.42 : 0.28) + 0.08 * Math.sin(globalTime * 6);
-                    const gg = c.createRadialGradient(0, 0, hr * 0.35, 0, 0, gRad);
-                    gg.addColorStop(0, skin.glow);
-                    gg.addColorStop(1, 'rgba(0,0,0,0)');
-                    c.fillStyle = gg;
-                    c.beginPath(); c.arc(0, 0, gRad, 0, Math.PI * 2); c.fill();
-                    c.restore();
+                    c.drawImage(getGlowSprite(skin.glow), -gRad, -gRad, gRad * 2, gRad * 2);
+                    c.globalAlpha = 1;
                   }
+                     
 
 
                   const hg = c.createRadialGradient(hr * 0.18, -hr * 0.25, hr * 0.1, 0, 0, hr * 1.25);
@@ -2114,21 +2133,15 @@ jobs:
                     c.restore(); return;
                   }
 
-                                    if (skin.glow && idx % 2 === 0) {
+                                         if (skin.glow && idx % 2 === 0) {
                     const isMythic = skin.tier === 'Mythic';
                     const isLeg = skin.tier === 'Legendary';
                     const gRad = sr * (isMythic ? 1.52 : (isLeg ? 1.42 : 1.28));
-                    const pulse = (isMythic ? 0.34 : (isLeg ? 0.26 : 0.18)) + 0.06 * Math.sin(t * 6 + idx * 0.5);
-                    c.save();
-                    c.globalCompositeOperation = 'screen';
-                    c.globalAlpha = pulse;
-                    const bg = c.createRadialGradient(0, 0, sr * 0.3, 0, 0, gRad);
-                    bg.addColorStop(0, skin.glow);
-                    bg.addColorStop(1, 'rgba(0,0,0,0)');
-                    c.fillStyle = bg;
-                    c.beginPath(); c.arc(0, 0, gRad, 0, Math.PI * 2); c.fill();
-                    c.restore();
+                    c.globalAlpha = (isMythic ? 0.34 : (isLeg ? 0.26 : 0.18)) + 0.06 * Math.sin(t * 6 + idx * 0.5);
+                    c.drawImage(getGlowSprite(skin.glow), -gRad, -gRad, gRad * 2, gRad * 2);
+                    c.globalAlpha = 1;
                   }
+             
 
 
                   if (bt === 'frillBody') {
@@ -3066,9 +3079,10 @@ jobs:
                   }
  
                   ctx.restore();
-                                  if (isMaxGfx() && cachedGameVg) {
-                    ctx.fillStyle = cachedGameVg; ctx.fillRect(0, 0, appW, appH);
+                                 if (isMaxGfx() && cachedVgCvs) {
+                    ctx.drawImage(cachedVgCvs, 0, 0, appW, appH);
                   }
+ 
                     
 
                 }
