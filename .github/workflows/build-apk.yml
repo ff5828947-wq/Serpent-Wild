@@ -182,7 +182,7 @@ jobs:
           -keepclassmembers class * {
               @android.webkit.JavascriptInterface <methods>;
           }
-          -keep class com.apexwild.serpent.MainActivity$AudioBridge { *; }    
+          -keep class com.apexwild.serpent.MainActivity$AudioBridge { *; }
           -keep class com.apexwild.serpent.MainActivity$BillingBridge { *; }
           -keep class com.apexwild.serpent.MainActivity$AdBridge { *; }
 
@@ -241,7 +241,6 @@ jobs:
               implementation("androidx.appcompat:appcompat:1.7.0")
               implementation("com.android.billingclient:billing-ktx:7.1.1")
               implementation("com.google.android.gms:play-services-ads:23.6.0")
-
           }
           EOF
 
@@ -276,7 +275,6 @@ jobs:
                   android:theme="@style/Theme.SerpentWild"
                   android:usesCleartextTraffic="false">
                   <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3210967652219044~5142816234" />
-
 
                   <receiver android:name=".ReminderReceiver" android:exported="false" />
 
@@ -436,7 +434,6 @@ jobs:
                           rewardedAd = null
                           isLoadingRewardedAd = false
                           webView.postDelayed({ loadRewardedAd() }, 15000L)
-
                       }
                   })
               }
@@ -661,6 +658,7 @@ jobs:
                       }
                   }
               }
+
               private fun isSignatureValid(): Boolean {
                   return try {
                       if (packageName != "com.apexwild.serpent.royale") return false
@@ -693,7 +691,7 @@ jobs:
               @SuppressLint("SetJavaScriptEnabled")
               override fun onCreate(savedInstanceState: Bundle?) {
                   super.onCreate(savedInstanceState)
-                                    if (!isSignatureValid()) {
+                  if (!isSignatureValid()) {
                       finishAffinity()
                       return
                   }
@@ -706,10 +704,8 @@ jobs:
                   setupPlayBilling()
                   MobileAds.initialize(this) { loadRewardedAd() }
 
-
                   webView = WebView(this).apply {
-                  setLayerType(View.LAYER_TYPE_HARDWARE, null)
-
+                      setLayerType(View.LAYER_TYPE_HARDWARE, null)
                       setBackgroundColor(Color.parseColor("#0d4a14"))
                       overScrollMode = View.OVER_SCROLL_NEVER
                       isHorizontalScrollBarEnabled = false
@@ -1078,7 +1074,7 @@ jobs:
               }
               #hudTopRight { position: absolute; top: 8px; right: max(10px, env(safe-area-inset-right)); display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
               .hud-tools { display: flex; gap: 5px; pointer-events: auto; }
-                            #arenaLeaderBox {
+              #arenaLeaderBox {
                 width: 178px; padding: 6px 8px; border-radius: 11px;
                 background: rgba(8, 22, 16, 0.78); border: 1.5px solid rgba(145, 235, 118, 0.5);
                 font-size: 8.8px; font-weight: 800; display: flex; flex-direction: column; gap: 2px;
@@ -1088,7 +1084,6 @@ jobs:
               .alb-row { display: flex; justify-content: space-between; gap: 5px; color: #e2f5dc; padding: 1px 3px; border-radius: 4px; }
               .alb-row.me { color: #ffffff; font-weight: 900; background: rgba(62, 201, 24, 0.55); border: 1px solid #8cff3b; }
               .alb-sep { height: 1px; background: rgba(255,255,255,0.22); margin: 2px 0; }
-
 
               #quickPotions { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; pointer-events: auto; }
               .qp-btn {
@@ -1439,7 +1434,7 @@ jobs:
                 const LANGUAGES = [
                   { id: 'en', flag: '🇺🇸', name: 'English',    battle: 'To battle!', workshop: '🎨 Workshop', shop: 'Shop', gift: 'Open Gift', chest: 'Ready Chest', spin: 'Lucky Spin', world: 'World Top', settings: '⚙️ Settings', profile: '👤 Player Dossier' },
                   { id: 'hi', flag: '🇮🇳', name: 'हिन्दी',      battle: 'लड़ाई शुरू!', workshop: '🎨 वर्कशॉप',  shop: 'दुकान', gift: 'उपहार',     chest: 'खजाना',       spin: 'लकी व्हील',  world: 'वर्ल्ड टॉप', settings: '⚙️ सेटिंग्स',  profile: '👤 प्रोफ़ाइल' },
-                  { id: 'bn', flag: '🇧🇩', name: 'বাংলা',      battle: 'যুদ্ধে যাও!', workshop: '🎨 ওয়ার্কশপ', shop: 'দোকান', gift: 'উপহার',     chest: 'সিন্দুক',     spin: 'লাকি স্পিন', world: 'ওয়ার্ল্ড টপ', settings: '⚙️ সেটিংস',   profile: '👤 প্রোফাইল' },
+                  { id: 'bn', flag: '🇧🇩', name: 'বাংলা',      battle: 'যুদ্ধে যাও!', workshop: '🎨 ওয়ার্কশপ', shop: 'দোকান', gift: 'উপহার',     chest: 'সিন্দুক',     spin: 'লাকি স্পিন', world: 'ওয়ার্ল্ড টপ', settings: '⚙️ সেটিংস',   profile: '👤 প্রোफ़াইল' },
                   { id: 'es', flag: '🇪🇸', name: 'Español',    battle: '¡A luchar!', workshop: '🎨 Taller',   shop: 'Tienda',gift: 'Regalo',    chest: 'Cofre',       spin: 'Ruleta',     world: 'Top Mundo', settings: '⚙️ Ajustes',  profile: '👤 Perfil' },
                   { id: 'fr', flag: '🇫🇷', name: 'Français',   battle: 'Au combat!', workshop: '🎨 Atelier',  shop: 'Boutique',gift:'Cadeau',   chest: 'Coffre',      spin: 'Roue',       world: 'Top Monde', settings: '⚙️ Paramètres',profile:'👤 Profil' },
                   { id: 'de', flag: '🇩🇪', name: 'Deutsch',    battle: 'In die Schlacht!',workshop:'🎨 Werkstatt',shop:'Shop',gift:'Geschenk', chest: 'Truhe',       spin: 'Glücksrad',  world: 'Weltrang',  settings: '⚙️ Optionen', profile: '👤 Profil' },
@@ -1454,7 +1449,7 @@ jobs:
                   { id: 'tr', flag: '🇹🇷', name: 'Türkçe',     battle: 'Savaşa!',    workshop: '🎨 Atölye',   shop: 'Mağaza',gift: 'Hediye',    chest: 'Sandık',      spin: 'Çark',       world: 'Dünya Top', settings: '⚙️ Ayarlar',  profile: '👤 Profil' },
                   { id: 'vi', flag: '🇻🇳', name: 'Tiếng Việt', battle: 'Chiến thôi!',workshop: '🎨 Xưởng',    shop: 'Cửa hàng',gift:'Quà tặng', chest: 'Rương',       spin: 'Vòng quay',  world: 'Top Thế Giới',settings:'⚙️ Cài đặt', profile: '👤 Hồ sơ' },
                   { id: 'zh', flag: '🇨🇳', name: '简体中文',   battle: '开始战斗!',  workshop: '🎨 工坊',     shop: '商店',  gift: '礼物',      chest: '宝箱',        spin: '转盘',       world: '世界榜',     settings: '⚙️ 设置',     profile: '👤 个人资料' },
-                  { id: 'ar', flag: '🇸🇦', name: 'العربية',    battle: 'إلى المعركة!',workshop:'🎨 الورشة',  shop: 'المتجر',gift: 'هدية',      chest: 'صندوق',       spin: 'عجلة الحظ',  world: 'الأوائل',   settings: '⚙️ الإعدادات',profile: '👤 الملف الشخصي' }
+                  { id: 'ar', flag: '🇸🇦', name: 'العربية',    battle: 'إلى المعركة!',workshop:'🎨 الورشة',  shop: 'المتجر',gift: 'هدية',      chest: 'صندوق',       spin: 'عجلة الحظ',  world: 'الأوائل',   settings: '⚙️ الإعدادات',profile:'👤 الملف الشخصي' }
                 ];
 
                 const MODES = [
@@ -1538,7 +1533,7 @@ jobs:
                   ['rhino',      'Rhino',          'Free',      'rhinoHorn', 'rhinoClassic',  'none',         '',        '#84919e','#545e69','#222830','#e8e1cc','free',0],
                   ['panda',      'Panda',          'Free',      'pandaEars', 'pandaClassic',  'none',         '',        '#ffffff','#dce4eb','#14171a','#14171a','free',0],
                   ['watermelon', 'Watermelon',     'Free',      'leaf',      'melonClassic',  'none',         '',        '#ff4769','#38c94b','#12521b','#141414','free',0],
-                        ['dilopho',    'Dilophosaurus',  'Rare',      'frill',     'frillBody',     'pulseFrill',   '#ff38d4', '#8cff3b','#38a814','#0e3d06','#ff38d4','coin',3000],
+                  ['dilopho',    'Dilophosaurus',  'Rare',      'frill',     'frillBody',     'pulseFrill',   '#ff38d4', '#8cff3b','#38a814','#0e3d06','#ff38d4','coin',3000],
                   ['honey',      'Honey',          'Rare',      'antenna',   'honeycomb',     'drip',         '#ffd23f', '#ffd23f','#d98e00','#522d00','#ffae00','coin',3200],
                   ['donut',      'Donut',          'Rare',      'sprinkle',  'donuts',        'orbitSprinkle','#ff73b9', '#ff73b9','#e6a86e','#6e3a12','#ffe85c','coin',5200],
                   ['goo',        'Goo',            'Rare',      'slimeCap',  'slime',         'bubble',       '#7cff3b', '#7cff3b','#2ec914','#0b4706','#d4ff8a','coin',6600],
@@ -1564,7 +1559,6 @@ jobs:
                   ['xmastree',   'Christmas Tree', 'Epic',      'starTop',   'pineNeedles',   'treeLights',   '#69f03a', '#24a842','#126925','#062e0f','#ff3b30','coin',70000],
                   ['wizard',     'Wizard',         'Epic',      'wizardHat', 'arcaneRunes',   'starOrbit',    '#ffd23f', '#3848b8','#1b246e','#0a0e36','#ffe259','coin',80000],
                   ['snake',      'Cobra King',     'Epic',      'cobraHood', 'emeraldScales', 'venomDrip',    '#69ff59', '#32d94e','#148528','#05330e','#b8ff70','coin',113000],
-
 
                   ['raptor',     'Raptor',         'Legendary', 'dragHorn',  'dinoSpikes',    'electricArc',  '#00e5ff', '#1ca8ff','#0c58b8','#041d4d','#69f03a','dia',250],
                   ['beast',      'Beast',          'Legendary', 'horns',     'lavaArmor',     'emberRise',    '#ff6b1a', '#5c2614','#2e1007','#120502','#ff8c24','dia',445],
@@ -1654,6 +1648,7 @@ jobs:
                 recordPlayToday();
                 const saveProfile = () => { try { localStorage.setItem('serpent_wild_v26_wz', JSON.stringify(profile)); } catch (e) {} };
                 saveProfile();
+
                 const getRealPlayersBoard = (mode) => {
                   try {
                     const raw = localStorage.getItem('serpent_real_world_lb_v1');
@@ -1680,7 +1675,6 @@ jobs:
                   return list.length > 0 && list[0].id === 'local_real_player' && list[0].score >= 10000;
                 };
 
-                
                 const rand = (a, b) => a + Math.random() * (b - a);
                 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
                 const lerp = (a, b, t) => a + (b - a) * t;
@@ -1741,6 +1735,7 @@ jobs:
                 };
                 window.pauseGameAudio = () => { try { Sound.ctx && Sound.ctx.suspend(); } catch (e) {} };
                 window.resumeGameAudio = () => { try { Sound.ctx && Sound.ctx.resume(); } catch (e) {} };
+
                 const canvas = document.getElementById('gameCanvas');
                 const ctx = canvas.getContext('2d', { alpha: false });
                 const miniCanvas = document.getElementById('minimapCanvas');
@@ -1752,7 +1747,7 @@ jobs:
                 let screenState = 'intro';
                 let floorPattern = null, globalTime = 0, lastFrame = 0, hudTick = 0;
                 let worms = [], foods = [], potions = [], chests = [], particles = [], floatTexts = [];
-                              let emojiPopups = [];
+                let emojiPopups = [];
 
                 let player = null, lobbyWorm = null, wsPreviewWorm = null;
                 let buffs = {};
@@ -1765,11 +1760,10 @@ jobs:
                   boostHeld: false, keys: { up: false, down: false, left: false, right: false, boost: false }
                 };
 
-                                function isMaxGfx() {
+                function isMaxGfx() {
                   return profile.settings.gfx !== 'medium' && profile.settings.gfx !== 'low';
                 }
 
-                              let cachedVgCvs = null;
                 let shadeMaxCvs = null, shadeMedCvs = null;
                 const glowCache = {};
 
@@ -1806,7 +1800,7 @@ jobs:
                   return oc;
                 }
 
-                                function resizeCanvas() {
+                function resizeCanvas() {
                   appW = window.innerWidth; appH = window.innerHeight;
                   dpr = 1;
                   canvas.width = Math.max(1, Math.floor(appW * dpr));
@@ -1820,9 +1814,6 @@ jobs:
                   }
                   vgEl.style.display = isMaxGfx() ? 'block' : 'none';
                 }
-
-                  
-
 
                 function buildFloorPattern(floorId) {
                   const fl = ARENA_FLOORS.find(f => f.id === floorId) || ARENA_FLOORS[0];
@@ -1884,8 +1875,6 @@ jobs:
                   }
                   floorPattern = ctx.createPattern(t, 'repeat');
                 }
-
-
                 function drawSkinAccessory(c, skin, hr, layer) {
                   const acc = skin.acc;
                   c.save();
@@ -1908,8 +1897,11 @@ jobs:
                         c.quadraticCurveTo(-hr * 0.85, s * hr * 0.7, -hr * 0.5, s * hr * 0.4); c.closePath(); c.fill(); c.stroke();
                       }
                     } else if (acc === 'cobraHood') {
-                      c.fillStyle = skin.mid; c.strokeStyle = skin.accent; c.lineWidth = 1.6;
-                      c.beginPath(); c.ellipse(-hr * 0.32, 0, hr * 0.75, hr * 1.42, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+                      const flare = 1 + 0.08 * Math.sin(globalTime * 7);
+                      c.fillStyle = '#0c5c1d'; c.strokeStyle = '#ffe259'; c.lineWidth = 2.0;
+                      c.beginPath(); c.ellipse(-hr * 0.32, 0, hr * 0.82, hr * 1.52 * flare, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+                      c.strokeStyle = '#7cff59'; c.lineWidth = 1.4;
+                      c.beginPath(); c.ellipse(-hr * 0.32, 0, hr * 0.56, hr * 1.15 * flare, 0, 0, Math.PI * 2); c.stroke();
                     } else if (acc === 'bunnyEars') {
                       for (const s of [-1, 1]) {
                         c.fillStyle = skin.base; c.strokeStyle = skin.dark; c.lineWidth = 1.3;
@@ -1924,10 +1916,10 @@ jobs:
                         if (acc !== 'pandaEars') { c.fillStyle = skin.accent; c.beginPath(); c.arc(-hr * 0.48, s * hr * 0.88, hr * 0.18, 0, Math.PI * 2); c.fill(); }
                       }
                     } else if (acc === 'dragHorn' || acc === 'horns') {
-                      c.fillStyle = acc === 'dragHorn' ? skin.accent : '#e8dfd0'; c.strokeStyle = skin.dark; c.lineWidth = 1.3;
+                      c.fillStyle = acc === 'dragHorn' ? skin.accent : '#f5ebd6'; c.strokeStyle = skin.glow || skin.dark; c.lineWidth = 1.6;
                       for (const s of [-1, 1]) {
-                        c.beginPath(); c.moveTo(-hr * 0.1, s * hr * 0.68); c.quadraticCurveTo(-hr * 0.85, s * hr * 1.4, -hr * 1.52, s * hr * 1.05);
-                        c.quadraticCurveTo(-hr * 0.85, s * hr * 0.92, -hr * 0.55, s * hr * 0.45); c.closePath(); c.fill(); c.stroke();
+                        c.beginPath(); c.moveTo(-hr * 0.1, s * hr * 0.68); c.quadraticCurveTo(-hr * 0.85, s * hr * 1.48, -hr * 1.62, s * hr * 1.12);
+                        c.quadraticCurveTo(-hr * 0.85, s * hr * 0.94, -hr * 0.55, s * hr * 0.45); c.closePath(); c.fill(); c.stroke();
                       }
                     } else if (acc === 'tentacle') {
                       c.strokeStyle = skin.mid; c.lineWidth = Math.max(2.2, hr * 0.22); c.lineCap = 'round';
@@ -1944,9 +1936,9 @@ jobs:
                       c.fillStyle = skin.base;
                       for (let k = 0; k < 8; k++) { const a = (k / 8) * Math.PI * 2; c.beginPath(); c.arc(Math.cos(a) * hr * 0.85, Math.sin(a) * hr * 0.85, hr * 0.38, 0, Math.PI * 2); c.fill(); }
                     } else if (acc === 'hood') {
-                      c.fillStyle = '#0e2c3d'; c.strokeStyle = '#4de2f0'; c.lineWidth = 1.6;
-                      c.beginPath(); c.moveTo(hr * 0.65, -hr * 1.05); c.quadraticCurveTo(-hr * 1.45, -hr * 1.25, -hr * 1.48, 0);
-                      c.quadraticCurveTo(-hr * 1.45, hr * 1.25, hr * 0.65, hr * 1.05); c.closePath(); c.fill(); c.stroke();
+                      c.fillStyle = '#092030'; c.strokeStyle = '#6ef7ff'; c.lineWidth = 2.0;
+                      c.beginPath(); c.moveTo(hr * 0.68, -hr * 1.1); c.quadraticCurveTo(-hr * 1.5, -hr * 1.32, -hr * 1.56, 0);
+                      c.quadraticCurveTo(-hr * 1.5, hr * 1.32, hr * 0.68, hr * 1.1); c.closePath(); c.fill(); c.stroke();
                     }
                   } else {
                     if (acc === 'rhinoHorn') {
@@ -1963,9 +1955,9 @@ jobs:
                       c.fillStyle = '#141826';
                       for (const s of [-1, 1]) { c.beginPath(); c.ellipse(-hr * 0.12, s * hr * 1.02, hr * 0.32, hr * 0.2, 0, 0, Math.PI * 2); c.fill(); c.stroke(); }
                     } else if (acc === 'wizardHat') {
-                      c.fillStyle = skin.mid; c.strokeStyle = skin.accent; c.lineWidth = 1.5;
-                      c.beginPath(); c.moveTo(-hr * 0.15, -hr * 0.88); c.lineTo(-hr * 1.6, 0); c.lineTo(-hr * 0.15, hr * 0.88); c.closePath(); c.fill(); c.stroke();
-                      c.fillStyle = '#ffe259'; c.beginPath(); c.arc(-hr * 1.6, 0, hr * 0.22, 0, Math.PI * 2); c.fill();
+                      c.fillStyle = '#252f8c'; c.strokeStyle = '#ffe259'; c.lineWidth = 1.8;
+                      c.beginPath(); c.moveTo(-hr * 0.15, -hr * 0.94); c.lineTo(-hr * 1.72, 0); c.lineTo(-hr * 0.15, hr * 0.94); c.closePath(); c.fill(); c.stroke();
+                      c.fillStyle = '#ffe259'; c.beginPath(); c.arc(-hr * 1.72, 0, hr * 0.25, 0, Math.PI * 2); c.fill();
                     } else if (acc === 'jesterHat') {
                       for (const s of [-1, 1]) {
                         c.fillStyle = s === 1 ? '#ffe259' : '#9b38ff';
@@ -1989,7 +1981,13 @@ jobs:
                       c.fillStyle = 'rgba(212,255,138,0.85)';
                       c.beginPath(); c.arc(-hr * 0.3, -hr * 0.35, hr * 0.22, 0, Math.PI * 2); c.arc(-hr * 0.55, hr * 0.25, hr * 0.16, 0, Math.PI * 2); c.fill();
                     } else if (acc === 'starTop') {
-                      c.fillStyle = '#ffe259'; c.beginPath(); c.arc(-hr * 0.55, 0, hr * 0.38, 0, Math.PI * 2); c.fill();
+                      c.fillStyle = '#ffe259'; c.strokeStyle = '#ff9f1a'; c.lineWidth = 1.2;
+                      c.beginPath();
+                      for (let k = 0; k < 10; k++) {
+                        const a = (k * Math.PI) / 5 + globalTime * 1.6, rad = k % 2 === 0 ? hr * 0.46 : hr * 0.21;
+                        k === 0 ? c.moveTo(-hr * 0.55 + Math.cos(a) * rad, Math.sin(a) * rad) : c.lineTo(-hr * 0.55 + Math.cos(a) * rad, Math.sin(a) * rad);
+                      }
+                      c.closePath(); c.fill(); c.stroke();
                     } else if (acc === 'camera' || acc === 'block') {
                       c.fillStyle = '#242b33'; c.strokeStyle = '#fff'; c.lineWidth = 1.3;
                       c.fillRect(-hr * 0.75, -hr * 0.45, hr * 0.58, hr * 0.9); c.strokeRect(-hr * 0.75, -hr * 0.45, hr * 0.58, hr * 0.9);
@@ -2003,26 +2001,25 @@ jobs:
                   const isSkull = skin.acc === 'skull' || isGreenSkull;
                   const headCol = isGreenSkull ? '#69ff59' : (skin.acc === 'skull' ? '#ffffff' : skin.base);
                   const headMid = isGreenSkull ? '#1eb834' : (skin.acc === 'skull' ? '#dce4eb' : skin.mid);
+                  const isPremium = skin.curr === 'dia' || (skin.curr === 'coin' && skin.price >= 50000);
 
                   drawSkinAccessory(c, skin, hr, 'back');
 
-                                 if (skin.glow) {
-                    const isTopTier = skin.tier === 'Mythic' || skin.tier === 'Legendary';
-                    const gRad = hr * (isTopTier ? 1.55 : 1.32);
-                    c.globalAlpha = (isTopTier ? 0.42 : 0.28) + 0.08 * Math.sin(globalTime * 6);
+                  if (skin.glow) {
+                    const isTopTier = skin.tier === 'Mythic' || skin.tier === 'Legendary' || isPremium;
+                    const gRad = hr * (isTopTier ? 1.72 : 1.32);
+                    c.globalAlpha = (isTopTier ? 0.50 : 0.28) + 0.09 * Math.sin(globalTime * 6);
                     c.drawImage(getGlowSprite(skin.glow), -gRad, -gRad, gRad * 2, gRad * 2);
                     c.globalAlpha = 1;
                   }
-                     
-
 
                   const hg = c.createRadialGradient(hr * 0.18, -hr * 0.25, hr * 0.1, 0, 0, hr * 1.25);
                   hg.addColorStop(0, headCol); hg.addColorStop(0.75, headMid); hg.addColorStop(1, skin.dark);
-                  c.fillStyle = hg; c.strokeStyle = 'rgba(0,0,0,0.36)'; c.lineWidth = 1.3;
+                  c.fillStyle = hg; c.strokeStyle = isPremium ? (skin.accent || '#ffe259') : 'rgba(0,0,0,0.36)'; c.lineWidth = isPremium ? 1.8 : 1.3;
                   c.beginPath(); c.ellipse(hr * 0.08, 0, hr * 1.14, hr * 1.04, 0, 0, Math.PI * 2); c.fill(); c.stroke();
 
-                  c.fillStyle = 'rgba(255,255,255,0.28)';
-                  c.beginPath(); c.ellipse(-hr * 0.12, -hr * 0.42, hr * 0.44, hr * 0.2, -0.2, 0, Math.PI * 2); c.fill();
+                  c.fillStyle = isPremium ? 'rgba(255,255,255,0.44)' : 'rgba(255,255,255,0.28)';
+                  c.beginPath(); c.ellipse(-hr * 0.12, -hr * 0.42, hr * 0.46, hr * 0.22, -0.2, 0, Math.PI * 2); c.fill();
                   if (!isSkull) {
                     c.fillStyle = 'rgba(255, 110, 145, 0.34)';
                     c.beginPath(); c.arc(hr * 0.34, -hr * 0.66, hr * 0.18, 0, Math.PI * 2); c.arc(hr * 0.34, hr * 0.66, hr * 0.18, 0, Math.PI * 2); c.fill();
@@ -2131,42 +2128,20 @@ jobs:
                     c.restore(); return;
                   }
 
-                            if (skin.glow && idx % 2 === 0) {
-                    const isMythic = skin.tier === 'Mythic';
-                    const isLeg = skin.tier === 'Legendary';
-                    const pVal = Number(skin.price ?? skin.cost ?? 0);
-                    const pBoost = pVal <= 3000
-                      ? (Math.max(0, pVal) / 3000) * 0.25
-                      : 0.25 + Math.min(0.35, ((pVal - 3000) / (100000 - 3000)) * 0.35);
-                    const gRad = sr * ((isMythic ? 1.52 : (isLeg ? 1.42 : 1.28)) + pBoost);
-                    const baseA = (isMythic ? 0.34 : (isLeg ? 0.26 : 0.18)) + pBoost * 0.45;
-                    c.globalAlpha = Math.min(0.88, baseA) + 0.06 * Math.sin(t * 6 + idx * 0.5);
+                  const isPremium = skin.curr === 'dia' || (skin.curr === 'coin' && skin.price >= 50000);
+                  const isMythic = skin.tier === 'Mythic';
+                  const isLeg = skin.tier === 'Legendary';
+                  const isEpic = skin.tier === 'Epic';
+
+                  if (skin.glow && idx % 2 === 0) {
+                    const gRad = sr * (isMythic ? 1.85 : (isLeg ? 1.72 : (isPremium ? 1.62 : 1.32)));
+                    const baseA = isMythic ? 0.52 : (isLeg ? 0.44 : (isPremium ? 0.38 : 0.20));
+                    c.globalAlpha = baseA + 0.08 * Math.sin(t * 6.5 + idx * 0.45);
                     c.drawImage(getGlowSprite(skin.glow), -gRad, -gRad, gRad * 2, gRad * 2);
                     c.globalAlpha = 1;
-                    }
-              let rgb5 = null;
-          {   
-             const _p5 = Number(skin.price ?? skin.cost ?? 0);
-             const _d5 = String(skin.tier || '').toLowerCase() === 'diamond';
-               if (_p5 > 50000 || _d5) {
-             const _k = String(skin.id ?? skin.name ?? skin.tier ?? _p5);
-               let _s = 0;
-                for (let k = 0; k < _k.length; k++) _s = (_s * 47 + _k.charCodeAt(k)) % 1000000;
-                 const _u = (_s + Math.floor(_p5 * 1.618)) % 99991;
-                  const _b = (_u * 137.508) % 360;
-                    const _g = 44 + (_u % 32);
-                   const _w = t * 3.3 + idx * 0.38 + _u * 0.19;
-                rgb5 = c.createLinearGradient(-sr, -sr, sr, sr);
-                 rgb5.addColorStop(0.00, `hsl(${(_b + Math.sin(_w) * 22 + 360) % 360}, 100%, 62%)`);
-               rgb5.addColorStop(0.25, `hsl(${(_b + _g + Math.cos(_w * 0.9 + idx * 0.2) * 20 + 360) % 360}, 100%, 60%)`);
-                rgb5.addColorStop(0.50, `hsl(${(_b + _g * 2 + Math.sin(_w * 1.1 - idx * 0.15) * 22 + 360) % 360}, 100%, 58%)`);
-             rgb5.addColorStop(0.75, `hsl(${(_b + _g * 3 + Math.cos(_w * 0.8 + idx * 0.25) * 18 + 360) % 360}, 100%, 60%)`);
-               rgb5.addColorStop(1.00, `hsl(${(_b + _g * 4 + Math.sin(_w * 1.25 + idx * 0.18) * 20 + 360) % 360}, 100%, 56%)`);
-           }
-          }
-              
-    
-                       if (bt === 'frillBody') {
+                  }
+
+                  if (bt === 'frillBody') {
                     const wv = Math.sin(t * 10 + idx) * sr * 0.22;
                     if (idx % 2 === 0) {
                       c.fillStyle = skin.accent;
@@ -2176,32 +2151,6 @@ jobs:
                     c.fillStyle = skin.accent; c.beginPath(); c.arc(0, 0, sr * 0.42, 0, Math.PI * 2); c.fill();
                   } else if (bt === 'honeycomb') {
                     c.fillStyle = skin.base; c.strokeStyle = '#7a4500'; c.lineWidth = 1.6;
-                   const pValBody = Number(skin.price ?? skin.cost ?? 0);
-                   const isDiamondBody = String(skin.tier || '').toLowerCase() === 'diamond';
-                   if (pValBody > 50000 || isDiamondBody) {
-                   const keyStr = String(skin.id ?? skin.name ?? skin.tier ?? pValBody);
-                   let seed = 0;
-                   for (let k = 0; k < keyStr.length; k++) seed = (seed * 47 + keyStr.charCodeAt(k)) % 1000000;
-                    const uid = (seed + Math.floor(pValBody * 1.618)) % 99991;
-                  const baseH = (uid * 137.508) % 360;
-                const gap = 44 + (uid % 32);
-                 const wv5 = globalTime * 3.3 + idx * 0.38 + uid * 0.19;
-              const h1 = (baseH + Math.sin(wv5) * 22 + 360) % 360;
-              const h2 = (baseH + gap + Math.cos(wv5 * 0.9 + idx * 0.2) * 20 + 360) % 360;
-            const h3 = (baseH + gap * 2 + Math.sin(wv5 * 1.1 - idx * 0.15) * 22 + 360) % 360;
-              const h4 = (baseH + gap * 3 + Math.cos(wv5 * 0.8 + idx * 0.25) * 18 + 360) % 360;
-            const h5 = (baseH + gap * 4 + Math.sin(wv5 * 1.25 + idx * 0.18) * 20 + 360) % 360;
-           const g5 = c.createLinearGradient(-sr, -sr, sr, sr);
-                  g5.addColorStop(0.00, `hsl(${h1}, 100%, 62%)`);
-             g5.addColorStop(0.25, `hsl(${h2}, 100%, 60%)`);
-             g5.addColorStop(0.50, `hsl(${h3}, 100%, 58%)`);
-              g5.addColorStop(0.75, `hsl(${h4}, 100%, 60%)`);
-          g5.addColorStop(1.00, `hsl(${h5}, 100%, 56%)`);
-          c.fillStyle = g5;
-          }
- 
-
-                  
                     c.beginPath();
                     for (let k = 0; k < 6; k++) { const a = (Math.PI / 3) * k; k === 0 ? c.moveTo(Math.cos(a) * sr * 1.08, Math.sin(a) * sr * 1.08) : c.lineTo(Math.cos(a) * sr * 1.08, Math.sin(a) * sr * 1.08); }
                     c.closePath(); c.fill(); c.stroke();
@@ -2220,30 +2169,6 @@ jobs:
                   } else if (bt === 'slime') {
                     const sq = 1 + 0.12 * Math.sin(t * 7 + idx * 0.8);
                     c.fillStyle = skin.base; c.globalAlpha = 0.88;
-                          const pValBody = Number(skin.price ?? skin.cost ?? 0);
-                const isDiamondBody = String(skin.tier || '').toLowerCase() === 'diamond';
-                  if (pValBody > 50000 || isDiamondBody) {
-                 const keyStr = String(skin.id ?? skin.name ?? skin.tier ?? pValBody);
-                let seed = 0;
-               for (let k = 0; k < keyStr.length; k++) seed = (seed * 47 + keyStr.charCodeAt(k)) % 1000000;
-               const uid = (seed + Math.floor(pValBody * 1.618)) % 99991;
-             const baseH = (uid * 137.508) % 360;
-               const gap = 44 + (uid % 32);
-            const wv5 = globalTime * 3.3 + idx * 0.38 + uid * 0.19;
-                const h1 = (baseH + Math.sin(wv5) * 22 + 360) % 360;
-            const h2 = (baseH + gap + Math.cos(wv5 * 0.9 + idx * 0.2) * 20 + 360) % 360;
-            const h3 = (baseH + gap * 2 + Math.sin(wv5 * 1.1 - idx * 0.15) * 22 + 360) % 360;
-            const h4 = (baseH + gap * 3 + Math.cos(wv5 * 0.8 + idx * 0.25) * 18 + 360) % 360;
-               const h5 = (baseH + gap * 4 + Math.sin(wv5 * 1.25 + idx * 0.18) * 20 + 360) % 360;
-               const g5 = c.createLinearGradient(-sr, -sr, sr, sr);
-             g5.addColorStop(0.00, `hsl(${h1}, 100%, 62%)`);
-                g5.addColorStop(0.25, `hsl(${h2}, 100%, 60%)`);
-             g5.addColorStop(0.50, `hsl(${h3}, 100%, 58%)`);
-            g5.addColorStop(0.75, `hsl(${h4}, 100%, 60%)`);
-               g5.addColorStop(1.00, `hsl(${h5}, 100%, 56%)`);
-               c.fillStyle = g5;
-            }
-
                     c.beginPath(); c.ellipse(0, 0, sr * sq, sr / sq, 0, 0, Math.PI * 2); c.fill();
                     c.globalAlpha = 1;
                     if (idx % 2 === 0) {
@@ -2270,38 +2195,12 @@ jobs:
                     c.fillStyle = fl; c.fillRect(-sz * 0.36, -sz * 0.38, sz * 0.72, sz * 0.56);
                   } else if (bt === 'pawBody') {
                     c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
-                   const pValBody = Number(skin.price ?? skin.cost ?? 0);
-                 const isDiamondBody = String(skin.tier || '').toLowerCase() === 'diamond';
-                      if (pValBody > 50000 || isDiamondBody) {
-                           const keyStr = String(skin.id ?? skin.name ?? skin.tier ?? pValBody);
-                   let seed = 0;
-                        for (let k = 0; k < keyStr.length; k++) seed = (seed * 47 + keyStr.charCodeAt(k)) % 1000000;
-                           const uid = (seed + Math.floor(pValBody * 1.618)) % 99991;
-                            const baseH = (uid * 137.508) % 360;
-                         const gap = 44 + (uid % 32);
-                        const wv5 = globalTime * 3.3 + idx * 0.38 + uid * 0.19;
-                          const h1 = (baseH + Math.sin(wv5) * 22 + 360) % 360;
-                        const h2 = (baseH + gap + Math.cos(wv5 * 0.9 + idx * 0.2) * 20 + 360) % 360;
-                          const h3 = (baseH + gap * 2 + Math.sin(wv5 * 1.1 - idx * 0.15) * 22 + 360) % 360;
-                        const h4 = (baseH + gap * 3 + Math.cos(wv5 * 0.8 + idx * 0.25) * 18 + 360) % 360;
-                        const h5 = (baseH + gap * 4 + Math.sin(wv5 * 1.25 + idx * 0.18) * 20 + 360) % 360;
-                         const g5 = c.createLinearGradient(-sr, -sr, sr, sr);
-                          g5.addColorStop(0.00, `hsl(${h1}, 100%, 62%)`);
-                         g5.addColorStop(0.25, `hsl(${h2}, 100%, 60%)`);
-                         g5.addColorStop(0.50, `hsl(${h3}, 100%, 58%)`);
-                        g5.addColorStop(0.75, `hsl(${h4}, 100%, 60%)`);
-                         g5.addColorStop(1.00, `hsl(${h5}, 100%, 56%)`);
-                          c.fillStyle = g5;
-                      }
-              
                     if (idx % 3 === 0) {
                       const fy = Math.sin(t * 6 + idx) * sr * 0.22;
                       c.fillStyle = skin.accent; c.beginPath(); c.arc(0, fy, sr * 0.34, 0, Math.PI * 2); c.fill();
                     }
                   } else if (bt === 'coinBody') {
                     c.fillStyle = skin.base; c.strokeStyle = skin.dark; c.lineWidth = 1.2;
-                    if (rgb5) c.fillStyle = rgb5;
-
                     c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill(); c.stroke();
                     if (idx % 2 === 0) {
                       const sp = Math.abs(Math.cos(t * 5 + idx));
@@ -2310,49 +2209,36 @@ jobs:
                   } else if (bt === 'fluffCloud') {
                     const bnc = 1 + 0.08 * Math.sin(t * 8 + idx);
                     c.fillStyle = skin.base;
-                    if (rgb5) c.fillStyle = rgb5;
-
                     for (let k = 0; k < 6; k++) { const a = (k / 6) * Math.PI * 2; c.beginPath(); c.arc(Math.cos(a) * sr * 0.44 * bnc, Math.sin(a) * sr * 0.44 * bnc, sr * 0.66, 0, Math.PI * 2); c.fill(); }
                   } else if (bt === 'furStitch') {
-                   
-                    c.fillStyle = idx % 2 === 0 ? skin.base : skin.mid; if (rgb5) c.fillStyle = rgb5;  c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = idx % 2 === 0 ? skin.base : skin.mid; c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
                     if (idx % 3 === 0) { c.fillStyle = skin.accent; c.beginPath(); c.arc(0, 0, sr * (0.28 + 0.08 * Math.sin(t * 7 + idx)), 0, Math.PI * 2); c.fill(); }
                   } else if (bt === 'carrotTrail') {
-                    c.fillStyle = skin.base; if (rgb5) c.fillStyle = rgb5;  c.beginPath(); c.arc(0, 0, sr * (1 + 0.09 * Math.sin(t * 9 + idx)), 0, Math.PI * 2); c.fill();
-                    
-                  if (idx % 3 === 0) { c.fillStyle = '#ff8c24'; c.beginPath(); c.moveTo(sr * 0.45, 0); c.lineTo(-sr * 0.35, -sr * 0.28); c.lineTo(-sr * 0.35, sr * 0.28); c.closePath(); c.fill(); }
+                    c.fillStyle = skin.base; c.beginPath(); c.arc(0, 0, sr * (1 + 0.09 * Math.sin(t * 9 + idx)), 0, Math.PI * 2); c.fill();
+                    if (idx % 3 === 0) { c.fillStyle = '#ff8c24'; c.beginPath(); c.moveTo(sr * 0.45, 0); c.lineTo(-sr * 0.35, -sr * 0.28); c.lineTo(-sr * 0.35, sr * 0.28); c.closePath(); c.fill(); }
                   } else if (bt === 'featherWave') {
                     const flt = Math.sin(t * 11 + idx) * sr * 0.2;
                     const fc = ['#ff3b30','#24c94b','#ffe259','#1c8cff'];
                     c.fillStyle = fc[idx % fc.length];
-                   if (rgb5) c.fillStyle = rgb5;
- 
                     c.beginPath(); c.ellipse(0, flt * 0.3, sr * 1.05, sr * 0.92, 0, 0, Math.PI * 2); c.fill();
                     c.strokeStyle = '#ffffff'; c.lineWidth = 1.3; c.beginPath(); c.arc(-sr * 0.15, 0, sr * 0.55, -0.8, 0.8); c.stroke();
                   } else if (bt === 'cyberCircuit') {
                     const sz = sr * 1.8;
                     c.fillStyle = '#111524'; c.strokeStyle = `hsl(${(t * 180 + idx * 18) % 360}, 100%, 58%)`; c.lineWidth = 2;
-                    if (rgb5) c.fillStyle = rgb5;
-
                     c.fillRect(-sz / 2, -sz / 2, sz, sz); c.strokeRect(-sz / 2, -sz / 2, sz, sz);
                     c.fillStyle = c.strokeStyle; c.beginPath(); c.arc(0, 0, sr * 0.26, 0, Math.PI * 2); c.fill();
                   } else if (bt === 'diamondCheck') {
                     c.fillStyle = idx % 2 === 0 ? skin.base : skin.mid;
-                    if (rgb5) c.fillStyle = rgb5;
-
                     c.beginPath(); c.moveTo(sr * 1.15, 0); c.lineTo(0, -sr * 1.15); c.lineTo(-sr * 1.15, 0); c.lineTo(0, sr * 1.15); c.closePath(); c.fill();
                     if (idx % 3 === 0) { c.fillStyle = '#ff4757'; c.beginPath(); c.arc(Math.cos(t * 5 + idx) * sr * 0.8, Math.sin(t * 5 + idx) * sr * 0.8, sr * 0.18, 0, Math.PI * 2); c.fill(); }
                   } else if (bt === 'neonClaw') {
                     c.fillStyle = skin.base;
-                    if (rgb5) c.fillStyle = rgb5;
                     c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
                     c.strokeStyle = skin.accent; c.lineWidth = 2; c.globalAlpha = 0.5 + 0.5 * Math.sin(t * 8 + idx);
                     c.beginPath(); c.moveTo(-sr * 0.4, -sr * 0.45); c.lineTo(sr * 0.4, sr * 0.45); c.moveTo(-sr * 0.4, sr * 0.45); c.lineTo(sr * 0.4, -sr * 0.45); c.stroke();
                     c.globalAlpha = 1;
                   } else if (bt === 'saberStripe') {
                     c.fillStyle = (Math.floor(idx / 2) % 2 === 0) ? skin.base : '#4a2704';
-                    if (rgb5) c.fillStyle = rgb5;
-
                     c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
                     if (idx % 3 === 0) { c.fillStyle = '#ffffff'; c.beginPath(); c.arc(0, Math.sin(t * 9 + idx) * sr * 0.6, sr * 0.16, 0, Math.PI * 2); c.fill(); }
                   } else if (bt === 'batWings') {
@@ -2366,13 +2252,10 @@ jobs:
                       }
                     }
                     c.fillStyle = idx % 2 === 0 ? skin.base : skin.mid;
-                    if (rgb5) c.fillStyle = rgb5; 
-                   c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                    c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
                     if (idx % 3 === 0) { c.fillStyle = 'rgba(255,36,66,0.55)'; c.beginPath(); c.arc(0, Math.sin(t * 6 + idx) * sr, sr * 0.25, 0, Math.PI * 2); c.fill(); }
                   } else if (bt === 'spiderLegs') {
-                    c.fillStyle = skin.base; 
-                   if (rgb5) c.fillStyle = rgb5; 
- 
+                    c.fillStyle = skin.base;
                     c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
                     if (idx % 2 === 0 && idx <= 12) {
                       const kick = Math.sin(t * 18 + idx * 1.4) * sr * 0.38;
@@ -2381,9 +2264,7 @@ jobs:
                     }
                     c.fillStyle = skin.accent; c.beginPath(); c.arc(0, 0, sr * 0.32, 0, Math.PI * 2); c.fill();
                   } else if (bt === 'suckerRings') {
-                    c.fillStyle = skin.base; 
-                    if (rgb5) c.fillStyle = rgb5; 
-
+                    c.fillStyle = skin.base;
                     c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
                     if (idx % 2 === 0) {
                       const rr = sr * (0.42 + 0.12 * Math.sin(t * 8 + idx));
@@ -2391,120 +2272,186 @@ jobs:
                     }
                   } else if (bt === 'ribcage') {
                     c.fillStyle = skin.dark;
-                    if (rgb5) c.fillStyle = rgb5; 
-                   c.beginPath(); c.arc(0, 0, sr * 0.88, 0, Math.PI * 2); c.fill();
+                    c.beginPath(); c.arc(0, 0, sr * 0.88, 0, Math.PI * 2); c.fill();
                     c.strokeStyle = '#f2f7ff'; c.lineWidth = Math.max(2.2, sr * 0.22); c.lineCap = 'round';
                     if (idx % 2 === 0) { c.beginPath(); c.moveTo(0, -sr * 0.94); c.lineTo(0, sr * 0.94); c.stroke(); c.fillStyle = '#59f4ff'; c.beginPath(); c.arc(0, 0, sr * 0.28, 0, Math.PI * 2); c.fill(); }
                   } else if (bt === 'wireBulbs') {
-                    c.fillStyle = skin.base;
-                    if (rgb5) c.fillStyle = rgb5;
-
-                    c.beginPath(); c.arc(0, 0, sr * 0.78, 0, Math.PI * 2); c.fill();
-                    const bc = ['#ff3b30','#ffe259','#4de2f0','#ff59d6'];
-                    const on = Math.sin(t * 10 + idx * 1.2) > -0.2;
-                    c.fillStyle = bc[idx % bc.length]; c.globalAlpha = on ? 1 : 0.35;
-                    c.beginPath(); c.arc(0, (idx % 2 === 0 ? 1 : -1) * sr * 0.82, sr * 0.36, 0, Math.PI * 2); c.fill();
+                    // 50,000 COINS — GARLAND: Braided emerald-gold vine with glowing glass LED bulbs
+                    c.fillStyle = idx % 2 === 0 ? '#116322' : '#1b8532';
+                    c.strokeStyle = '#ffd23f'; c.lineWidth = 1.6;
+                    c.beginPath(); c.arc(0, 0, sr * 0.94, 0, Math.PI * 2); c.fill(); c.stroke();
+                    c.strokeStyle = '#ffe885'; c.lineWidth = 1.5;
+                    c.beginPath(); c.moveTo(-sr * 0.65, -sr * 0.4); c.quadraticCurveTo(0, sr * 0.45, sr * 0.65, -sr * 0.4); c.stroke();
+                    const bc = ['#ff2e63', '#ffe259', '#00f7ff', '#7cff3b', '#ff59f0'];
+                    const col = bc[idx % bc.length];
+                    const pulse = 0.65 + 0.35 * Math.sin(t * 9 + idx * 1.1);
+                    const side = (idx % 2 === 0 ? 1 : -1) * sr * 0.88;
+                    c.globalAlpha = 0.45 * pulse;
+                    c.drawImage(getGlowSprite(col), -sr * 0.72, side - sr * 0.72, sr * 1.44, sr * 1.44);
                     c.globalAlpha = 1;
+                    c.fillStyle = col; c.beginPath(); c.arc(0, side, sr * 0.36, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = '#ffffff'; c.beginPath(); c.arc(-sr * 0.1, side - sr * 0.1, sr * 0.14, 0, Math.PI * 2); c.fill();
                   } else if (bt === 'pineNeedles') {
-                    c.fillStyle = skin.base; c.strokeStyle = skin.dark; c.lineWidth = 1.3;
-                  if (rgb5) c.fillStyle = rgb5;
-
-                   c.beginPath();
-                    for (let k = 0; k < 10; k++) { const a = (k / 10) * Math.PI * 2, rad = k % 2 === 0 ? sr * 1.25 : sr * 0.76; k === 0 ? c.moveTo(Math.cos(a) * rad, Math.sin(a) * rad) : c.lineTo(Math.cos(a) * rad, Math.sin(a) * rad); }
+                    // 70,000 COINS — CHRISTMAS TREE: Layered frosted pine fronds, golden garland & sparkling ornaments
+                    c.fillStyle = idx % 2 === 0 ? '#0d5920' : '#167a2e';
+                    c.strokeStyle = '#8cff70'; c.lineWidth = 1.3;
+                    c.beginPath();
+                    for (let k = 0; k < 12; k++) {
+                      const a = (k / 12) * Math.PI * 2, rad = k % 2 === 0 ? sr * 1.24 : sr * 0.82;
+                      k === 0 ? c.moveTo(Math.cos(a) * rad, Math.sin(a) * rad) : c.lineTo(Math.cos(a) * rad, Math.sin(a) * rad);
+                    }
                     c.closePath(); c.fill(); c.stroke();
-                    if (idx % 2 === 0) { c.fillStyle = (Math.floor(t * 4 + idx) % 2 === 0) ? '#ff3b30' : '#ffe259'; c.beginPath(); c.arc(0, 0, sr * 0.3, 0, Math.PI * 2); c.fill(); }
+                    c.fillStyle = '#28b849'; c.beginPath(); c.arc(0, 0, sr * 0.68, 0, Math.PI * 2); c.fill();
+                    c.strokeStyle = '#ffe259'; c.lineWidth = 1.8;
+                    c.beginPath(); c.arc(0, 0, sr * 0.56, -0.9, 0.9); c.stroke();
+                    const orn = ['#ff2442', '#ffe259', '#38e4ff', '#ff66d9'][(idx + Math.floor(t * 2)) % 4];
+                    c.fillStyle = orn; c.beginPath(); c.arc(0, 0, sr * 0.32, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = '#ffffff'; c.beginPath(); c.arc(-sr * 0.1, -sr * 0.1, sr * 0.12, 0, Math.PI * 2); c.fill();
                   } else if (bt === 'arcaneRunes') {
-                    c.fillStyle = skin.base; c.strokeStyle = skin.accent; c.lineWidth = 1.6;
-                   if (rgb5) c.fillStyle = rgb5;
- 
-                    c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill(); c.stroke();
-                    if (idx % 3 === 0) {
-                      const oa = t * 5 + idx;
-                      c.fillStyle = '#ffe259'; c.beginPath(); c.arc(Math.cos(oa) * sr * 1.15, Math.sin(oa) * sr * 1.15, sr * 0.24, 0, Math.PI * 2); c.fill();
+                    // 80,000 COINS — WIZARD: Deep cosmic indigo cloak, rotating golden rune ring & orbiting arcane orbs
+                    c.fillStyle = idx % 2 === 0 ? '#1b206e' : '#2d369e';
+                    c.strokeStyle = '#ffd23f'; c.lineWidth = 1.8;
+                    c.beginPath(); c.arc(0, 0, sr * 1.02, 0, Math.PI * 2); c.fill(); c.stroke();
+                    const rRot = t * 2.4 + idx * 0.35;
+                    c.strokeStyle = '#8ef6ff'; c.lineWidth = 1.5;
+                    c.beginPath();
+                    for (let k = 0; k < 4; k++) {
+                      const a = rRot + (k * Math.PI) / 2;
+                      k === 0 ? c.moveTo(Math.cos(a) * sr * 0.66, Math.sin(a) * sr * 0.66) : c.lineTo(Math.cos(a) * sr * 0.66, Math.sin(a) * sr * 0.66);
+                    }
+                    c.closePath(); c.stroke();
+                    c.fillStyle = '#ffe259'; c.beginPath(); c.arc(0, 0, sr * (0.24 + 0.08 * Math.sin(t * 8 + idx)), 0, Math.PI * 2); c.fill();
+                    if (idx % 2 === 0) {
+                      const oa = t * 4.5 + idx;
+                      const ox = Math.cos(oa) * sr * 1.18, oy = Math.sin(oa) * sr * 1.18;
+                      c.fillStyle = '#ffe875'; c.beginPath(); c.arc(ox, oy, sr * 0.22, 0, Math.PI * 2); c.fill();
                     }
                   } else if (bt === 'emeraldScales') {
-                    c.fillStyle = skin.base; 
-                   if (rgb5) c.fillStyle = rgb5;
- 
-                    c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
-                    c.fillStyle = skin.accent; c.beginPath(); c.moveTo(sr * 0.48, 0); c.lineTo(0, -sr * 0.48); c.lineTo(-sr * 0.48, 0); c.lineTo(0, sr * 0.48); c.closePath(); c.fill();
+                    // 113,000 COINS — COBRA KING: Royal jade-gold armor scales with glowing venom spine
+                    c.fillStyle = idx % 2 === 0 ? '#0c6b22' : '#189634';
+                    c.strokeStyle = '#ffe259'; c.lineWidth = 1.6;
+                    c.beginPath();
+                    c.moveTo(sr * 1.16, 0); c.lineTo(sr * 0.2, -sr * 1.02); c.lineTo(-sr * 0.98, -sr * 0.56);
+                    c.lineTo(-sr * 1.08, 0); c.lineTo(-sr * 0.98, sr * 0.56); c.lineTo(sr * 0.2, sr * 1.02);
+                    c.closePath(); c.fill(); c.stroke();
+                    const vp = 0.55 + 0.45 * Math.sin(t * 9 - idx * 0.6);
+                    c.fillStyle = '#69ff59'; c.globalAlpha = vp;
+                    c.beginPath(); c.moveTo(sr * 0.68, 0); c.lineTo(0, -sr * 0.42); c.lineTo(-sr * 0.62, 0); c.lineTo(0, sr * 0.42); c.closePath(); c.fill();
+                    c.globalAlpha = 1;
+                    c.fillStyle = '#fff599'; c.beginPath(); c.arc(sr * 0.1, 0, sr * 0.18, 0, Math.PI * 2); c.fill();
                   } else if (bt === 'dinoSpikes') {
-                    c.fillStyle = skin.base;
-                    if (rgb5) c.fillStyle = rgb5;
-
-                    c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
+                    // 250 DIAMONDS — RAPTOR: Sapphire-cyan armored scales with electric neon dorsal spikes
+                    const spk = 1 + 0.12 * Math.sin(t * 11 + idx * 0.7);
                     if (idx % 2 === 0) {
-                      c.fillStyle = '#69f03a';
-                      for (const s of [-1, 1]) { c.beginPath(); c.moveTo(sr * 0.3, s * sr * 0.8); c.lineTo(0, s * sr * 1.5); c.lineTo(-sr * 0.4, s * sr * 0.8); c.closePath(); c.fill(); }
+                      c.fillStyle = '#69f03a'; c.strokeStyle = '#00f7ff'; c.lineWidth = 1.4;
+                      for (const s of [-1, 1]) {
+                        c.beginPath(); c.moveTo(sr * 0.35, s * sr * 0.78); c.lineTo(-sr * 0.08, s * sr * 1.56 * spk); c.lineTo(-sr * 0.52, s * sr * 0.78); c.closePath(); c.fill(); c.stroke();
+                      }
                     }
+                    c.fillStyle = idx % 2 === 0 ? '#0c5fd6' : '#189eff';
+                    c.strokeStyle = '#70f8ff'; c.lineWidth = 1.7;
+                    c.beginPath(); c.arc(0, 0, sr * 1.02, 0, Math.PI * 2); c.fill(); c.stroke();
+                    c.strokeStyle = '#a8ff78'; c.lineWidth = 2.0;
+                    c.beginPath(); c.moveTo(sr * 0.55, 0); c.lineTo(-sr * 0.25, -sr * 0.42); c.lineTo(-sr * 0.25, sr * 0.42); c.closePath(); c.stroke();
                   } else if (bt === 'lavaArmor') {
-                    const sz = sr * 1.82;
-                    c.fillStyle = '#2e1007'; c.strokeStyle = '#ff6b1a'; c.lineWidth = 2;
-                    if (rgb5) c.fillStyle = rgb5;
-
-                    c.beginPath(); c.roundRect ? c.roundRect(-sz / 2, -sz / 2, sz, sz, sr * 0.32) : c.rect(-sz / 2, -sz / 2, sz, sz); c.fill(); c.stroke();
-                    c.fillStyle = '#ffe259'; c.globalAlpha = 0.5 + 0.5 * Math.sin(t * 10 + idx);
-                    c.beginPath(); c.arc(0, 0, sr * 0.32, 0, Math.PI * 2); c.fill(); c.globalAlpha = 1;
+                    // 445 DIAMONDS — BEAST: Cracked volcanic obsidian plates with pulsing molten magma core
+                    const sz = sr * 1.92;
+                    const magma = 0.6 + 0.4 * Math.sin(t * 8.5 - idx * 0.5);
+                    c.fillStyle = '#240b04'; c.strokeStyle = '#ff6b1a'; c.lineWidth = 2.2;
+                    c.beginPath(); c.roundRect ? c.roundRect(-sz / 2, -sz / 2, sz, sz, sr * 0.38) : c.rect(-sz / 2, -sz / 2, sz, sz); c.fill(); c.stroke();
+                    c.strokeStyle = '#ffae00'; c.lineWidth = 1.8; c.globalAlpha = magma;
+                    c.beginPath(); c.moveTo(-sr * 0.65, -sr * 0.5); c.lineTo(0, 0); c.lineTo(sr * 0.65, -sr * 0.45); c.moveTo(0, 0); c.lineTo(0, sr * 0.7); c.stroke();
+                    c.fillStyle = '#fff080'; c.beginPath(); c.arc(0, 0, sr * (0.34 + 0.1 * magma), 0, Math.PI * 2); c.fill();
+                    c.globalAlpha = 1;
                   } else if (bt === 'ghostWisp') {
-                    c.globalAlpha = 0.55 + 0.28 * Math.sin(t * 7 + idx * 0.6);
-                    c.fillStyle = skin.base;
-                    if (rgb5) c.fillStyle = rgb5;
-                    c.beginPath(); c.arc(0, 0, sr * 1.05, 0, Math.PI * 2); c.fill();
-                    c.fillStyle = '#ffffff'; c.beginPath(); c.arc(0, 0, sr * 0.42, 0, Math.PI * 2); c.fill();
+                    // 1,560 DIAMONDS — PHANTOM: Translucent spectral spirit body with etheric aura rings & soul core
+                    const ph = 0.68 + 0.24 * Math.sin(t * 7.5 - idx * 0.55);
+                    c.globalAlpha = ph;
+                    c.fillStyle = '#12739e'; c.strokeStyle = '#9cf8ff'; c.lineWidth = 2.0;
+                    c.beginPath(); c.arc(0, 0, sr * 1.08, 0, Math.PI * 2); c.fill(); c.stroke();
+                    c.fillStyle = '#4de2f0'; c.beginPath(); c.arc(0, 0, sr * 0.72, 0, Math.PI * 2); c.fill();
+                    c.globalAlpha = 0.92;
+                    c.fillStyle = '#ffffff'; c.beginPath(); c.arc(0, 0, sr * (0.32 + 0.08 * Math.sin(t * 10 + idx)), 0, Math.PI * 2); c.fill();
                     c.globalAlpha = 1;
-                  } else if (bt === 'blazeMane' || bt === 'hellSpikes' || bt === 'spectralEmerald') {
-                    const fl = 0.72 + 0.32 * Math.sin(t * 16 + idx * 1.7);
-                    c.fillStyle = skin.accent; c.globalAlpha = 0.65;
-                    for (const s of [-1, 1]) { c.beginPath(); c.arc(-sr * 0.2, s * sr * (0.95 + 0.35 * fl), sr * 0.46 * fl, 0, Math.PI * 2); c.fill(); }
-                    c.globalAlpha = 1;
-                    c.fillStyle = skin.base;
-                    if (rgb5) c.fillStyle = rgb5; 
-                    c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
-                    c.fillStyle = skin.accent; c.beginPath(); c.arc(0, 0, sr * 0.38 * fl, 0, Math.PI * 2); c.fill();
-                  } else if (bt === 'aquaFins') {
-                    const sw = Math.sin(t * 9 + idx) * sr * 0.2;
-                    if (idx % 2 === 0) {
-                      c.fillStyle = '#8cf5ff';
-                      for (const s of [-1, 1]) { c.beginPath(); c.moveTo(sr * 0.4, s * sr * 0.8); c.quadraticCurveTo(sw, s * sr * 1.65, -sr * 0.7, s * sr * 1.0); c.closePath(); c.fill(); }
+                  } else if (bt === 'blazeMane') {
+                    // 3,775 DIAMONDS — FIRE HORSE: Blazing solar armor with roaring golden-orange flame plumes
+                    const fl = 0.78 + 0.34 * Math.sin(t * 15 - idx * 1.2);
+                    c.fillStyle = '#ffae00'; c.globalAlpha = 0.78;
+                    for (const s of [-1, 1]) {
+                      c.beginPath(); c.moveTo(sr * 0.4, s * sr * 0.72); c.quadraticCurveTo(-sr * 0.3, s * sr * (1.55 * fl), -sr * 0.95, s * sr * (1.05 * fl)); c.lineTo(-sr * 0.35, s * sr * 0.65); c.closePath(); c.fill();
                     }
-                    c.fillStyle = skin.base;
-                    if (rgb5) c.fillStyle = rgb5; 
-
-                    c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
-                    c.strokeStyle = 'rgba(255,255,255,0.65)'; c.lineWidth = 1.5; c.beginPath(); c.arc(0, 0, sr * 0.55, 0, Math.PI * 2); c.stroke();
+                    c.globalAlpha = 1;
+                    c.fillStyle = idx % 2 === 0 ? '#e63900' : '#ff6b00'; c.strokeStyle = '#ffe875'; c.lineWidth = 1.8;
+                    c.beginPath(); c.arc(0, 0, sr * 1.02, 0, Math.PI * 2); c.fill(); c.stroke();
+                    c.fillStyle = '#fff59e'; c.beginPath(); c.arc(sr * 0.1, 0, sr * 0.42 * fl, 0, Math.PI * 2); c.fill();
+                  } else if (bt === 'hellSpikes') {
+                    // 5,190 DIAMONDS — EVIL: Crimson-obsidian demonic scales with razor blood-crystal spikes & dark flame
+                    const df = 0.8 + 0.28 * Math.sin(t * 14 - idx * 1.1);
+                    if (idx % 2 === 0) {
+                      c.fillStyle = '#ff1e38'; c.strokeStyle = '#ffd0d6'; c.lineWidth = 1.3;
+                      for (const s of [-1, 1]) {
+                        c.beginPath(); c.moveTo(sr * 0.35, s * sr * 0.75); c.lineTo(-sr * 0.35, s * sr * 1.62 * df); c.lineTo(-sr * 0.6, s * sr * 0.7); c.closePath(); c.fill(); c.stroke();
+                      }
+                    }
+                    c.fillStyle = '#38030a'; c.strokeStyle = '#ff2442'; c.lineWidth = 2.0;
+                    c.beginPath(); c.arc(0, 0, sr * 1.04, 0, Math.PI * 2); c.fill(); c.stroke();
+                    c.fillStyle = '#b80b1f'; c.beginPath(); c.moveTo(sr * 0.72, 0); c.lineTo(0, -sr * 0.58); c.lineTo(-sr * 0.72, 0); c.lineTo(0, sr * 0.58); c.closePath(); c.fill();
+                    c.fillStyle = '#ff8594'; c.beginPath(); c.arc(0, 0, sr * 0.26 * df, 0, Math.PI * 2); c.fill();
+                  } else if (bt === 'spectralEmerald') {
+                    // 8,115 DIAMONDS — DULLAHAN (MYTHIC): Haunted dark-emerald knight armor with green inferno wisps
+                    const inf = 0.78 + 0.32 * Math.sin(t * 13 - idx * 1.0);
+                    c.fillStyle = '#52ff42'; c.globalAlpha = 0.62;
+                    for (const s of [-1, 1]) {
+                      c.beginPath(); c.moveTo(sr * 0.35, s * sr * 0.75); c.quadraticCurveTo(-sr * 0.2, s * sr * (1.65 * inf), -sr * 0.9, s * sr * 0.95); c.closePath(); c.fill();
+                    }
+                    c.globalAlpha = 1;
+                    c.fillStyle = '#09381d'; c.strokeStyle = '#69ff59'; c.lineWidth = 2.2;
+                    c.beginPath();
+                    for (let k = 0; k < 6; k++) {
+                      const a = (Math.PI / 3) * k;
+                      k === 0 ? c.moveTo(Math.cos(a) * sr * 1.08, Math.sin(a) * sr * 1.08) : c.lineTo(Math.cos(a) * sr * 1.08, Math.sin(a) * sr * 1.08);
+                    }
+                    c.closePath(); c.fill(); c.stroke();
+                    c.fillStyle = '#b8ff9e'; c.beginPath(); c.arc(0, 0, sr * 0.36 * inf, 0, Math.PI * 2); c.fill();
+                  } else if (bt === 'aquaFins') {
+                    // 11,140 DIAMONDS — WATER DRAGON (MYTHIC): Iridescent sapphire dragon scales, flowing hydro-fins & crystal pearl core
+                    const sw = Math.sin(t * 9 - idx * 0.5) * sr * 0.26;
+                    if (idx % 2 === 0) {
+                      c.fillStyle = 'rgba(120, 245, 255, 0.85)'; c.strokeStyle = '#ffffff'; c.lineWidth = 1.3;
+                      for (const s of [-1, 1]) {
+                        c.beginPath(); c.moveTo(sr * 0.45, s * sr * 0.78); c.quadraticCurveTo(sw, s * sr * 1.82, -sr * 0.85, s * sr * 1.08); c.closePath(); c.fill(); c.stroke();
+                      }
+                    }
+                    c.fillStyle = idx % 2 === 0 ? '#0b6cd4' : '#18a8ff'; c.strokeStyle = '#9cf8ff'; c.lineWidth = 2.1;
+                    c.beginPath(); c.arc(0, 0, sr * 1.05, 0, Math.PI * 2); c.fill(); c.stroke();
+                    c.strokeStyle = 'rgba(255,255,255,0.8)'; c.lineWidth = 1.6;
+                    c.beginPath(); c.arc(0, 0, sr * 0.62, -1.1, 1.1); c.stroke();
+                    c.fillStyle = '#e0ffff'; c.beginPath(); c.arc(sr * 0.14, 0, sr * (0.28 + 0.08 * Math.sin(t * 8 + idx)), 0, Math.PI * 2); c.fill();
                   } else {
-                    c.fillStyle = skin.base; 
-                    if (rgb5) c.fillStyle = rgb5; 
-
+                    c.fillStyle = skin.base;
                     c.beginPath(); c.arc(0, 0, sr, 0, Math.PI * 2); c.fill();
                   }
-                                  const maxQ = isMaxGfx();
-                  const isMythic = skin.tier === 'Mythic';
-                  const isLeg = skin.tier === 'Legendary';
-                  const isEpic = skin.tier === 'Epic';
 
-                               c.drawImage(getShadeSprite(maxQ), -sr, -sr, sr * 2, sr * 2);
-     
+                  const maxQ = isMaxGfx();
+                  c.drawImage(getShadeSprite(maxQ), -sr, -sr, sr * 2, sr * 2);
 
-                  if (isEpic || isLeg || isMythic) {
+                  if (isPremium || isEpic || isLeg || isMythic) {
                     const wave = 0.5 + 0.5 * Math.sin(t * (isMythic ? 9 : 6.5) - idx * 0.55);
                     c.strokeStyle = skin.accent || skin.glow || '#ffffff';
-                    c.globalAlpha = (isMythic ? 0.58 : (isLeg ? 0.44 : 0.30)) * wave;
-                    c.lineWidth = isMythic ? 2.2 : 1.5;
-                    c.beginPath(); c.arc(0, 0, sr * 0.94, 0, Math.PI * 2); c.stroke();
+                    c.globalAlpha = (isMythic ? 0.65 : (isLeg ? 0.52 : (isPremium ? 0.44 : 0.28))) * wave;
+                    c.lineWidth = isMythic ? 2.4 : (isPremium ? 1.9 : 1.4);
+                    c.beginPath(); c.arc(0, 0, sr * 0.96, 0, Math.PI * 2); c.stroke();
                     c.globalAlpha = 1;
                   }
 
                   if ((isLeg || isMythic) && idx % 3 === 0) {
                     const orbA = t * (isMythic ? 5.5 : 3.8) + idx * 1.1;
-                    const ox = Math.cos(orbA) * sr * 1.18, oy = Math.sin(orbA) * sr * 1.18;
+                    const ox = Math.cos(orbA) * sr * 1.24, oy = Math.sin(orbA) * sr * 1.24;
                     c.fillStyle = isMythic ? '#ffffff' : (skin.accent || '#ffe259');
-                    c.globalAlpha = 0.78;
-                    c.beginPath(); c.arc(ox, oy, sr * (isMythic ? 0.22 : 0.16), 0, Math.PI * 2); c.fill();
+                    c.globalAlpha = 0.85;
+                    c.beginPath(); c.arc(ox, oy, sr * (isMythic ? 0.24 : 0.18), 0, Math.PI * 2); c.fill();
                     c.globalAlpha = 1;
                   }
-              
-     
 
                   c.restore();
                 }
@@ -2520,7 +2467,6 @@ jobs:
                   drawWormHead(tc, skin, profile.eye, profile.lip, 11.5, 0, 0, 0);
                   tc.restore();
                 }
-
                 class Worm {
                   constructor({ name, skin, eye, lip, x, y, isPlayer = false, score = 100, isChamp = false, scale = 1.0 }) {
                     this.name = name; this.skin = skin; this.eye = eye || 'cute'; this.lip = lip || 'smile';
@@ -2536,10 +2482,9 @@ jobs:
                     for (let i = 0; i < cnt; i++) this.segments.push({ x: x - Math.cos(this.angle) * i * 4.5, y: y - Math.sin(this.angle) * i * 4.5 });
                   }
 
-                                 getRadius() { return clamp(7.8 + Math.pow(Math.max(10, this.score), 0.31) * 1.55, 9, 72) * this.scale; }
-                    getSegCount() { return clamp(Math.floor(14 + Math.pow(Math.max(10, this.score), 0.40) * 1.12), 14, 320); }
+                  getRadius() { return clamp(7.8 + Math.pow(Math.max(10, this.score), 0.31) * 1.55, 9, 72) * this.scale; }
+                  getSegCount() { return clamp(Math.floor(14 + Math.pow(Math.max(10, this.score), 0.40) * 1.5), 14, 420); }
 
-   
                   say(txt) { this.bubbleText = txt; this.bubbleTimer = 2.6; }
 
                   updateAI(dt) {
@@ -2625,63 +2570,77 @@ jobs:
                     while (this.segments.length > tLen && this.segments.length > 14) this.segments.pop();
                   }
 
-                  draw(c, showUi = true) {
+                  draw(c, showUi = true, viewX = 0, viewY = 0) {
                     if (!this.alive || this.segments.length < 4) return;
                     const r = this.getRadius(), len = this.segments.length;
+                    const cull = viewX > 0 && viewY > 0;
+                    const cx = camera.x, cy = camera.y;
+                    const padX = viewX + r * 2, padY = viewY + r * 2;
 
                     c.save();
                     c.fillStyle = 'rgba(0,0,0,0.22)';
                     for (let i = len - 1; i >= 0; i -= 2) {
                       const seg = this.segments[i];
+                      if (cull && (Math.abs(seg.x - cx) > padX || Math.abs(seg.y - cy) > padY)) continue;
                       const taper = i > len - 6 ? lerp(1, 0.55, (i - (len - 6)) / 6) : 1;
                       c.beginPath(); c.arc(seg.x + 3, seg.y + 5, r * taper, 0, Math.PI * 2); c.fill();
                     }
 
-                                        if (this.boosting) {
+                    if (this.boosting) {
                       const aura = 0.22 + 0.08 * Math.sin(globalTime * 16);
                       c.fillStyle = '#ffffff'; c.globalAlpha = aura;
                       for (let i = len - 1; i >= 0; i -= 2) {
-                        c.beginPath(); c.arc(this.segments[i].x, this.segments[i].y, r * 1.34, 0, Math.PI * 2); c.fill();
+                        const seg = this.segments[i];
+                        if (cull && (Math.abs(seg.x - cx) > padX || Math.abs(seg.y - cy) > padY)) continue;
+                        c.beginPath(); c.arc(seg.x, seg.y, r * 1.34, 0, Math.PI * 2); c.fill();
                       }
                       c.globalAlpha = 1;
                     }
 
-
                     for (let i = len - 1; i >= 1; i--) {
-                      const seg = this.segments[i], prev = this.segments[i - 1];
+                      const seg = this.segments[i];
+                      if (cull && (Math.abs(seg.x - cx) > padX || Math.abs(seg.y - cy) > padY)) continue;
+                      const prev = this.segments[i - 1];
                       const ang = Math.atan2(prev.y - seg.y, prev.x - seg.x);
                       const taper = i > len - 6 ? lerp(1, 0.55, (i - (len - 6)) / 6) : 1;
                       drawBodySegment(c, this.skin, seg.x, seg.y, r * taper, i, ang);
                     }
 
-                    c.save();
-                    c.translate(this.x, this.y);
-                    c.rotate(this.angle);
-                    drawWormHead(c, this.skin, this.eye, this.lip, r * 1.08, this.blinkAmt, this.mouthOpen, this.lookAng);
-                    if (this.spawnShield > 0) {
-                      c.strokeStyle = 'rgba(89, 244, 255, 0.85)'; c.lineWidth = 2.6;
-                      c.beginPath(); c.arc(0, 0, r * 1.65, 0, Math.PI * 2); c.stroke();
-                    }
-                    c.restore();
-
-                    if (this.bubbleTimer > 0 && this.bubbleText) {
+                    const headVisible = !cull || (Math.abs(this.x - cx) <= padX && Math.abs(this.y - cy) <= padY);
+                    if (headVisible) {
                       c.save();
-                      c.font = '900 11.5px sans-serif';
-                      const tw = c.measureText(this.bubbleText).width + 16;
-                      const bx = this.x - tw / 2, by = this.y - r - 40;
-                      c.fillStyle = '#ffffff'; c.strokeStyle = '#1b3554'; c.lineWidth = 2;
-                      c.beginPath(); c.roundRect ? c.roundRect(bx, by, tw, 22, 11) : c.rect(bx, by, tw, 22);
-                      c.fill(); c.stroke();
-                      c.fillStyle = '#11223a'; c.textAlign = 'center'; c.textBaseline = 'middle';
-                      c.fillText(this.bubbleText, this.x, by + 11);
+                      c.translate(this.x, this.y);
+                      c.rotate(this.angle);
+                      drawWormHead(c, this.skin, this.eye, this.lip, r * 1.08, this.blinkAmt, this.mouthOpen, this.lookAng);
+                      if (this.spawnShield > 0) {
+                        c.strokeStyle = 'rgba(89, 244, 255, 0.85)'; c.lineWidth = 2.6;
+                        c.beginPath(); c.arc(0, 0, r * 1.65, 0, Math.PI * 2); c.stroke();
+                      }
                       c.restore();
-                    }
 
-                    if (showUi && profile.settings.showNames) {
-                      c.font = '900 10.5px sans-serif'; c.textAlign = 'center';
-                      const lbl = this.isChamp ? `👑 ${this.name}` : this.name;
-                      c.fillStyle = 'rgba(0,0,0,0.65)'; c.fillText(lbl, this.x + 1, this.y - r - 10);
-                      c.fillStyle = this.isChamp ? '#ffe259' : '#ffffff'; c.fillText(lbl, this.x, this.y - r - 11);
+                      if (this.bubbleTimer > 0 && this.bubbleText) {
+                        c.save();
+                        const bScale = (this === lobbyWorm) ? 1.65 : 1;
+                        const bFont = +(11.5 * bScale).toFixed(1);
+                        const bH = Math.round(22 * bScale);
+                        const bPad = Math.round(16 * bScale);
+                        c.font = `900 ${bFont}px sans-serif`;
+                        const tw = c.measureText(this.bubbleText).width + bPad;
+                        const bx = this.x - tw / 2, by = this.y - r - Math.round(18 * bScale) - bH;
+                        c.fillStyle = '#ffffff'; c.strokeStyle = '#1b3554'; c.lineWidth = 2 * bScale;
+                        c.beginPath(); c.roundRect ? c.roundRect(bx, by, tw, bH, bH / 2) : c.rect(bx, by, tw, bH);
+                        c.fill(); c.stroke();
+                        c.fillStyle = '#11223a'; c.textAlign = 'center'; c.textBaseline = 'middle';
+                        c.fillText(this.bubbleText, this.x, by + bH / 2);
+                        c.restore();
+                      }
+
+                      if (showUi && profile.settings.showNames) {
+                        c.font = '900 10.5px sans-serif'; c.textAlign = 'center';
+                        const lbl = this.isChamp ? `👑 ${this.name}` : this.name;
+                        c.fillStyle = 'rgba(0,0,0,0.65)'; c.fillText(lbl, this.x + 1, this.y - r - 10);
+                        c.fillStyle = this.isChamp ? '#ffe259' : '#ffffff'; c.fillText(lbl, this.x, this.y - r - 11);
+                      }
                     }
                     c.restore();
                   }
@@ -2730,8 +2689,8 @@ jobs:
                   const fv = FOOD_VARIETIES.find(f => f.id === profile.food) || FOOD_VARIETIES[0];
                   const dropStep = Math.max(2, Math.floor(victim.segments.length / 24));
                   const chunkVal = Math.max(12, Math.min(180, Math.round(victim.score * 0.032)));
-   
-                                    const glowCols = [victim.skin.base, victim.skin.accent || '#ffe259', '#ff59d6', '#4de2f0', '#8cff3b'];
+
+                  const glowCols = [victim.skin.base, victim.skin.accent || '#ffe259', '#ff59d6', '#4de2f0', '#8cff3b'];
                   for (let i = 0; i < victim.segments.length; i += dropStep) {
                     const sg = victim.segments[i];
                     const icon = fv.items[i % fv.items.length];
@@ -2836,7 +2795,7 @@ jobs:
                   player.say(exprObj.text);
                   worms.push(player);
 
-                                    const shuffledSkins = [...SKINS].sort(() => Math.random() - 0.5);
+                  const shuffledSkins = [...SKINS].sort(() => Math.random() - 0.5);
                   for (let i = 1; i < TOTAL_WORMS; i++) {
                     const pt = randInArena(450);
                     const sk = shuffledSkins[(i - 1) % shuffledSkins.length];
@@ -2845,7 +2804,6 @@ jobs:
                     const sc = i === 1 ? Math.floor(rand(95000, 180000)) : (i < 5 ? Math.floor(rand(18000, 58000)) : Math.floor(rand(120, 4200)));
                     worms.push(new Worm({ name: AI_NAMES[i % AI_NAMES.length] + (i > 25 ? i : ''), skin: sk, eye: ey, lip: lp, x: pt.x, y: pt.y, score: sc }));
                   }
-
 
                   spawnFood(320, true);
                   spawnFood(340, false);
@@ -2902,7 +2860,7 @@ jobs:
 
                   for (const w of worms) w.update(dt);
 
-                                    for (const w of worms) {
+                  for (const w of worms) {
                     if (!w.alive || w.spawnShield > 0) continue;
                     const rW = w.getRadius();
                     const noseX = w.x + Math.cos(w.angle) * (rW * 0.72);
@@ -2923,7 +2881,6 @@ jobs:
                     }
                   }
 
-
                   const magR = (buffs.magnet || 0) > 0 ? 260 : 85;
                   const mult = (buffs.x5 || 0) > 0 ? 5 : 1;
                   let nearFoodAng = 0, nearFoodD = 220 * 220;
@@ -2936,10 +2893,10 @@ jobs:
                       if (d2 < magR * magR) { f.x = lerp(f.x, player.x, dt * 8.5); f.y = lerp(f.y, player.y, dt * 8.5); }
                     }
                     for (const w of worms) {
-                      if (!w.alive || Math.abs(w.x - f.x) > 55 || Math.abs(w.y - f.y) > 55) continue; 
+                      if (!w.alive || Math.abs(w.x - f.x) > 55 || Math.abs(w.y - f.y) > 55) continue;
                       const er = w.getRadius() * 1.28 + f.r;
                       if (distSq(w.x, w.y, f.x, f.y) < er * er) {
-                        const gain = f.val * 1.3 * (w.isPlayer ? mult : 1);
+                        const gain = Math.round(f.val * 1.3 * (w.isPlayer ? mult : 1));
                         w.score += gain;
                         w.mouthOpen = 0.85;
                         if (w.isPlayer) {
@@ -2948,7 +2905,7 @@ jobs:
                             floatTexts.push({ x: f.x, y: f.y - 12, text: `+${gain}`, color: gain >= 50 ? '#ffe259' : '#a8ff78', life: 0.72, maxLife: 0.72, big: gain >= 50 });
                           }
                         }
-                        foods[i] = foods[foods.length - 1]; foods.pop(); break;  
+                        foods[i] = foods[foods.length - 1]; foods.pop(); break;
                       }
                     }
                   }
@@ -2982,21 +2939,19 @@ jobs:
 
                   for (let i = particles.length - 1; i >= 0; i--) { const p = particles[i]; p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt; if (p.life <= 0) particles.splice(i, 1); }
                   for (let i = floatTexts.length - 1; i >= 0; i--) { const ft = floatTexts[i]; ft.y -= 34 * dt; ft.life -= dt; if (ft.life <= 0) floatTexts.splice(i, 1); }
-
-                                 for (let i = emojiPopups.length - 1; i >= 0; i--) { const ep = emojiPopups[i]; ep.y -= 18 * dt; ep.life -= dt; if (ep.life <= 0) emojiPopups.splice(i, 1); }
+                  for (let i = emojiPopups.length - 1; i >= 0; i--) { const ep = emojiPopups[i]; ep.y -= 18 * dt; ep.life -= dt; if (ep.life <= 0) emojiPopups.splice(i, 1); }
 
                   if (player && player.alive) {
-                            camera.x = lerp(camera.x, player.x, clamp(dt * 8, 0, 1));
+                    camera.x = lerp(camera.x, player.x, clamp(dt * 8, 0, 1));
                     camera.y = lerp(camera.y, player.y, clamp(dt * 8, 0, 1));
                     const sizeZoom = clamp(1.14 - Math.pow(player.score, 0.21) * 0.068, 0.48, 1.08);
                     const targetZoom = (buffs.zoom || 0) > 0 ? Math.max(0.38, sizeZoom - 0.16) : sizeZoom;
                     camera.zoom = lerp(camera.zoom, targetZoom, clamp(dt * 3.5, 0, 1));
-                         
                   }
 
                   hudTick -= dt;
                   if (hudTick <= 0 && player) {
-                         hudTick = 0.45;
+                    hudTick = 0.45;
                     document.getElementById('hudScoreBig').textContent = Math.floor(player.score).toLocaleString();
                     document.getElementById('hudKillsPill').textContent = `💀 ${matchKills}`;
                     document.getElementById('hudCoinsRun').textContent = `🪙 ${matchCoins}`;
@@ -3010,7 +2965,7 @@ jobs:
                     bRow.innerHTML = POTIONS.filter(p => (buffs[p.id] || 0) > 0)
                       .map(p => `<span class="buff-tag">${p.icon} ${Math.ceil(buffs[p.id])}s</span>`).join('');
 
-                                   const sorted = worms.filter(w => w.alive).sort((a, b) => b.score - a.score);
+                    const sorted = worms.filter(w => w.alive).sort((a, b) => b.score - a.score);
                     const myIdx = sorted.findIndex(w => w.isPlayer);
                     let lbHtml = `<div class="alb-hdr">Top players (in arena: ${sorted.length})</div>`;
                     lbHtml += sorted.slice(0, 9).map((w, i) =>
@@ -3020,7 +2975,6 @@ jobs:
                       lbHtml += `<div class="alb-sep"></div><div class="alb-row me"><span>${myIdx + 1}. ${player.name.slice(0, 11)}</span><span>${Math.floor(player.score).toLocaleString()}</span></div>`;
                     }
                     document.getElementById('arenaLeaderBox').innerHTML = lbHtml;
-     
 
                     drawMinimap();
                   }
@@ -3067,7 +3021,8 @@ jobs:
                   const tl = segs[segs.length - 1];
                   return Math.abs(tl.x - camera.x) < vx && Math.abs(tl.y - camera.y) < vy;
                 }
-                       const foodSpriteCache = {};
+
+                const foodSpriteCache = {};
                 function getFoodSprite(icon, r, big) {
                   const k = icon + '_' + r + '_' + (big ? 1 : 0);
                   if (foodSpriteCache[k]) return foodSpriteCache[k];
@@ -3081,11 +3036,8 @@ jobs:
                   return (foodSpriteCache[k] = c);
                 }
 
-
                 function renderGame(dt) {
                   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-                  if (floorPattern) { ctx.fillStyle = floorPattern; ctx.fillRect(0, 0, appW, appH); }
-                  else { ctx.fillStyle = '#145e1c'; ctx.fillRect(0, 0, appW, appH); }
 
                   if (document.getElementById('workshopModal').classList.contains('open') && wsPreviewWorm) {
                     wsCtx.clearRect(0, 0, wsCanvas.width, wsCanvas.height);
@@ -3100,7 +3052,9 @@ jobs:
                     wsPreviewWorm.draw(wsCtx, false);
                   }
 
-                                   if (screenState !== 'playing') {
+                  if (screenState !== 'playing') {
+                    if (floorPattern) { ctx.fillStyle = floorPattern; ctx.fillRect(0, 0, appW, appH); }
+                    else { ctx.fillStyle = '#145e1c'; ctx.fillRect(0, 0, appW, appH); }
                     if (lobbyWorm) {
                       const t = globalTime * 1.35;
                       const rx = appW * 0.42, ry = appH * 0.38;
@@ -3132,20 +3086,17 @@ jobs:
                     }
                     return;
                   }
- 
 
                   ctx.save();
                   ctx.translate(appW / 2, appH / 2);
                   ctx.scale(camera.zoom, camera.zoom);
                   ctx.translate(-camera.x, -camera.y);
 
-                             const vx = (appW / camera.zoom) * 0.6 + 140, vy = (appH / camera.zoom) * 0.6 + 140;
+                  const vx = (appW / camera.zoom) * 0.56 + 110, vy = (appH / camera.zoom) * 0.56 + 110;
                   const near = (x, y) => Math.abs(x - camera.x) < vx && Math.abs(y - camera.y) < vy;
 
-                  if (floorPattern) {
-                    ctx.fillStyle = floorPattern;
-                    ctx.fillRect(camera.x - vx, camera.y - vy, vx * 2, vy * 2);
-                  }
+                  ctx.fillStyle = floorPattern || '#145e1c';
+                  ctx.fillRect(camera.x - vx, camera.y - vy, vx * 2, vy * 2);
 
                   ctx.strokeStyle = 'rgba(255, 71, 87, 0.28)'; ctx.lineWidth = 46;
                   ctx.beginPath(); ctx.arc(WORLD_CENTER, WORLD_CENTER, ARENA_RADIUS, 0, Math.PI * 2); ctx.stroke();
@@ -3157,29 +3108,22 @@ jobs:
                   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                   for (const f of foods) {
                     if (!near(f.x, f.y)) continue;
-                                if (f.orb) {
-                    const pulse = f.killDrop ? (1 + 0.16 * Math.sin(globalTime * 7 + (f.phase || 0))) : 1;
-                    const fr = f.r * pulse;
-                    if (f.big || f.killDrop) {
-                      ctx.save();
-                      ctx.fillStyle = f.col || '#ffe259';
-                      ctx.globalAlpha = f.killDrop ? 0.34 : 0.24;
-                      ctx.beginPath(); ctx.arc(f.x, f.y, fr * 1.75, 0, Math.PI * 2); ctx.fill();
-                      ctx.globalAlpha = f.killDrop ? 0.55 : 0.35;
-                      ctx.beginPath(); ctx.arc(f.x, f.y, fr * 1.28, 0, Math.PI * 2); ctx.fill();
-                      ctx.restore();
-                    }
-                    ctx.fillStyle = f.col; ctx.beginPath(); ctx.arc(f.x, f.y, fr, 0, Math.PI * 2); ctx.fill();
-                    ctx.fillStyle = 'rgba(255,255,255,0.68)'; ctx.beginPath(); ctx.arc(f.x - fr * 0.26, f.y - fr * 0.28, fr * 0.36, 0, Math.PI * 2); ctx.fill();
-      
+                    if (f.orb) {
+                      const pulse = f.killDrop ? (1 + 0.16 * Math.sin(globalTime * 7 + (f.phase || 0))) : 1;
+                      const fr = f.r * pulse;
+                      if (f.big || f.killDrop) {
+                        ctx.fillStyle = f.col || '#ffe259';
+                        ctx.globalAlpha = f.killDrop ? 0.34 : 0.24;
+                        ctx.beginPath(); ctx.arc(f.x, f.y, fr * 1.75, 0, Math.PI * 2); ctx.fill();
+                        ctx.globalAlpha = 1;
+                      }
+                      ctx.fillStyle = f.col; ctx.beginPath(); ctx.arc(f.x, f.y, fr, 0, Math.PI * 2); ctx.fill();
+                      ctx.fillStyle = 'rgba(255,255,255,0.68)'; ctx.beginPath(); ctx.arc(f.x - fr * 0.26, f.y - fr * 0.28, fr * 0.36, 0, Math.PI * 2); ctx.fill();
                     } else {
                       const sp = getFoodSprite(f.icon, f.r, f.big);
                       ctx.drawImage(sp, f.x - sp.width / 2, f.y - sp.height / 2);
                     }
                   }
-       
-                      
-                      
 
                   for (const p of potions) {
                     if (!near(p.x, p.y)) continue;
@@ -3204,7 +3148,7 @@ jobs:
 
                   for (const w of worms) {
                     if (!w.alive) continue;
-                    if (isWormVisible(w, vx, vy)) w.draw(ctx, true);
+                    if (isWormVisible(w, vx, vy)) w.draw(ctx, true, vx, vy);
                   }
 
                   for (const ft of floatTexts) {
@@ -3214,7 +3158,8 @@ jobs:
                     ctx.fillStyle = ft.color; ctx.fillText(ft.text, ft.x, ft.y);
                   }
                   ctx.globalAlpha = 1;
-                                  for (const ep of emojiPopups) {
+
+                  for (const ep of emojiPopups) {
                     if (!near(ep.x, ep.y)) continue;
                     ctx.save();
                     ctx.globalAlpha = clamp(ep.life / ep.maxLife, 0, 1);
@@ -3224,12 +3169,8 @@ jobs:
                     ctx.fillText(ep.emoji, ep.x, ep.y);
                     ctx.restore();
                   }
- 
-                  ctx.restore();
-                                 
- 
-                    
 
+                  ctx.restore();
                 }
 
                 function mainLoop(ts) {
@@ -3566,7 +3507,7 @@ jobs:
                     document.getElementById('sgVib').onclick = () => { profile.settings.vib = !profile.settings.vib; saveProfile(); renderSettingsModal(); Sound.play('click'); };
                     document.getElementById('sgNotif').onclick = () => { profile.settings.notifs = !profile.settings.notifs; saveProfile(); if (window.AndroidAudio) window.AndroidAudio.setNotifications(profile.settings.notifs); renderSettingsModal(); Sound.play('click'); };
                     document.getElementById('sgPriv').onclick = () => { document.getElementById('privacyModal').classList.add('open'); Sound.play('click'); };
-                                    } else if (setTab === 'arena') {
+                  } else if (setTab === 'arena') {
                     const maxOn = isMaxGfx();
                     body.innerHTML = `
                       <div class="setting-row"><div><div style="font-size:12px;font-weight:800;">Graphics Quality</div><div style="font-size:9.5px;color:#b8d8f8;">Max = Realistic 3D Lighting &amp; Shadows • Medium = Smooth 60 FPS</div></div><div style="display:flex;gap:5px;"><button class="chip ${!maxOn ? 'selected' : ''}" id="saMed">MEDIUM</button><button class="chip ${maxOn ? 'selected' : ''}" id="saMax">MAX</button></div></div>
@@ -3574,8 +3515,7 @@ jobs:
                     document.getElementById('saMed').onclick = () => { profile.settings.gfx = 'medium'; saveProfile(); resizeCanvas(); buildFloorPattern(profile.floor); renderSettingsModal(); Sound.play('click'); };
                     document.getElementById('saMax').onclick = () => { profile.settings.gfx = 'max'; saveProfile(); resizeCanvas(); buildFloorPattern(profile.floor); renderSettingsModal(); Sound.play('click'); };
                     document.getElementById('saNames').onclick = () => { profile.settings.showNames = !profile.settings.showNames; saveProfile(); renderSettingsModal(); Sound.play('click'); };
-
-                                  } else if (setTab === 'controls') {
+                  } else if (setTab === 'controls') {
                     body.innerHTML = `
                       <div class="setting-row"><div><div style="font-size:12px;font-weight:800;">Joystick Mode</div></div><div style="display:flex;gap:5px;"><button class="chip ${profile.settings.joy === 'floating' ? 'selected' : ''}" id="scFloat">FLOATING</button><button class="chip ${profile.settings.joy === 'fixed' ? 'selected' : ''}" id="scFix">FIXED</button></div></div>
                       <div class="setting-row"><div><div style="font-size:12px;font-weight:800;">Joystick Size</div></div><div style="display:flex;gap:5px;"><button class="chip ${profile.settings.joySize === 'small' ? 'selected' : ''}" id="scSm">SMALL</button><button class="chip ${profile.settings.joySize === 'normal' ? 'selected' : ''}" id="scNm">NORMAL</button><button class="chip ${profile.settings.joySize === 'large' ? 'selected' : ''}" id="scLg">LARGE</button></div></div>
@@ -3586,7 +3526,6 @@ jobs:
                     document.getElementById('scNm').onclick = () => { profile.settings.joySize = 'normal'; saveProfile(); refreshLobbyUI(); renderSettingsModal(); Sound.play('click'); };
                     document.getElementById('scLg').onclick = () => { profile.settings.joySize = 'large'; saveProfile(); refreshLobbyUI(); renderSettingsModal(); Sound.play('click'); };
                     document.getElementById('scHudEdit').onclick = () => { document.getElementById('settingsModal').classList.remove('open'); window.openHudEditor && window.openHudEditor(); Sound.play('click'); };
-  
                   } else {
                     const grid = document.createElement('div'); grid.className = 'lang-grid';
                     LANGUAGES.forEach(lg => {
@@ -3805,7 +3744,7 @@ jobs:
                 let wlMode = 'infinity';
                 function renderWorldLeaderboard() {
                   document.querySelectorAll('[data-wlm]').forEach(b => b.classList.toggle('selected', b.dataset.wlm === wlMode));
-                                 let realData = {};
+                  let realData = {};
                   try { realData = JSON.parse(localStorage.getItem('serpent_real_world_lb_v1') || '{}') || {}; } catch (e) {}
                   const rawList = Array.isArray(realData) ? realData : (Array.isArray(realData[wlMode]) ? realData[wlMode] : []);
                   const entries = rawList.map(p => ({ ...p, score: Number(p.score) || 0, isMe: p.name === profile.name }));
@@ -3814,11 +3753,11 @@ jobs:
                   if (meEntry) { if (myBest > meEntry.score) meEntry.score = myBest; }
                   else { entries.push({ name: profile.name, score: myBest, isMe: true }); }
                   entries.sort((a, b) => b.score - a.score);
-   
+
                   document.getElementById('worldList').innerHTML = entries.map((e, idx) => {
                     const isTop1 = idx === 0;
                     const badge = isTop1 ? `<span class="world-champ-title">👑 WORLD CHAMPION</span>` : '';
-                    return `<div class="wl-row${isTop1 ? ' top1' : ''}${e.isMe ? ' me' : ''}"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><strong style="width:24px;color:${isTop1 ? '#ffe259' : '#9cd6ff'};">#${idx + 1}</strong><span>${e.country}</span><strong style="font-size:12px;">${e.name}${e.isMe ? ' (YOU)' : ''}</strong>${badge}</div><strong style="color:#ffe259;font-size:12.5px;">${e.score.toLocaleString()}</strong></div>`;
+                    return `<div class="wl-row${isTop1 ? ' top1' : ''}${e.isMe ? ' me' : ''}"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><strong style="width:24px;color:${isTop1 ? '#ffe259' : '#9cd6ff'};">#${idx + 1}</strong><span>${e.country || '🇮🇳'}</span><strong style="font-size:12px;">${e.name}${e.isMe ? ' (YOU)' : ''}</strong>${badge}</div><strong style="color:#ffe259;font-size:12.5px;">${e.score.toLocaleString()}</strong></div>`;
                   }).join('');
                 }
 
@@ -3962,6 +3901,7 @@ jobs:
                   if (e.code === 'KeyD' || e.code === 'ArrowRight') ctrl.keys.right = false;
                   if (e.code === 'Space') ctrl.keys.boost = false;
                 });
+
                 const HUD_ITEMS = [
                   { id: 'btnBoost',     label: '⚡ Boost Button' },
                   { id: 'quickPotions', label: '🧪 Quick Potions' },
@@ -4156,9 +4096,8 @@ jobs:
               -storepass "$STORE_PASS" -keypass "$KEY_PASS" \
               -dname "CN=Apex Wild Studios, OU=Games, O=SerpentWild, L=India, S=IN, C=IN"
           fi
-                    SIG_SHA256=$(keytool -list -v -keystore app/serpent-release.jks -alias "$KEY_ALIAS" -storepass "$STORE_PASS" | grep "SHA256:" | head -n 1 | awk '{print $2}' | tr -d ':')
+          SIG_SHA256=$(keytool -list -v -keystore app/serpent-release.jks -alias "$KEY_ALIAS" -storepass "$STORE_PASS" | grep "SHA256:" | head -n 1 | awk '{print $2}' | tr -d ':')
           sed -i "s/__EXPECTED_SIG_SHA256__/$SIG_SHA256/g" app/src/main/java/com/apexwild/serpent/MainActivity.kt
-
 
       - name: Build Play Store Signed AAB & Release APK
         env:
