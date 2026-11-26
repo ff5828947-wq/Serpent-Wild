@@ -1,4 +1,4 @@
-name: Build Serpent-Wild v29 PlayStore-Ready AAB & APK
+name: Build Serpent-Wild v30 PlayStore-Ready AAB & APK
 
 on:
   push:
@@ -142,7 +142,7 @@ jobs:
               wf.writeframes(data)
           PYEOF
 
-      - name: Generate Serpent-Wild v29 PlayStore-Ready Project
+      - name: Generate Serpent-Wild v30 PlayStore-Ready Project
         run: |
           mkdir -p app/src/main/java/com/apexwild/serpent app/src/main/assets app/src/main/res/values
 
@@ -202,8 +202,8 @@ jobs:
                   applicationId = "com.apexwild.serpent.royale"
                   minSdk = 26
                   targetSdk = 35
-                  versionCode = 29
-                  versionName = "1.0.2"
+                  versionCode = 30
+                  versionName = "1.0.3"
               }
               signingConfigs {
                   create("release") {
@@ -240,7 +240,7 @@ jobs:
               implementation("androidx.core:core-ktx:1.15.0")
               implementation("androidx.appcompat:appcompat:1.7.0")
               implementation("com.android.billingclient:billing-ktx:7.1.1")
-              implementation("com.google.android.gms:play-services-ads:23.6.0")
+              implementation("com.google.android.gms:play-services-ads:24.1.0")
           }
           EOF
 
@@ -272,7 +272,7 @@ jobs:
                   android:hardwareAccelerated="true"
                   android:label="Serpent Wild: Apex"
                   android:supportsRtl="true"
-                  android:theme="@style/Theme.SerpentWild"
+                  android:theme="@style/Theme.AppCompat.NoActionBar"
                   android:usesCleartextTraffic="false">
                   <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3210967652219044~5142816234" />
 
@@ -282,6 +282,7 @@ jobs:
                       android:name=".MainActivity"
                       android:exported="true"
                       android:hardwareAccelerated="true"
+                      android:theme="@style/Theme.SerpentWild"
                       android:screenOrientation="sensorLandscape"
                       android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize">
                       <intent-filter>
@@ -356,7 +357,6 @@ jobs:
               }
           }
           EOF
-
           cat << 'EOF' > app/src/main/java/com/apexwild/serpent/MainActivity.kt
           package com.apexwild.serpent
 
@@ -753,7 +753,6 @@ jobs:
                   bgmPlayer?.let { if (it.isPlaying) it.pause() }
                   webView.evaluateJavascript("window.pauseGameAudio && window.pauseGameAudio();", null)
                   webView.onPause()
-                  webView.pauseTimers()
               }
 
               override fun onStop() {
@@ -764,7 +763,6 @@ jobs:
               override fun onResume() {
                   super.onResume()
                   hideSystemBars()
-                  webView.resumeTimers()
                   webView.onResume()
                   syncNativeBgm()
                   webView.evaluateJavascript("window.resumeGameAudio && window.resumeGameAudio();", null)
@@ -2491,21 +2489,48 @@ jobs:
                   updateAI(dt) {
                     this.aiTimer -= dt;
                     if (this.aiBoost > 0) this.aiBoost -= dt;
-                    if (dist(this.x, this.y, WORLD_CENTER, WORLD_CENTER) > ARENA_RADIUS - 420) {
+                    if (dist(this.x, this.y, WORLD_CENTER, WORLD_CENTER) > ARENA_RADIUS - 480) {
                       this.targetAngle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x);
                       this.boosting = false; return;
                     }
-                    let avX = 0, avY = 0, danger = false;
+                    const rSelf = this.getRadius();
+                    const fx = Math.cos(this.angle), fy = Math.sin(this.angle);
+                    const probeX = this.x + fx * (rSelf + 95), probeY = this.y + fy * (rSelf + 95);
+                    let avX = 0, avY = 0, danger = false, closestD = 9999;
+
                     for (const o of worms) {
                       if (o === this || !o.alive) continue;
-                      if (distSq(this.x, this.y, o.x, o.y) > 400 * 400) continue;
-                      const step = Math.max(1, Math.floor(o.segments.length / 10));
+                      const rO = o.getRadius();
+                      const maxReach = o.segments.length * rO * 0.5 + 420;
+                      if (distSq(this.x, this.y, o.x, o.y) > maxReach * maxReach) continue;
+
+                      const safeR = rSelf + rO + 155;
+                      const safeR2 = safeR * safeR;
+                      const step = o.segments.length > 60 ? 3 : 1;
                       for (let k = 0; k < o.segments.length; k += step) {
-                        const sg = o.segments[k], d2 = distSq(this.x, this.y, sg.x, sg.y);
-                        if (d2 < 140 * 140) { const d = Math.sqrt(d2) || 1; avX += (this.x - sg.x) / d; avY += (this.y - sg.y) / d; danger = true; }
+                        const sg = o.segments[k];
+                        const dx = this.x - sg.x, dy = this.y - sg.y;
+                        const d2 = dx * dx + dy * dy;
+                        const pd2 = distSq(probeX, probeY, sg.x, sg.y);
+                        if (d2 < safeR2 || pd2 < safeR2 * 0.72) {
+                          const d = Math.sqrt(d2) || 1;
+                          if (d < closestD) closestD = d;
+                          const ahead = (-(dx * fx + dy * fy) / d);
+                          const weight = ((safeR - Math.min(d, safeR * 0.95)) / (d * d)) * (ahead > 0.15 ? 2.4 : 1.0);
+                          avX += (dx / d) * weight;
+                          avY += (dy / d) * weight;
+                          danger = true;
+                        }
                       }
                     }
-                    if (danger) { this.targetAngle = Math.atan2(avY, avX); this.boosting = this.score > 160; return; }
+
+                    if (danger) {
+                      const dodgeAng = Math.atan2(avY, avX);
+                      this.targetAngle = dodgeAng;
+                      this.boosting = Math.abs(angleDiff(dodgeAng, this.angle)) < 0.7 && closestD < rSelf + 95 && this.score > 220;
+                      return;
+                    }
+
                     if (this.aiTimer <= 0) {
                       this.aiTimer = rand(0.35, 0.9);
                       this.aiWander += rand(-1.1, 1.1);
@@ -4120,7 +4145,7 @@ jobs:
       - name: Upload Play Store Ready Bundle (AAB + APK + Mapping + Keystore)
         uses: actions/upload-artifact@v4
         with:
-          name: Serpent-Wild-v29-PlayStore-Ready
+          name: Serpent-Wild-v30-PlayStore-Ready
           path: |
             app/build/outputs/bundle/release/app-release.aab
             app/build/outputs/apk/release/app-release.apk
