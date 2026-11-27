@@ -859,11 +859,26 @@ jobs:
                 background: rgba(255,255,255,0.1); color: #eef7ff; font-size: 11px; font-weight: 800; cursor: pointer;
               }
 
-              @keyframes champShine {
+                           @keyframes champShine {
                 0% { background-position: 0% 50%; transform: scale(1); }
                 50% { background-position: 100% 50%; transform: scale(1.06); }
                 100% { background-position: 0% 50%; transform: scale(1); }
               }
+              @keyframes rbGlossSweep {
+                0% { transform: translateX(-140%) skewX(-24deg); }
+                55%, 100% { transform: translateX(260%) skewX(-24deg); }
+              }
+              @keyframes rbPulse1  { 0%,100%{background-position:0% 50%;transform:scale(1);box-shadow:0 0 10px #ffe259,0 0 22px #ff9f1a;} 50%{background-position:100% 50%;transform:scale(1.08);box-shadow:0 0 18px #fff599,0 0 32px #ff5e00;} }
+              @keyframes rbPulse2  { 0%,100%{background-position:0% 50%;transform:translateY(0);box-shadow:0 0 10px #59f4ff,0 0 20px #1e90ff;} 50%{background-position:100% 50%;transform:translateY(-1.5px) scale(1.05);box-shadow:0 0 16px #aef8ff,0 0 28px #00c8ff;} }
+              @keyframes rbPulse3  { 0%,100%{background-position:0% 50%;transform:scale(1);box-shadow:0 0 9px #ff4757,0 0 18px #ff7a18;} 50%{background-position:100% 50%;transform:scale(1.06);box-shadow:0 0 16px #ff6b81,0 0 26px #ff2442;} }
+              @keyframes rbPulse4  { 0%,100%{background-position:0% 50%;box-shadow:0 0 9px #c470ff,0 0 18px #7b2cbf;} 50%{background-position:100% 50%;box-shadow:0 0 16px #e0aaff,0 0 26px #9d4edd;} }
+              @keyframes rbPulse5  { 0%,100%{background-position:0% 50%;box-shadow:0 0 8px #52ff42,0 0 16px #0f9d3a;} 50%{background-position:100% 50%;box-shadow:0 0 15px #a8ff78,0 0 24px #24c94b;} }
+              @keyframes rbPulse6  { 0%,100%{background-position:0% 50%;box-shadow:0 0 8px #38b6ff,0 0 15px #1258b5;} 50%{background-position:100% 50%;box-shadow:0 0 14px #8cd4ff,0 0 22px #1c8cff;} }
+              @keyframes rbPulse7  { 0%,100%{background-position:0% 50%;box-shadow:0 0 8px #ff59d6,0 0 15px #b5179e;} 50%{background-position:100% 50%;box-shadow:0 0 14px #ffa6eb,0 0 22px #ff2e93;} }
+              @keyframes rbPulse8  { 0%,100%{background-position:0% 50%;box-shadow:0 0 8px #ffae00,0 0 15px #d95d00;} 50%{background-position:100% 50%;box-shadow:0 0 14px #ffd25c,0 0 22px #ff7a18;} }
+              @keyframes rbPulse9  { 0%,100%{background-position:0% 50%;box-shadow:0 0 8px #2ec4b6,0 0 15px #0b7285;} 50%{background-position:100% 50%;box-shadow:0 0 14px #8ef6ff,0 0 22px #00b4d8;} }
+              @keyframes rbPulse10 { 0%,100%{background-position:0% 50%;box-shadow:0 0 7px #e2edf8,0 0 14px #7c96b2;} 50%{background-position:100% 50%;box-shadow:0 0 13px #ffffff,0 0 20px #9eb8d4;} }
+
               .world-champ-title {
                 display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 8.5px; font-weight: 900;
                 letter-spacing: 0.7px; text-transform: uppercase; color: #1b0e00;
@@ -871,6 +886,56 @@ jobs:
                 background-size: 300% 300%; animation: champShine 2.4s linear infinite;
                 box-shadow: 0 0 12px rgba(255, 218, 71, 0.85);
               }
+              .rank-badge {
+                position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 3px;
+                padding: 2px 8px; border-radius: 999px; font-size: 8.5px; font-weight: 900;
+                letter-spacing: 0.6px; text-transform: uppercase; vertical-align: middle;
+                background-size: 260% 260%; border: 1.5px solid rgba(255,255,255,0.75);
+                text-shadow: 0 1px 2px rgba(0,0,0,0.48);
+              }
+              .rank-badge::before {
+                content: ''; position: absolute; left: 6%; right: 6%; top: 1px; height: 42%;
+                border-radius: 999px; background: linear-gradient(180deg, rgba(255,255,255,0.68), rgba(255,255,255,0));
+                pointer-events: none;
+              }
+              .rank-badge::after {
+                content: ''; position: absolute; top: -25%; left: 0; width: 42%; height: 150%;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.85), transparent);
+                animation: rbGlossSweep 2.1s ease-in-out infinite; pointer-events: none;
+              }
+              .rank-badge.r1  { color: #241000; text-shadow: 0 1px 0 rgba(255,255,255,0.55); border-color: #fff8b8; background-image: linear-gradient(95deg, #fff599, #ffd23f, #ff8c00, #ffe259, #ff5e7e, #ffd23f); animation: rbPulse1 1.9s linear infinite; }
+              .rank-badge.r2  { color: #021d2b; text-shadow: 0 1px 0 rgba(255,255,255,0.5);  border-color: #d6fcff; background-image: linear-gradient(95deg, #d6fcff, #59f4ff, #1e90ff, #8ef6ff, #d6fcff); animation: rbPulse2 2.1s ease-in-out infinite; }
+              .rank-badge.r3  { color: #ffffff; border-color: #ffc2c7; background-image: linear-gradient(95deg, #ff2442, #ff6b1a, #ffd23f, #ff2442); animation: rbPulse3 2.0s ease-in-out infinite; }
+              .rank-badge.r4  { color: #ffffff; border-color: #ecc8ff; background-image: linear-gradient(95deg, #7b2cbf, #c470ff, #ff59d6, #7b2cbf); animation: rbPulse4 2.2s ease-in-out infinite; }
+              .rank-badge.r5  { color: #04240b; text-shadow: 0 1px 0 rgba(255,255,255,0.45); border-color: #d4ffbf; background-image: linear-gradient(95deg, #a8ff78, #38c94b, #00e676, #a8ff78); animation: rbPulse5 2.3s ease-in-out infinite; }
+              .rank-badge.r6  { color: #ffffff; border-color: #bfe6ff; background-image: linear-gradient(95deg, #0c4894, #1ca8ff, #59f4ff, #0c4894); animation: rbPulse6 2.4s ease-in-out infinite; }
+              .rank-badge.r7  { color: #ffffff; border-color: #ffd1f2; background-image: linear-gradient(95deg, #b5179e, #ff4da6, #ff85c0, #b5179e); animation: rbPulse7 2.4s ease-in-out infinite; }
+              .rank-badge.r8  { color: #241000; text-shadow: 0 1px 0 rgba(255,255,255,0.45); border-color: #ffe8a3; background-image: linear-gradient(95deg, #ffd25c, #ff8c24, #ff5e14, #ffd25c); animation: rbPulse8 2.5s ease-in-out infinite; }
+              .rank-badge.r9  { color: #032126; text-shadow: 0 1px 0 rgba(255,255,255,0.45); border-color: #c7fff7; background-image: linear-gradient(95deg, #8ef6ff, #2ec4b6, #00b4d8, #8ef6ff); animation: rbPulse9 2.6s ease-in-out infinite; }
+              .rank-badge.r10 { color: #111c29; text-shadow: 0 1px 0 rgba(255,255,255,0.6);  border-color: #ffffff; background-image: linear-gradient(95deg, #ffffff, #c8d8e8, #8ea8c4, #ffffff); animation: rbPulse10 2.7s ease-in-out infinite; }
+
+              @keyframes prGlow1  { 0%,100%{box-shadow:0 0 12px rgba(255,210,63,0.75),inset 0 0 10px rgba(255,210,63,0.3);} 50%{box-shadow:0 0 24px rgba(255,174,0,1),inset 0 0 16px rgba(255,245,153,0.45);} }
+              @keyframes prGlow2  { 0%,100%{box-shadow:0 0 11px rgba(89,244,255,0.7),inset 0 0 9px rgba(89,244,255,0.28);} 50%{box-shadow:0 0 22px rgba(0,200,255,0.95),inset 0 0 14px rgba(174,248,255,0.4);} }
+              @keyframes prGlow3  { 0%,100%{box-shadow:0 0 11px rgba(255,71,87,0.7),inset 0 0 9px rgba(255,107,26,0.28);} 50%{box-shadow:0 0 21px rgba(255,36,66,0.95),inset 0 0 14px rgba(255,159,67,0.4);} }
+              @keyframes prGlow4  { 0%,100%{box-shadow:0 0 10px rgba(196,112,255,0.65);} 50%{box-shadow:0 0 20px rgba(196,112,255,0.95);} }
+              @keyframes prGlow5  { 0%,100%{box-shadow:0 0 10px rgba(82,255,66,0.65);}   50%{box-shadow:0 0 19px rgba(82,255,66,0.92);} }
+              @keyframes prGlow6  { 0%,100%{box-shadow:0 0 10px rgba(56,182,255,0.65);}  50%{box-shadow:0 0 19px rgba(56,182,255,0.92);} }
+              @keyframes prGlow7  { 0%,100%{box-shadow:0 0 10px rgba(255,89,214,0.65);}  50%{box-shadow:0 0 19px rgba(255,89,214,0.92);} }
+              @keyframes prGlow8  { 0%,100%{box-shadow:0 0 10px rgba(255,174,0,0.65);}   50%{box-shadow:0 0 18px rgba(255,140,36,0.92);} }
+              @keyframes prGlow9  { 0%,100%{box-shadow:0 0 10px rgba(46,196,182,0.65);}  50%{box-shadow:0 0 18px rgba(0,180,216,0.92);} }
+              @keyframes prGlow10 { 0%,100%{box-shadow:0 0 9px rgba(210,228,245,0.6);}   50%{box-shadow:0 0 17px rgba(255,255,255,0.88);} }
+
+              .prof-rank-1  { border-color: #ffe259 !important; animation: prGlow1 1.9s ease-in-out infinite; }
+              .prof-rank-2  { border-color: #59f4ff !important; animation: prGlow2 2.1s ease-in-out infinite; }
+              .prof-rank-3  { border-color: #ff4757 !important; animation: prGlow3 2.0s ease-in-out infinite; }
+              .prof-rank-4  { border-color: #c470ff !important; animation: prGlow4 2.2s ease-in-out infinite; }
+              .prof-rank-5  { border-color: #52ff42 !important; animation: prGlow5 2.3s ease-in-out infinite; }
+              .prof-rank-6  { border-color: #38b6ff !important; animation: prGlow6 2.4s ease-in-out infinite; }
+              .prof-rank-7  { border-color: #ff59d6 !important; animation: prGlow7 2.4s ease-in-out infinite; }
+              .prof-rank-8  { border-color: #ffae00 !important; animation: prGlow8 2.5s ease-in-out infinite; }
+              .prof-rank-9  { border-color: #2ec4b6 !important; animation: prGlow9 2.6s ease-in-out infinite; }
+              .prof-rank-10 { border-color: #dce8f5 !important; animation: prGlow10 2.7s ease-in-out infinite; }
+ 
 
               #introScreen {
                 position: fixed; inset: 0; z-index: 160; display: flex; flex-direction: column;
@@ -1298,9 +1363,10 @@ jobs:
                     <button class="chip" type="button" data-wlm="time">⏱️ Time Mode</button>
                     <button class="chip" type="button" data-wlm="treasure">💰 Treasure Hunter</button>
                   </div>
-                  <div style="font-size:10px;color:#ffe259;font-weight:800;margin-bottom:8px;">
-                    👑 World #1 Highest Score unlocks the animated <span class="world-champ-title">WORLD CHAMPION</span> title!
+                                    <div style="font-size:10px;color:#ffe259;font-weight:800;margin-bottom:8px;">
+                    🏆 World Top 50 Real Players • Top 1–10 unlock unique glossy glowing live profile badges!
                   </div>
+
                   <div id="worldList"></div>
                 </div>
               </div>
@@ -1647,31 +1713,171 @@ jobs:
                 const saveProfile = () => { try { localStorage.setItem('serpent_wild_v26_wz', JSON.stringify(profile)); } catch (e) {} };
                 saveProfile();
 
-                const getRealPlayersBoard = (mode) => {
+                               const FIREBASE_DB_URL = 'https://serpent-wild-top-default-rtdb.asia-southeast1.firebasedatabase.app';
+                if (!profile.playerId) {
+                  profile.playerId = 'p_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+                  saveProfile();
+                }
+
+                const escHtml = (s) => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+                const getPlayerFlag = () => {
                   try {
-                    const raw = localStorage.getItem('serpent_real_world_lb_v1');
-                    const db = raw ? JSON.parse(raw) : { infinity: [], time: [], treasure: [] };
-                    return Array.isArray(db[mode]) ? db[mode] : [];
-                  } catch (e) { return []; }
-                };
-                const syncRealPlayerScore = (mode, score) => {
-                  if (!score || score <= 0) return;
-                  try {
-                    const raw = localStorage.getItem('serpent_real_world_lb_v1');
-                    const db = raw ? JSON.parse(raw) : { infinity: [], time: [], treasure: [] };
-                    if (!Array.isArray(db[mode])) db[mode] = [];
-                    const idx = db[mode].findIndex(p => p.id === 'local_real_player');
-                    const entry = { id: 'local_real_player', name: profile.name, score: Math.floor(score), country: '🇮🇳', real: true };
-                    if (idx >= 0) { if (entry.score > db[mode][idx].score) db[mode][idx] = entry; else db[mode][idx].name = profile.name; }
-                    else db[mode].push(entry);
-                    db[mode].sort((a, b) => b.score - a.score);
-                    localStorage.setItem('serpent_real_world_lb_v1', JSON.stringify(db));
+                    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+                    if (tz === 'Asia/Kolkata' || tz === 'Asia/Calcutta') return '🇮🇳';
                   } catch (e) {}
+                  const lg = LANGUAGES.find(l => l.id === profile.lang);
+                  return lg ? lg.flag : '🌍';
                 };
-                const isWorldChampion = () => {
-                  const list = getRealPlayersBoard('infinity');
-                  return list.length > 0 && list[0].id === 'local_real_player' && list[0].score >= 10000;
+
+                const TOP10_BADGES = [
+                  { icon: '👑', label: 'TOP #1' },
+                  { icon: '💎', label: 'TOP #2' },
+                  { icon: '🔥', label: 'TOP #3' },
+                  { icon: '⚡', label: 'TOP #4' },
+                  { icon: '🌟', label: 'TOP #5' },
+                  { icon: '💠', label: 'TOP #6' },
+                  { icon: '🌺', label: 'TOP #7' },
+                  { icon: '☀️', label: 'TOP #8' },
+                  { icon: '❄️', label: 'TOP #9' },
+                  { icon: '🛡️', label: 'TOP #10' }
+                ];
+
+                const getRankBadgeHtml = (rank) => {
+                  if (!rank || rank < 1 || rank > 10) return '';
+                  const b = TOP10_BADGES[rank - 1];
+                  return `<span class="rank-badge r${rank}">${b.icon} ${b.label}</span>`;
                 };
+
+                const applyProfileRankGlow = (el, rank) => {
+                  if (!el) return;
+                  for (let k = 1; k <= 10; k++) el.classList.remove(`prof-rank-${k}`);
+                  if (rank >= 1 && rank <= 10) el.classList.add(`prof-rank-${rank}`);
+                };
+
+                let worldCache = (() => {
+                  try {
+                    const c = JSON.parse(localStorage.getItem('serpent_world_cache_v2') || '{}');
+                    return {
+                      infinity: Array.isArray(c.infinity) ? c.infinity.slice(0, 50) : [],
+                      time: Array.isArray(c.time) ? c.time.slice(0, 50) : [],
+                      treasure: Array.isArray(c.treasure) ? c.treasure.slice(0, 50) : []
+                    };
+                  } catch (e) { return { infinity: [], time: [], treasure: [] }; }
+                })();
+                let worldLoading = false;
+                let worldLoadedOnce = false;
+
+                const getRealPlayersBoard = (mode) => Array.isArray(worldCache[mode]) ? worldCache[mode].slice(0, 50) : [];
+
+                const getMyWorldRank = (mode = profile.mode) => {
+                  const list = getRealPlayersBoard(mode);
+                  const idx = list.findIndex(p => p.id === profile.playerId);
+                  return idx >= 0 ? (idx + 1) : 0;
+                };
+
+                const isWorldChampion = () => getMyWorldRank(profile.mode) === 1;
+
+                const applyLiveRankToOpenViews = () => {
+                  const myRank = getMyWorldRank(profile.mode);
+                  if (typeof refreshLobbyUI === 'function') refreshLobbyUI();
+                  if (typeof lobbyWorm !== 'undefined' && lobbyWorm) lobbyWorm.isChamp = (myRank === 1);
+                  const dCard = document.getElementById('dossierCard');
+                  const dBadge = document.getElementById('dossierBadgeWrap');
+                  if (dCard && dBadge) {
+                    applyProfileRankGlow(dCard, myRank);
+                    dBadge.innerHTML = getRankBadgeHtml(myRank);
+                  }
+                  const wm = document.getElementById('worldModal');
+                  if (wm && wm.classList.contains('open') && typeof renderWorldLeaderboard === 'function') {
+                    renderWorldLeaderboard(false);
+                  }
+                };
+
+                const fetchWorldLeaderboard = async () => {
+                  if (worldLoading) return worldCache;
+                  worldLoading = true;
+                  try {
+                    const res = await fetch(`${FIREBASE_DB_URL}/worldTop.json?t=${Date.now()}`, { cache: 'no-store' });
+                    if (res.ok) {
+                      const data = (await res.json()) || {};
+                      ['infinity', 'time', 'treasure'].forEach(m => {
+                        const raw = data[m];
+                        const arr = raw && typeof raw === 'object' ? Object.values(raw) : [];
+                        worldCache[m] = arr
+                          .filter(p => p && p.id && p.name && Number(p.score) > 0)
+                          .map(p => ({
+                            id: String(p.id),
+                            name: String(p.name).slice(0, 15),
+                            score: Math.floor(Number(p.score) || 0),
+                            country: p.country || '🌍',
+                            updatedAt: Number(p.updatedAt) || 0
+                          }))
+                          .sort((a, b) => (b.score - a.score) || (a.updatedAt - b.updatedAt))
+                          .slice(0, 50);
+                      });
+                      worldLoadedOnce = true;
+                      try { localStorage.setItem('serpent_world_cache_v2', JSON.stringify(worldCache)); } catch (e) {}
+                    }
+                  } catch (e) {}
+                  worldLoading = false;
+                  applyLiveRankToOpenViews();
+                  return worldCache;
+                };
+
+                const syncRealPlayerScore = async (mode, score) => {
+                  const best = Math.max(Math.floor(score || 0), Math.floor(profile.bestScores[mode] || 0));
+                  if (best <= 0) return fetchWorldLeaderboard();
+                  const entry = {
+                    id: profile.playerId,
+                    name: (profile.name || 'ApexHunter').slice(0, 15),
+                    score: best,
+                    country: getPlayerFlag(),
+                    updatedAt: Date.now()
+                  };
+                  try {
+                    const list = getRealPlayersBoard(mode);
+                    const idx = list.findIndex(p => p.id === profile.playerId);
+                    if (idx >= 0) list[idx] = entry; else list.push(entry);
+                    list.sort((a, b) => (b.score - a.score) || (a.updatedAt - b.updatedAt));
+                    worldCache[mode] = list.slice(0, 50);
+                    applyLiveRankToOpenViews();
+                    await fetch(`${FIREBASE_DB_URL}/worldTop/${mode}/${encodeURIComponent(profile.playerId)}.json`, {
+                      method: 'PUT',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(entry)
+                    });
+                  } catch (e) {}
+                  return fetchWorldLeaderboard();
+                };
+
+                let nameSyncTimer = null;
+                const syncAllScoresAndName = () => {
+                  const tasks = ['infinity', 'time', 'treasure']
+                    .filter(m => (profile.bestScores[m] || 0) > 0)
+                    .map(m => {
+                      const entry = {
+                        id: profile.playerId,
+                        name: (profile.name || 'ApexHunter').slice(0, 15),
+                        score: Math.floor(profile.bestScores[m]),
+                        country: getPlayerFlag(),
+                        updatedAt: Date.now()
+                      };
+                      return fetch(`${FIREBASE_DB_URL}/worldTop/${m}/${encodeURIComponent(profile.playerId)}.json`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(entry)
+                      }).catch(() => {});
+                    });
+                  Promise.all(tasks).finally(() => fetchWorldLeaderboard());
+                };
+
+                setTimeout(() => {
+                  syncAllScoresAndName();
+                  setInterval(() => {
+                    if (typeof screenState === 'undefined' || screenState !== 'playing') fetchWorldLeaderboard();
+                  }, 15000);
+                }, 1200);
+ 
 
                 const rand = (a, b) => a + Math.random() * (b - a);
                 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -2909,8 +3115,9 @@ jobs:
                     for (let i = 0; i < cnt; i++) this.segments.push({ x: x - Math.cos(this.angle) * i * 4.5, y: y - Math.sin(this.angle) * i * 4.5 });
                   }
 
-                  getRadius() { return clamp(7.8 + Math.pow(Math.max(10, this.score), 0.31) * 1.55, 9, 72) * this.scale; }
-                  getSegCount() { return clamp(Math.floor(14 + Math.pow(Math.max(10, this.score), 0.40) * 2.0), 14, 480); }
+                                    getRadius() { return clamp(7.8 + Math.pow(Math.max(10, this.score), 0.28) * 1.35, 9, 48) * this.scale; }
+                  getSegCount() { return clamp(Math.floor(14 + Math.pow(Math.max(10, this.score), 0.36) * 1.85), 14, 260); }
+
 
                   say(txt) { this.bubbleText = txt; this.bubbleTimer = 2.6; }
 
@@ -3326,16 +3533,25 @@ jobs:
                   profile.stats.totalTimeSec = (profile.stats.totalTimeSec || 0) + elapsedSec;
                   if (elapsedSec > (profile.stats.bestTimeSec || 0)) profile.stats.bestTimeSec = elapsedSec;
                   if (finalScore > (profile.bestScores[profile.mode] || 0)) profile.bestScores[profile.mode] = finalScore;
-                  saveProfile();
-                  syncRealPlayerScore(profile.mode, finalScore);
-
+                                    saveProfile();
                   document.getElementById('resTitle').textContent = profile.mode === 'time' && matchTimer <= 0 ? 'TIME UP!' : 'GAME OVER!';
                   document.getElementById('resSub').textContent = subText;
                   document.getElementById('resScore').textContent = finalScore.toLocaleString();
                   document.getElementById('resKills').textContent = matchKills;
                   document.getElementById('resGold').textContent = `+${earnedGold} 🪙`;
-                  document.getElementById('resChampNotice').style.display = (!wasChamp && isWorldChampion()) ? 'block' : 'none';
+                  const resNotice = document.getElementById('resChampNotice');
+                  resNotice.style.display = 'none';
                   document.getElementById('resultsModal').classList.add('open');
+                  syncRealPlayerScore(profile.mode, finalScore).then(() => {
+                    const r = getMyWorldRank(profile.mode);
+                    if (r >= 1 && r <= 10) {
+                      resNotice.innerHTML = `🎉 WORLD TOP #${r}! ${getRankBadgeHtml(r)} ACTIVE!`;
+                      resNotice.style.display = 'block';
+                    } else {
+                      resNotice.style.display = 'none';
+                    }
+                  });
+
                   Sound.play('over');
                 }
 
@@ -3708,9 +3924,12 @@ jobs:
                   const xpNeed = profile.level * 1000;
                   document.getElementById('lbXpBar').style.width = `${Math.min(100, ((profile.xp || 0) / xpNeed) * 100)}%`;
 
-                  const bestAll = Math.max(profile.bestScores.infinity || 0, profile.bestScores.time || 0, profile.bestScores.treasure || 0);
-                  const champHtml = isWorldChampion() ? ` <span class="world-champ-title">👑 WORLD CHAMPION</span>` : '';
-                  document.getElementById('lbChampWrap').innerHTML = `Best: ${bestAll.toLocaleString()}${champHtml}`;
+                                    const bestAll = Math.max(profile.bestScores.infinity || 0, profile.bestScores.time || 0, profile.bestScores.treasure || 0);
+                  const myRank = getMyWorldRank(profile.mode);
+                  const badgeHtml = getRankBadgeHtml(myRank);
+                  document.getElementById('lbChampWrap').innerHTML = `Best: ${bestAll.toLocaleString()}${badgeHtml ? ' ' + badgeHtml : ''}`;
+                  applyProfileRankGlow(document.getElementById('btnProfileOpen'), myRank);
+
 
                   const netBtn = document.getElementById('btnNetToggle');
                   const hasNet = window.AndroidAudio ? window.AndroidAudio.isOnline() : navigator.onLine;
@@ -3941,15 +4160,16 @@ jobs:
                   const body = document.getElementById('profileBody');
                   const bestAll = Math.max(profile.bestScores.infinity || 0, profile.bestScores.time || 0, profile.bestScores.treasure || 0);
 
-                  if (profTab === 'dossier') {
-                    const champ = isWorldChampion() ? `<div style="margin-top:4px;"><span class="world-champ-title">👑 WORLD CHAMPION</span></div>` : '';
+                                    if (profTab === 'dossier') {
+                    const myRank = getMyWorldRank(profile.mode);
+                    const rankCls = (myRank >= 1 && myRank <= 10) ? ` prof-rank-${myRank}` : '';
                     body.innerHTML = `
                       <div class="dossier-grid">
-                        <div class="dossier-left">
+                        <div class="dossier-left${rankCls}" id="dossierCard">
                           <div style="font-size:44px;">${profile.avatar}</div>
                           <div class="lvl-badge" style="width:42px;height:42px;font-size:15px;">LV.${profile.level}</div>
-                          <input id="profNameIn" class="text-input" maxlength="15" value="${profile.name}" style="text-align:center;" />
-                          ${champ}
+                          <input id="profNameIn" class="text-input" maxlength="15" value="${escHtml(profile.name)}" style="text-align:center;" />
+                          <div id="dossierBadgeWrap" style="margin-top:4px;">${getRankBadgeHtml(myRank)}</div>
                           <div style="font-size:10px;color:#b8d8f8;">XP: ${profile.xp || 0} / ${profile.level * 1000}</div>
                           <button class="btn-ghost" id="btnResetData" type="button" style="font-size:9.5px;color:#ff8594;border-color:#ff4757;margin-top:6px;">🗑️ Reset Data</button>
                         </div>
@@ -3962,9 +4182,13 @@ jobs:
                           <div class="stat-card"><div class="sv">${profile.ownedSkins.length} / ${SKINS.length}</div><div class="sl">🐍 Worms Collected</div></div>
                         </div>
                       </div>`;
+                    fetchWorldLeaderboard();
                     document.getElementById('profNameIn').addEventListener('input', e => {
                       profile.name = e.target.value.trim() || 'ApexHunter'; saveProfile(); refreshLobbyUI();
+                      clearTimeout(nameSyncTimer);
+                      nameSyncTimer = setTimeout(syncAllScoresAndName, 700);
                     });
+
                     document.getElementById('btnResetData').addEventListener('click', () => {
                       if (confirm('Reset all local game data?')) { localStorage.removeItem('serpent_wild_v26_wz'); location.reload(); }
                     });
@@ -4239,25 +4463,28 @@ jobs:
                   document.getElementById('calendarModal').classList.add('open'); Sound.play('click');
                 }
 
-                let wlMode = 'infinity';
-                function renderWorldLeaderboard() {
+                                let wlMode = 'infinity';
+                function renderWorldLeaderboard(shouldFetch = true) {
                   document.querySelectorAll('[data-wlm]').forEach(b => b.classList.toggle('selected', b.dataset.wlm === wlMode));
-                  let realData = {};
-                  try { realData = JSON.parse(localStorage.getItem('serpent_real_world_lb_v1') || '{}') || {}; } catch (e) {}
-                  const rawList = Array.isArray(realData) ? realData : (Array.isArray(realData[wlMode]) ? realData[wlMode] : []);
-                  const entries = rawList.map(p => ({ ...p, score: Number(p.score) || 0, isMe: p.name === profile.name }));
-                  const myBest = profile.bestScores[wlMode] || 0;
-                  const meEntry = entries.find(e => e.isMe);
-                  if (meEntry) { if (myBest > meEntry.score) meEntry.score = myBest; }
-                  else { entries.push({ name: profile.name, score: myBest, isMe: true }); }
-                  entries.sort((a, b) => b.score - a.score);
+                  if (shouldFetch) fetchWorldLeaderboard();
+                  const entries = getRealPlayersBoard(wlMode);
+                  const listEl = document.getElementById('worldList');
 
-                  document.getElementById('worldList').innerHTML = entries.map((e, idx) => {
-                    const isTop1 = idx === 0;
-                    const badge = isTop1 ? `<span class="world-champ-title">👑 WORLD CHAMPION</span>` : '';
-                    return `<div class="wl-row${isTop1 ? ' top1' : ''}${e.isMe ? ' me' : ''}"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><strong style="width:24px;color:${isTop1 ? '#ffe259' : '#9cd6ff'};">#${idx + 1}</strong><span>${e.country || '🇮🇳'}</span><strong style="font-size:12px;">${e.name}${e.isMe ? ' (YOU)' : ''}</strong>${badge}</div><strong style="color:#ffe259;font-size:12.5px;">${e.score.toLocaleString()}</strong></div>`;
+                  if (!entries.length) {
+                    listEl.innerHTML = `<div style="text-align:center;padding:24px 10px;font-size:12px;font-weight:800;color:#b8d8f8;">${worldLoading && !worldLoadedOnce ? '🌍 Loading Live World Top 50...' : 'No real players on this board yet. Play a match to claim #1!'}</div>`;
+                    return;
+                  }
+
+                  listEl.innerHTML = entries.map((e, idx) => {
+                    const rank = idx + 1;
+                    const isMe = e.id === profile.playerId;
+                    const badge = getRankBadgeHtml(rank);
+                    const rowCls = (rank === 1 ? ' top1' : '') + (isMe ? ' me' : '') + (rank >= 1 && rank <= 10 ? ` prof-rank-${rank}` : '');
+                    const rankCol = rank === 1 ? '#ffe259' : (rank === 2 ? '#59f4ff' : (rank === 3 ? '#ff6b81' : '#9cd6ff'));
+                    return `<div class="wl-row${rowCls}"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><strong style="min-width:26px;color:${rankCol};">#${rank}</strong><span>${e.country || '🌍'}</span><strong style="font-size:12px;">${escHtml(e.name)}${isMe ? ' (YOU)' : ''}</strong>${badge}</div><strong style="color:#ffe259;font-size:12.5px;">${e.score.toLocaleString()}</strong></div>`;
                   }).join('');
                 }
+
 
                 const toggleMute = () => { profile.settings.muted = !profile.settings.muted; saveProfile(); Sound.updateVol(); refreshLobbyUI(); Sound.play('click'); };
                 document.getElementById('btnLobbyAudio').addEventListener('click', toggleMute);
