@@ -721,6 +721,8 @@ jobs:
                           useWideViewPort = true
                           loadWithOverviewMode = true
                           mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
+                          textZoom = 100
+
                       }
                       addJavascriptInterface(AudioBridge(), "AndroidAudio")
                       addJavascriptInterface(BillingBridge(), "AndroidBilling")
@@ -3277,59 +3279,60 @@ jobs:
                     }
                     return clamp(r, 9, 62.5) * this.scale;
                   }
-                  getSegCount() {
+                                    getSegCount() {
                     const s = Math.max(0, this.visualScore != null ? this.visualScore : this.score);
                     const rBase = this.getRadius() / (this.scale || 1);
                     let targetLenPx;
-                    if (s <= 100000) {
-                      targetLenPx = 150 + 3850 * (s / 100000);
-                    } else if (s <= 200000) {
-                      targetLenPx = 4000 + 1000 * ((s - 100000) / 100000);
+                    if (s <= 20000) {
+                      targetLenPx = 150 + 850 * (s / 20000);
+                    } else if (s <= 100000) {
+                      targetLenPx = 1000 + 3000 * ((s - 20000) / 80000);
                     } else {
-                      targetLenPx = 5000 + ((s - 200000) / 100000) * 250;
+                      targetLenPx = 4000;
                     }
                     const spc = rBase * 0.45;
                     return clamp(Math.round((targetLenPx - 2 * rBase) / spc) + 1, 14, 650);
                   }
+
                         
 
                   say(txt) { this.bubbleText = txt; this.bubbleTimer = 2.6; }
 
-                                   updateAI(dt) {
+                                     updateAI(dt) {
                     this.aiTimer -= dt;
                     this.aiReact = (this.aiReact || 0) - dt;
                     if (this.aiBoost > 0) this.aiBoost -= dt;
-                    if (dist(this.x, this.y, WORLD_CENTER, WORLD_CENTER) > ARENA_RADIUS - 420) {
+                    if (dist(this.x, this.y, WORLD_CENTER, WORLD_CENTER) > ARENA_RADIUS - 380) {
                       this.targetAngle = Math.atan2(WORLD_CENTER - this.y, WORLD_CENTER - this.x);
                       this.boosting = false; return;
                     }
 
                     if (this.aiReact <= 0) {
-                      this.aiReact = rand(0.11, 0.19);
+                      this.aiReact = rand(0.24, 0.36);
                       const rSelf = this.getRadius();
                       const fx = Math.cos(this.angle), fy = Math.sin(this.angle);
-                      const probeX = this.x + fx * (rSelf + 52), probeY = this.y + fy * (rSelf + 52);
+                      const probeX = this.x + fx * (rSelf + 34), probeY = this.y + fy * (rSelf + 34);
                       let avX = 0, avY = 0, danger = false;
 
                       for (const o of worms) {
                         if (o === this || !o.alive) continue;
                         const rO = o.getRadius();
-                        const maxReach = o.segments.length * rO * 0.5 + 260;
+                        const maxReach = o.segments.length * rO * 0.5 + 200;
                         if (distSq(this.x, this.y, o.x, o.y) > maxReach * maxReach) continue;
 
-                        const safeR = rSelf + rO + 72;
+                        const safeR = rSelf + rO + 46;
                         const safeR2 = safeR * safeR;
-                        const step = o.segments.length > 60 ? 3 : 2;
+                        const step = o.segments.length > 50 ? 4 : 3;
                         for (let k = 0; k < o.segments.length; k += step) {
                           const sg = o.segments[k];
                           const dx = this.x - sg.x, dy = this.y - sg.y;
                           const d2 = dx * dx + dy * dy;
                           const pd2 = distSq(probeX, probeY, sg.x, sg.y);
-                          if (d2 < safeR2 || pd2 < safeR2 * 0.65) {
+                          if (d2 < safeR2 || pd2 < safeR2 * 0.55) {
                             const d = Math.sqrt(d2) || 1;
                             const ahead = -(dx * fx + dy * fy) / d;
-                            if (ahead > -0.15) {
-                              const weight = ((safeR - Math.min(d, safeR * 0.92)) / (d * d)) * (ahead > 0.2 ? 2.2 : 1.0);
+                            if (ahead > 0.05) {
+                              const weight = ((safeR - Math.min(d, safeR * 0.9)) / (d * d)) * (ahead > 0.3 ? 1.6 : 0.9);
                               avX += (dx / d) * weight;
                               avY += (dy / d) * weight;
                               danger = true;
@@ -3338,52 +3341,53 @@ jobs:
                         }
                       }
 
-                      if (danger) {
+                      if (danger && Math.random() < 0.82) {
                         this.targetAngle = Math.atan2(avY, avX);
                         this.aiBoost = 0;
                         this.boosting = false;
-                        this.aiTimer = 0.25;
+                        this.aiTimer = 0.35;
                         return;
                       }
                     }
 
                     if (this.aiTimer <= 0) {
-                      this.aiTimer = rand(0.28, 0.72);
-                      let prey = null, preyD = 360 * 360;
-                      if (this.score > 160) {
+                      this.aiTimer = rand(0.45, 0.95);
+                      let prey = null, preyD = 280 * 280;
+                      if (this.score > 300) {
                         for (const o of worms) {
                           if (o === this || !o.alive || o.spawnShield > 0) continue;
                           const d2 = distSq(this.x, this.y, o.x, o.y);
-                          if (d2 < preyD && d2 > 95 * 95) { preyD = d2; prey = o; }
+                          if (d2 < preyD && d2 > 110 * 110) { preyD = d2; prey = o; }
                         }
                       }
 
-                      if (prey && Math.random() < 0.55) {
-                        const lead = 90 + prey.getRadius() * 1.4;
+                      if (prey && Math.random() < 0.25) {
+                        const lead = 60 + prey.getRadius();
                         const tx = prey.x + Math.cos(prey.angle) * lead;
                         const ty = prey.y + Math.sin(prey.angle) * lead;
                         this.targetAngle = Math.atan2(ty - this.y, tx - this.x);
-                        this.aiBoost = rand(0.45, 0.95);
+                        this.aiBoost = rand(0.3, 0.65);
                       } else {
-                        this.aiWander += rand(-1.1, 1.1);
+                        this.aiWander += rand(-1.2, 1.2);
                         this.targetAngle = this.aiWander;
-                        let bestF = null, bestD = 360 * 360;
+                        let bestF = null, bestD = 280 * 280;
                         for (let i = 0; i < foods.length; i += 2) {
                           const f = foods[i], d2 = distSq(this.x, this.y, f.x, f.y);
-                          const lim = f.big ? 440 * 440 : bestD;
+                          const lim = f.big ? 350 * 350 : bestD;
                           if (d2 < lim) {
-                            bestD = f.big ? d2 * 0.5 : d2;
+                            bestD = f.big ? d2 * 0.65 : d2;
                             bestF = f;
                           }
                         }
                         if (bestF) {
                           this.targetAngle = Math.atan2(bestF.y - this.y, bestF.x - this.x);
-                          if (bestF.big && this.score > 180 && Math.random() < 0.5) this.aiBoost = 0.65;
+                          if (bestF.big && this.score > 250 && Math.random() < 0.25) this.aiBoost = 0.45;
                         }
                       }
                     }
-                    this.boosting = this.aiBoost > 0 && this.score > 140;
+                    this.boosting = this.aiBoost > 0 && this.score > 160;
                   }
+                
  
 
                   update(dt) {
@@ -3566,19 +3570,36 @@ jobs:
                 function killWorm(victim, killer, reason) {
                   if (!victim.alive) return;
                   victim.alive = false;
-                  const fv = FOOD_VARIETIES.find(f => f.id === profile.food) || FOOD_VARIETIES[0];
-                  const dropStep = Math.max(2, Math.floor(victim.segments.length / 24));
-                  const chunkVal = Math.max(12, Math.min(180, Math.round(victim.score * 0.032)));
-
-                  const glowCols = [victim.skin.base, victim.skin.accent || '#ffe259', '#ff59d6', '#4de2f0', '#8cff3b'];
-                  for (let i = 0; i < victim.segments.length; i += dropStep) {
-                    const sg = victim.segments[i];
-                    const icon = fv.items[i % fv.items.length];
+                                    const deadItems = ['🥩', '🥦', '🍗', '🥕', '🍖', '🍅', '🥓', '🌽', '🥩', '🌶️', '🍗', '🥒', '🍖', '🍆'];
+                  const dropPts = [];
+                  const stepPx = 42;
+                  if (victim.segments.length > 0) {
+                    dropPts.push({ x: victim.segments[0].x, y: victim.segments[0].y });
+                    let carry = 0;
+                    for (let i = 1; i < victim.segments.length && dropPts.length < 95; i++) {
+                      const p0 = victim.segments[i - 1], p1 = victim.segments[i];
+                      const dx = p1.x - p0.x, dy = p1.y - p0.y;
+                      const segD = Math.hypot(dx, dy);
+                      if (segD < 0.001) continue;
+                      let d = stepPx - carry;
+                      while (d <= segD && dropPts.length < 95) {
+                        const u = d / segD;
+                        dropPts.push({ x: p0.x + dx * u, y: p0.y + dy * u });
+                        d += stepPx;
+                      }
+                      carry = segD - (d - stepPx);
+                    }
+                  }
+                  const chunkVal = Math.max(14, Math.min(180, Math.round((victim.score * 0.65) / Math.max(1, dropPts.length))));
+                  const glowCols = ['#ffe259', '#ff7a18', '#69f03a', '#ff4757', '#4de2f0'];
+                  for (let i = 0; i < dropPts.length; i++) {
+                    const pt = dropPts[i];
                     foods.push({
-                      x: sg.x + rand(-12, 12), y: sg.y + rand(-12, 12), val: chunkVal, r: 18, icon,
-                      col: glowCols[i % glowCols.length], orb: true, big: true, killDrop: true, phase: rand(0, 6.28)
+                      x: pt.x, y: pt.y, val: chunkVal, r: 26, icon: deadItems[i % deadItems.length],
+                      col: glowCols[i % glowCols.length], orb: false, big: true, killDrop: true, phase: i * 0.55
                     });
                   }
+
                   const sadEmojis = ['😭', '🫠', '😵', '💀'];
                   emojiPopups.push({ x: victim.x, y: victim.y - victim.getRadius() - 10, emoji: sadEmojis[Math.floor(Math.random() * sadEmojis.length)], life: 1.8, maxLife: 1.8 });
                   if (killer && killer !== victim && killer.alive) {
@@ -4010,10 +4031,21 @@ jobs:
                       }
                       ctx.fillStyle = f.col; ctx.beginPath(); ctx.arc(f.x, f.y, fr, 0, Math.PI * 2); ctx.fill();
                       ctx.fillStyle = 'rgba(255,255,255,0.68)'; ctx.beginPath(); ctx.arc(f.x - fr * 0.26, f.y - fr * 0.28, fr * 0.36, 0, Math.PI * 2); ctx.fill();
+                                        } else if (f.killDrop) {
+                      const wave = Math.sin(globalTime * 6.5 - (f.phase || 0));
+                      const pulse = 1 + 0.12 * wave;
+                      const gRad = f.r * 1.85 * pulse;
+                      ctx.globalAlpha = 0.48 + 0.24 * wave;
+                      ctx.drawImage(getGlowSprite(f.col || '#ffe259'), f.x - gRad, f.y - gRad, gRad * 2, gRad * 2);
+                      ctx.globalAlpha = 1;
+                      const sp = getFoodSprite(f.icon, f.r, true);
+                      const dw = sp.width * pulse, dh = sp.height * pulse;
+                      ctx.drawImage(sp, f.x - dw / 2, f.y - dh / 2, dw, dh);
                     } else {
                       const sp = getFoodSprite(f.icon, f.r, f.big);
                       ctx.drawImage(sp, f.x - sp.width / 2, f.y - sp.height / 2);
                     }
+
                   }
 
                   for (const p of potions) {
@@ -4415,10 +4447,11 @@ jobs:
                     document.getElementById('saMax').onclick = () => { profile.settings.gfx = 'max'; saveProfile(); resizeCanvas(); buildFloorPattern(profile.floor); renderSettingsModal(); Sound.play('click'); };
                     document.getElementById('saNames').onclick = () => { profile.settings.showNames = !profile.settings.showNames; saveProfile(); renderSettingsModal(); Sound.play('click'); };
                   } else if (setTab === 'controls') {
-                    body.innerHTML = `
+                                        body.innerHTML = `
+                      <div class="setting-row"><div><div style="font-size:12px;font-weight:800;">Custom HUD Layout</div><div style="font-size:9.5px;color:#b8d8f8;">Drag, resize &amp; set opacity of Boost, Potions, Map &amp; Leaderboard</div></div><button class="btn-gold" id="scHudEdit" type="button" style="padding:6px 12px;font-size:10.5px;">🎛️ CUSTOMIZE HUD</button></div>
                       <div class="setting-row"><div><div style="font-size:12px;font-weight:800;">Joystick Mode</div></div><div style="display:flex;gap:5px;"><button class="chip ${profile.settings.joy === 'floating' ? 'selected' : ''}" id="scFloat">FLOATING</button><button class="chip ${profile.settings.joy === 'fixed' ? 'selected' : ''}" id="scFix">FIXED</button></div></div>
-                      <div class="setting-row"><div><div style="font-size:12px;font-weight:800;">Joystick Size</div></div><div style="display:flex;gap:5px;"><button class="chip ${profile.settings.joySize === 'small' ? 'selected' : ''}" id="scSm">SMALL</button><button class="chip ${profile.settings.joySize === 'normal' ? 'selected' : ''}" id="scNm">NORMAL</button><button class="chip ${profile.settings.joySize === 'large' ? 'selected' : ''}" id="scLg">LARGE</button></div></div>
-                      <div class="setting-row"><div><div style="font-size:12px;font-weight:800;">Custom HUD Layout</div><div style="font-size:9.5px;color:#b8d8f8;">Drag, resize &amp; set opacity of Boost, Potions, Map &amp; Leaderboard</div></div><button class="btn-gold" id="scHudEdit" type="button" style="padding:6px 12px;font-size:10.5px;">🎛️ CUSTOMIZE HUD</button></div>`;
+                      <div class="setting-row"><div><div style="font-size:12px;font-weight:800;">Joystick Size</div></div><div style="display:flex;gap:5px;"><button class="chip ${profile.settings.joySize === 'small' ? 'selected' : ''}" id="scSm">SMALL</button><button class="chip ${profile.settings.joySize === 'normal' ? 'selected' : ''}" id="scNm">NORMAL</button><button class="chip ${profile.settings.joySize === 'large' ? 'selected' : ''}" id="scLg">LARGE</button></div></div>`;
+
                     document.getElementById('scFloat').onclick = () => { profile.settings.joy = 'floating'; saveProfile(); refreshLobbyUI(); renderSettingsModal(); Sound.play('click'); };
                     document.getElementById('scFix').onclick = () => { profile.settings.joy = 'fixed'; saveProfile(); refreshLobbyUI(); renderSettingsModal(); Sound.play('click'); };
                     document.getElementById('scSm').onclick = () => { profile.settings.joySize = 'small'; saveProfile(); refreshLobbyUI(); renderSettingsModal(); Sound.play('click'); };
