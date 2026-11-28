@@ -727,6 +727,14 @@ jobs:
                       addJavascriptInterface(AudioBridge(), "AndroidAudio")
                       addJavascriptInterface(BillingBridge(), "AndroidBilling")
                       addJavascriptInterface(AdBridge(), "AndroidAds")
+                      addJavascriptInterface(object {
+                      @android.webkit.JavascriptInterface
+                      fun getDeviceId(): String {
+                       return try {
+                      android.provider.Settings.Secure.getString(this@MainActivity.contentResolver, android.provider.Settings.Secure.ANDROID_ID) ?: ""
+                      } catch (_: Exception) { "" }
+                    }
+                  }, "DeviceBridge")
 
                       webViewClient = WebViewClient()
                       webChromeClient = WebChromeClient()
@@ -1709,14 +1717,425 @@ jobs:
                   { id: 'gold',    name: 'Golden Grill',  cost: 1200, desc: 'Shiny gold teeth smile' }
                 ];
 
-                const EXPRESSIONS = [
-                  { id: 'hi',    text: 'Hi! 👋',      cost: 0 },
-                  { id: 'yum',   text: 'Yummy! 😋',   cost: 0 },
-                  { id: 'haha',  text: 'Hahaha! 😂',  cost: 300 },
-                  { id: 'king',  text: 'I am #1! 👑', cost: 500 },
-                  { id: 'run',   text: 'Catch me! ⚡', cost: 400 },
-                  { id: 'oops',  text: 'Oops! 😈',    cost: 600 }
+                                const EXPRESSIONS = [
+                  { id: 'em_pink_cheeky',  text: 'Cheeky Pink',   tier: 'normal',  curr: 'free', cost: 0,     glow: '' },
+                  { id: 'em_angry_sweat',  text: 'Angry Sweat',   tier: 'normal',  curr: 'free', cost: 0,     glow: '' },
+                  { id: 'em_sunny_grin',   text: 'Sunny Grin',    tier: 'normal',  curr: 'free', cost: 0,     glow: '' },
+                  { id: 'em_cool_shades',  text: 'Cool Shades',   tier: 'normal',  curr: 'free', cost: 0,     glow: '' },
+                  { id: 'em_shock_blue',   text: 'Mega Shock',    tier: 'normal',  curr: 'free', cost: 0,     glow: '' },
+                  { id: 'em_sleepy_drool', text: 'Sleepy Drool',  tier: 'normal',  curr: 'free', cost: 0,     glow: '' },
+                  { id: 'em_love_blush',   text: 'Sweet Heart',   tier: 'normal',  curr: 'free', cost: 0,     glow: '' },
+                  { id: 'em_dizzy_ko',     text: 'Dizzy Spiral',  tier: 'normal',  curr: 'free', cost: 0,     glow: '' },
+                  { id: 'em_sly_smirk',    text: 'Sly Trickster', tier: 'normal',  curr: 'free', cost: 0,     glow: '' },
+                  { id: 'em_cry_flood',    text: 'Bawling Tears', tier: 'normal',  curr: 'free', cost: 0,     glow: '' },
+
+                  { id: 'em_cyber_visor',  text: 'Neon Visor',    tier: 'glow',    curr: 'coin', cost: 3500,  glow: '#00f7ff' },
+                  { id: 'em_golden_star',  text: 'Starstruck',    tier: 'glow',    curr: 'coin', cost: 5500,  glow: '#ffe259' },
+                  { id: 'em_toxic_slime',  text: 'Toxic Slime',   tier: 'glow',    curr: 'coin', cost: 7500,  glow: '#69ff3b' },
+                  { id: 'em_devil_glow',   text: 'Shadow Devil',  tier: 'glow',    curr: 'coin', cost: 10000, glow: '#ff2e63' },
+                  { id: 'em_frost_aura',   text: 'Ice Aura',      tier: 'glow',    curr: 'coin', cost: 13000, glow: '#70f8ff' },
+
+                  { id: 'em_live_rofl',    text: 'Ultra Laugh',   tier: 'diamond', curr: 'dia',  cost: 150,   glow: '#ffe259' },
+                  { id: 'em_live_kiss',    text: 'Blow Kiss',     tier: 'diamond', curr: 'dia',  cost: 280,   glow: '#ff59d6' },
+                  { id: 'em_live_blaze',   text: 'Inferno Roar',  tier: 'diamond', curr: 'dia',  cost: 450,   glow: '#ff6b1a' },
+                  { id: 'em_live_yummy',   text: 'Lick & Munch',  tier: 'diamond', curr: 'dia',  cost: 650,   glow: '#4de2f0' },
+                  { id: 'em_live_king',    text: 'Apex RGB King', tier: 'diamond', curr: 'dia',  cost: 950,   glow: '#c470ff' }
                 ];
+
+                const EMOJI_FALLBACK_MAP = {
+                  '😈': 'em_devil_glow', '💪': 'em_live_rofl', '😎': 'em_cool_shades', '🔥': 'em_live_blaze',
+                  '😭': 'em_cry_flood',  '🫠': 'em_angry_sweat', '😵': 'em_dizzy_ko',  '💀': 'em_shock_blue',
+                  'I am back! ⚡': 'em_cyber_visor'
+                };
+                const EMOJI_RGB_COLS = ['#ff4fd8', '#ffe259', '#69ff59', '#4de8ff', '#9b6bff', '#ff5e5e'];
+
+                function getEmojiDef(key) {
+                  const mk = EMOJI_FALLBACK_MAP[key] || key;
+                  return EXPRESSIONS.find(e => e.id === mk || e.text === mk) || EXPRESSIONS[0];
+                }
+
+                function drawEmHeart(c, x, y, s, col) {
+                  c.save(); c.translate(x, y); c.fillStyle = col;
+                  c.beginPath(); c.moveTo(0, s * 0.72);
+                  c.bezierCurveTo(-s * 1.15, s * 0.05, -s * 0.95, -s * 0.92, 0, -s * 0.25);
+                  c.bezierCurveTo(s * 0.95, -s * 0.92, s * 1.15, s * 0.05, 0, s * 0.72);
+                  c.closePath(); c.fill();
+                  c.fillStyle = 'rgba(255,255,255,0.68)';
+                  c.beginPath(); c.ellipse(-s * 0.34, -s * 0.28, s * 0.2, s * 0.12, -0.5, 0, Math.PI * 2); c.fill();
+                  c.restore();
+                }
+
+                function drawEmStar(c, x, y, ro, ri, rot, col) {
+                  c.save(); c.translate(x, y); c.rotate(rot); c.fillStyle = col;
+                  c.beginPath();
+                  for (let k = 0; k < 10; k++) {
+                    const a = (k * Math.PI) / 5 - Math.PI / 2, rad = k % 2 === 0 ? ro : ri;
+                    k === 0 ? c.moveTo(Math.cos(a) * rad, Math.sin(a) * rad) : c.lineTo(Math.cos(a) * rad, Math.sin(a) * rad);
+                  }
+                  c.closePath(); c.fill(); c.restore();
+                }
+
+                function drawEmSphere(c, r, c1, c2, c3, glossy, glowCol, t) {
+                  const g = c.createRadialGradient(-r * 0.3, -r * 0.35, r * 0.08, 0, 0, r * 1.05);
+                  g.addColorStop(0, c1); g.addColorStop(0.58, c2); g.addColorStop(1, c3);
+                  c.fillStyle = g;
+                  c.beginPath(); c.arc(0, 0, r, 0, Math.PI * 2); c.fill();
+                  c.strokeStyle = glowCol ? glowCol : 'rgba(26,14,34,0.62)';
+                  c.lineWidth = Math.max(1.6, r * (glossy ? 0.095 : 0.075));
+                  c.stroke();
+                  c.fillStyle = glossy ? 'rgba(255,255,255,0.58)' : 'rgba(255,255,255,0.38)';
+                  c.beginPath(); c.ellipse(-r * 0.28, -r * 0.42, r * 0.38, r * 0.2, -0.45, 0, Math.PI * 2); c.fill();
+                  if (glossy) {
+                    c.fillStyle = 'rgba(255,255,255,0.78)';
+                    c.beginPath(); c.ellipse(-r * 0.42, -r * 0.5, r * 0.14, r * 0.08, -0.45, 0, Math.PI * 2); c.fill();
+                    c.save(); c.beginPath(); c.arc(0, 0, r * 0.94, 0, Math.PI * 2); c.clip();
+                    const sw = (((t * 0.9) % 2.4) - 1.2) * r * 2.4;
+                    c.fillStyle = 'rgba(255,255,255,0.22)';
+                    c.beginPath(); c.moveTo(sw - r * 0.35, -r); c.lineTo(sw + r * 0.15, -r); c.lineTo(sw - r * 0.35, r); c.lineTo(sw - r * 0.85, r); c.closePath(); c.fill();
+                    c.restore();
+                  }
+                  c.fillStyle = 'rgba(255,255,255,0.18)';
+                  c.beginPath(); c.ellipse(0, r * 0.62, r * 0.55, r * 0.18, 0, 0, Math.PI * 2); c.fill();
+                }
+
+                function drawCustomEmoji(c, em, cx, cy, r, t) {
+                  if (!em) em = EXPRESSIONS[0];
+                  const id = em.id, isGlow = em.tier === 'glow', isDia = em.tier === 'diamond';
+                  c.save();
+                  c.translate(cx, cy);
+
+                  if (isGlow || isDia) {
+                    const pulse = 0.88 + 0.14 * Math.sin(t * (isDia ? 7.5 : 4.2));
+                    const gCol = id === 'em_live_king' ? EMOJI_RGB_COLS[Math.floor(t * 4) % EMOJI_RGB_COLS.length] : em.glow;
+                    const gr = r * (isDia ? 1.65 : 1.38) * pulse;
+                    c.globalAlpha = isDia ? 0.72 : 0.45;
+                    c.drawImage(getGlowSprite(gCol), -gr, -gr, gr * 2, gr * 2);
+                    if (isDia) {
+                      const gr2 = r * 1.18 * pulse;
+                      c.globalAlpha = 0.38;
+                      c.drawImage(getGlowSprite('#ffffff'), -gr2, -gr2, gr2 * 2, gr2 * 2);
+                    }
+                    c.globalAlpha = 1;
+                  }
+
+                  if (id === 'em_live_rofl') { c.translate(0, -Math.abs(Math.sin(t * 11)) * r * 0.14); c.rotate(Math.sin(t * 5.5) * 0.14); }
+                  else if (id === 'em_live_kiss') { c.rotate(Math.sin(t * 3.8) * 0.09); }
+                  else if (id === 'em_live_blaze') { c.translate(Math.sin(t * 28) * r * 0.04, Math.cos(t * 24) * r * 0.03); }
+                  else if (id === 'em_live_yummy') { const sq = 1 + 0.05 * Math.sin(t * 8); c.scale(sq, 2 - sq); }
+                  else if (id === 'em_live_king') { c.translate(0, Math.sin(t * 4.5) * r * 0.08); }
+
+                  const lw = Math.max(1.5, r * 0.085);
+                  c.lineCap = 'round'; c.lineJoin = 'round';
+
+                  if (id === 'em_pink_cheeky') {
+                    drawEmSphere(c, r, '#ff9cd0', '#f03e8b', '#990c4c', false, '', t);
+                    c.fillStyle = 'rgba(255,20,90,0.32)';
+                    c.beginPath(); c.ellipse(-r * 0.56, r * 0.18, r * 0.18, r * 0.11, 0, 0, Math.PI * 2); c.ellipse(r * 0.56, r * 0.18, r * 0.18, r * 0.11, 0, 0, Math.PI * 2); c.fill();
+                    for (const s of [-1, 1]) {
+                      c.fillStyle = '#fff'; c.strokeStyle = '#380a22'; c.lineWidth = lw * 0.85;
+                      c.beginPath(); c.arc(s * r * 0.33, -r * 0.18, r * 0.25, 0, Math.PI * 2); c.fill(); c.stroke();
+                      c.fillStyle = '#181024'; c.beginPath(); c.arc(s * r * 0.35, -r * 0.18, r * 0.13, 0, Math.PI * 2); c.fill();
+                      c.fillStyle = '#fff'; c.beginPath(); c.arc(s * r * 0.3, -r * 0.24, r * 0.06, 0, Math.PI * 2); c.fill();
+                    }
+                    c.fillStyle = '#4a061c'; c.strokeStyle = '#24030e'; c.lineWidth = lw * 0.8;
+                    c.beginPath(); c.arc(0, r * 0.16, r * 0.44, 0.05, Math.PI - 0.05); c.closePath(); c.fill(); c.stroke();
+                    c.fillStyle = '#fff'; c.fillRect(-r * 0.36, r * 0.17, r * 0.72, r * 0.14);
+                    c.fillStyle = '#ff385c'; c.strokeStyle = '#7a0924'; c.lineWidth = lw * 0.7;
+                    c.beginPath(); c.ellipse(r * 0.16, r * 0.52, r * 0.2, r * 0.24, -0.25, 0, Math.PI * 2); c.fill(); c.stroke();
+                  } else if (id === 'em_angry_sweat') {
+                    drawEmSphere(c, r, '#ffae42', '#e83e14', '#851004', false, '', t);
+                    for (const s of [-1, 1]) {
+                      c.fillStyle = '#fff'; c.strokeStyle = '#360802'; c.lineWidth = lw * 0.8;
+                      c.beginPath(); c.arc(s * r * 0.32, -r * 0.08, r * 0.2, 0, Math.PI * 2); c.fill(); c.stroke();
+                      c.fillStyle = '#140808'; c.beginPath(); c.arc(s * r * 0.3, -r * 0.06, r * 0.1, 0, Math.PI * 2); c.fill();
+                      c.strokeStyle = '#360802'; c.lineWidth = lw * 1.4;
+                      c.beginPath(); c.moveTo(s * r * 0.56, -r * 0.34); c.lineTo(s * r * 0.12, -r * 0.18); c.stroke();
+                    }
+                    c.strokeStyle = '#360802'; c.lineWidth = lw * 1.25;
+                    c.beginPath(); c.arc(0, r * 0.52, r * 0.32, Math.PI * 1.15, Math.PI * 1.85); c.stroke();
+                    c.fillStyle = '#59d4ff'; c.strokeStyle = '#0e5894'; c.lineWidth = lw * 0.75;
+                    c.beginPath(); c.moveTo(-r * 0.68, -r * 0.08);
+                    c.bezierCurveTo(-r * 0.92, r * 0.32, -r * 0.78, r * 0.58, -r * 0.62, r * 0.56);
+                    c.bezierCurveTo(-r * 0.44, r * 0.54, -r * 0.46, r * 0.26, -r * 0.68, -r * 0.08); c.fill(); c.stroke();
+                    c.fillStyle = '#fff'; c.beginPath(); c.arc(-r * 0.68, r * 0.34, r * 0.06, 0, Math.PI * 2); c.fill();
+                  } else if (id === 'em_sunny_grin') {
+                    drawEmSphere(c, r, '#fff58a', '#ffb800', '#b56500', false, '', t);
+                    c.fillStyle = 'rgba(255,75,110,0.42)';
+                    c.beginPath(); c.ellipse(-r * 0.54, r * 0.12, r * 0.18, r * 0.1, 0, 0, Math.PI * 2); c.ellipse(r * 0.54, r * 0.12, r * 0.18, r * 0.1, 0, 0, Math.PI * 2); c.fill();
+                    c.strokeStyle = '#4a2200'; c.lineWidth = lw * 1.25;
+                    for (const s of [-1, 1]) { c.beginPath(); c.arc(s * r * 0.34, -r * 0.1, r * 0.19, Math.PI * 1.12, Math.PI * 1.88); c.stroke(); }
+                    c.fillStyle = '#fff'; c.strokeStyle = '#4a2200'; c.lineWidth = lw;
+                    c.beginPath(); c.arc(0, r * 0.14, r * 0.48, 0.04, Math.PI - 0.04); c.closePath(); c.fill(); c.stroke();
+                    c.beginPath(); c.moveTo(-r * 0.44, r * 0.34); c.lineTo(r * 0.44, r * 0.34); c.stroke();
+                  } else if (id === 'em_cool_shades') {
+                    drawEmSphere(c, r, '#9eff8a', '#18b85c', '#075c28', false, '', t);
+                    c.fillStyle = '#0e131f'; c.strokeStyle = '#04060a'; c.lineWidth = lw * 0.8;
+                    c.fillRect(-r * 0.88, -r * 0.34, r * 1.76, r * 0.14);
+                    for (const s of [-1, 1]) {
+                      c.beginPath();
+                      c.moveTo(s * r * 0.08, -r * 0.28); c.lineTo(s * r * 0.82, -r * 0.28);
+                      c.lineTo(s * r * 0.7, r * 0.14); c.lineTo(s * r * 0.14, r * 0.14); c.closePath(); c.fill(); c.stroke();
+                      c.strokeStyle = 'rgba(255,255,255,0.72)'; c.lineWidth = lw * 0.9;
+                      c.beginPath(); c.moveTo(s * r * 0.28, -r * 0.2); c.lineTo(s * r * 0.56, r * 0.06); c.stroke();
+                    }
+                    c.strokeStyle = '#073618'; c.lineWidth = lw * 1.2;
+                    c.beginPath(); c.moveTo(-r * 0.26, r * 0.42); c.quadraticCurveTo(r * 0.14, r * 0.54, r * 0.42, r * 0.26); c.stroke();
+                  } else if (id === 'em_shock_blue') {
+                    drawEmSphere(c, r, '#9cf4ff', '#1e90ff', '#0a3a8a', false, '', t);
+                    for (const s of [-1, 1]) {
+                      c.strokeStyle = '#082354'; c.lineWidth = lw;
+                      c.beginPath(); c.arc(s * r * 0.34, -r * 0.36, r * 0.22, Math.PI * 1.15, Math.PI * 1.85); c.stroke();
+                      c.fillStyle = '#fff'; c.beginPath(); c.arc(s * r * 0.34, -r * 0.12, r * 0.26, 0, Math.PI * 2); c.fill(); c.stroke();
+                      c.fillStyle = '#08142b'; c.beginPath(); c.arc(s * r * 0.34, -r * 0.12, r * 0.08, 0, Math.PI * 2); c.fill();
+                    }
+                    c.fillStyle = '#140826'; c.strokeStyle = '#fff'; c.lineWidth = lw * 0.7;
+                    c.beginPath(); c.ellipse(0, r * 0.42, r * 0.24, r * 0.32, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+                  } else if (id === 'em_sleepy_drool') {
+                    drawEmSphere(c, r, '#e2c4ff', '#8c52d9', '#3f1975', false, '', t);
+                    c.strokeStyle = '#240b47'; c.lineWidth = lw * 1.15;
+                    for (const s of [-1, 1]) { c.beginPath(); c.arc(s * r * 0.34, -r * 0.14, r * 0.19, 0.15, Math.PI - 0.15); c.stroke(); }
+                    c.fillStyle = '#360e5e'; c.beginPath(); c.ellipse(-r * 0.04, r * 0.34, r * 0.15, r * 0.18, 0, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = 'rgba(130,235,255,0.78)'; c.strokeStyle = '#ffffff'; c.lineWidth = lw * 0.7;
+                    c.beginPath(); c.arc(r * 0.28, r * 0.44, r * 0.28, 0, Math.PI * 2); c.fill(); c.stroke();
+                    c.fillStyle = '#fff'; c.beginPath(); c.arc(r * 0.2, r * 0.34, r * 0.07, 0, Math.PI * 2); c.fill();
+                  } else if (id === 'em_love_blush') {
+                    drawEmSphere(c, r, '#ffd0b3', '#ff6363', '#ad1d2d', false, '', t);
+                    c.fillStyle = 'rgba(255,30,90,0.34)';
+                    c.beginPath(); c.ellipse(-r * 0.56, r * 0.2, r * 0.18, r * 0.1, 0, 0, Math.PI * 2); c.ellipse(r * 0.56, r * 0.2, r * 0.18, r * 0.1, 0, 0, Math.PI * 2); c.fill();
+                    drawEmHeart(c, -r * 0.35, -r * 0.14, r * 0.29, '#e60039');
+                    drawEmHeart(c,  r * 0.35, -r * 0.14, r * 0.29, '#e60039');
+                    c.strokeStyle = '#4a0818'; c.lineWidth = lw * 1.15;
+                    c.beginPath(); c.arc(-r * 0.16, r * 0.3, r * 0.16, 0.1, Math.PI - 0.1); c.arc(r * 0.16, r * 0.3, r * 0.16, 0.1, Math.PI - 0.1); c.stroke();
+                  } else if (id === 'em_dizzy_ko') {
+                    drawEmSphere(c, r, '#99ffe0', '#12b0a2', '#054f4d', false, '', t);
+                    for (const s of [-1, 1]) {
+                      const ex = s * r * 0.34, ey = -r * 0.14, er = r * (s === 1 ? 0.27 : 0.22);
+                      c.fillStyle = '#fff'; c.strokeStyle = '#073636'; c.lineWidth = lw * 0.75;
+                      c.beginPath(); c.arc(ex, ey, er, 0, Math.PI * 2); c.fill(); c.stroke();
+                      c.strokeStyle = '#0a1f24'; c.lineWidth = lw * 0.75; c.beginPath();
+                      for (let a = 0; a < 14; a++) {
+                        const th = a * 0.85, rad = (a / 14) * er * 0.82;
+                        const px = ex + Math.cos(th) * rad, py = ey + Math.sin(th) * rad;
+                        a === 0 ? c.moveTo(px, py) : c.lineTo(px, py);
+                      }
+                      c.stroke();
+                    }
+                    c.strokeStyle = '#073636'; c.lineWidth = lw * 1.1;
+                    c.beginPath(); c.moveTo(-r * 0.42, r * 0.38);
+                    c.bezierCurveTo(-r * 0.2, r * 0.22, -r * 0.05, r * 0.56, r * 0.12, r * 0.36);
+                    c.bezierCurveTo(r * 0.26, r * 0.22, r * 0.36, r * 0.5, r * 0.46, r * 0.34); c.stroke();
+                  } else if (id === 'em_sly_smirk') {
+                    drawEmSphere(c, r, '#ffd670', '#f77f00', '#8a3500', false, '', t);
+                    for (const s of [-1, 1]) {
+                      c.fillStyle = '#fff'; c.strokeStyle = '#3d1600'; c.lineWidth = lw * 0.8;
+                      c.beginPath(); c.ellipse(s * r * 0.33, -r * 0.08, r * 0.22, r * 0.14, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+                      c.fillStyle = '#1a0a00'; c.beginPath(); c.arc(s * r * 0.33 + r * 0.08, -r * 0.08, r * 0.09, 0, Math.PI * 2); c.fill();
+                    }
+                    c.strokeStyle = '#3d1600'; c.lineWidth = lw * 1.2;
+                    c.beginPath(); c.moveTo(-r * 0.54, -r * 0.36); c.quadraticCurveTo(-r * 0.32, -r * 0.48, -r * 0.14, -r * 0.28); c.stroke();
+                    c.beginPath(); c.moveTo(r * 0.14, -r * 0.24); c.lineTo(r * 0.56, -r * 0.32); c.stroke();
+                    c.beginPath(); c.moveTo(-r * 0.38, r * 0.34); c.quadraticCurveTo(r * 0.06, r * 0.52, r * 0.46, r * 0.18); c.stroke();
+                    c.fillStyle = '#fff'; c.beginPath(); c.moveTo(r * 0.22, r * 0.36); c.lineTo(r * 0.32, r * 0.56); c.lineTo(r * 0.38, r * 0.28); c.closePath(); c.fill();
+                  } else if (id === 'em_cry_flood') {
+                    drawEmSphere(c, r, '#c4e2ff', '#4b7bec', '#1c348f', false, '', t);
+                    c.fillStyle = 'rgba(130,240,255,0.85)';
+                    for (const s of [-1, 1]) {
+                      c.beginPath(); c.rect(s * r * 0.36 - r * 0.13, -r * 0.08, r * 0.26, r * 0.92); c.fill();
+                      c.strokeStyle = '#122259'; c.lineWidth = lw * 1.25;
+                      c.beginPath(); c.moveTo(s * r * 0.52, -r * 0.26); c.lineTo(s * r * 0.2, -r * 0.14); c.lineTo(s * r * 0.52, -r * 0.02); c.stroke();
+                    }
+                    c.fillStyle = '#1a1242'; c.strokeStyle = '#fff'; c.lineWidth = lw * 0.7;
+                    c.beginPath(); c.arc(0, r * 0.54, r * 0.3, Math.PI * 1.06, Math.PI * 1.94); c.closePath(); c.fill(); c.stroke();
+                  } else if (id === 'em_cyber_visor') {
+                    drawEmSphere(c, r, '#3862a8', '#14224a', '#060c1f', false, '#00f7ff', t);
+                    c.fillStyle = '#051424'; c.strokeStyle = '#00f7ff'; c.lineWidth = lw * 1.1;
+                    c.beginPath(); c.ellipse(0, -r * 0.12, r * 0.78, r * 0.26, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+                    const scan = Math.sin(t * 5) * r * 0.42;
+                    c.fillStyle = '#aefcff'; c.beginPath(); c.ellipse(scan, -r * 0.12, r * 0.24, r * 0.1, 0, 0, Math.PI * 2); c.fill();
+                    c.strokeStyle = '#00f7ff'; c.lineWidth = lw * 1.2;
+                    c.beginPath(); c.moveTo(-r * 0.38, r * 0.34); c.lineTo(-r * 0.16, r * 0.46); c.lineTo(r * 0.16, r * 0.46); c.lineTo(r * 0.38, r * 0.34); c.stroke();
+                  } else if (id === 'em_golden_star') {
+                    drawEmSphere(c, r, '#fffbb8', '#f5b800', '#8c5300', false, '#ffe259', t);
+                    drawEmStar(c, -r * 0.35, -r * 0.14, r * 0.32, r * 0.14, t * 1.4, '#fff8c4');
+                    drawEmStar(c,  r * 0.35, -r * 0.14, r * 0.32, r * 0.14, -t * 1.4, '#fff8c4');
+                    c.fillStyle = '#5c2800'; c.strokeStyle = '#ffe875'; c.lineWidth = lw * 0.85;
+                    c.beginPath(); c.arc(0, r * 0.2, r * 0.42, 0.06, Math.PI - 0.06); c.closePath(); c.fill(); c.stroke();
+                    c.fillStyle = '#ff6b81'; c.beginPath(); c.ellipse(0, r * 0.46, r * 0.22, r * 0.12, 0, 0, Math.PI * 2); c.fill();
+                  } else if (id === 'em_toxic_slime') {
+                    drawEmSphere(c, r, '#d4ff7a', '#32d414', '#0b5404', false, '#69ff3b', t);
+                    c.fillStyle = '#fff'; c.strokeStyle = '#0b3d04'; c.lineWidth = lw * 0.8;
+                    c.beginPath(); c.arc(-r * 0.34, -r * 0.14, r * 0.28, 0, Math.PI * 2); c.fill(); c.stroke();
+                    c.beginPath(); c.arc(r * 0.34, -r * 0.1, r * 0.18, 0, Math.PI * 2); c.fill(); c.stroke();
+                    c.fillStyle = '#091f04';
+                    c.beginPath(); c.arc(-r * 0.3, -r * 0.14, r * 0.1, 0, Math.PI * 2); c.arc(r * 0.32, -r * 0.1, r * 0.08, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = '#123808'; c.beginPath(); c.arc(0, r * 0.24, r * 0.42, 0, Math.PI); c.closePath(); c.fill();
+                    c.fillStyle = '#a8ff3b'; c.strokeStyle = '#0b4204'; c.lineWidth = lw * 0.7;
+                    c.beginPath(); c.ellipse(0, r * 0.56, r * 0.18, r * 0.28, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+                  } else if (id === 'em_devil_glow') {
+                    c.fillStyle = '#ff2442'; c.strokeStyle = '#470512'; c.lineWidth = lw * 0.8;
+                    for (const s of [-1, 1]) {
+                      c.beginPath(); c.moveTo(s * r * 0.4, -r * 0.72); c.quadraticCurveTo(s * r * 0.92, -r * 1.18, s * r * 0.85, -r * 0.55); c.closePath(); c.fill(); c.stroke();
+                    }
+                    drawEmSphere(c, r, '#b82965', '#610c38', '#210313', false, '#ff2e63', t);
+                    for (const s of [-1, 1]) {
+                      c.fillStyle = '#ffe259'; c.beginPath();
+                      c.moveTo(s * r * 0.12, -r * 0.08); c.lineTo(s * r * 0.58, -r * 0.28); c.lineTo(s * r * 0.46, r * 0.06); c.closePath(); c.fill();
+                    }
+                    c.fillStyle = '#1c020a'; c.beginPath(); c.arc(0, r * 0.22, r * 0.44, 0.05, Math.PI - 0.05); c.closePath(); c.fill();
+                    c.fillStyle = '#fff';
+                    for (const sx of [-0.28, 0.28]) { c.beginPath(); c.moveTo(sx * r - r * 0.08, r * 0.23); c.lineTo(sx * r, r * 0.44); c.lineTo(sx * r + r * 0.08, r * 0.23); c.closePath(); c.fill(); }
+                  } else if (id === 'em_frost_aura') {
+                    drawEmSphere(c, r, '#e8ffff', '#38c6ff', '#0b5285', false, '#70f8ff', t);
+                    for (const s of [-1, 1]) {
+                      c.fillStyle = '#fff'; c.strokeStyle = '#083c6b'; c.lineWidth = lw * 0.75;
+                      c.beginPath(); c.arc(s * r * 0.33, -r * 0.12, r * 0.23, 0, Math.PI * 2); c.fill(); c.stroke();
+                      c.fillStyle = '#00a8ff'; c.beginPath(); c.arc(s * r * 0.33, -r * 0.12, r * 0.13, 0, Math.PI * 2); c.fill();
+                      c.fillStyle = '#fff'; c.beginPath(); c.arc(s * r * 0.28, -r * 0.18, r * 0.06, 0, Math.PI * 2); c.fill();
+                    }
+                    c.strokeStyle = '#083c6b'; c.lineWidth = lw;
+                    c.beginPath(); c.arc(0, r * 0.26, r * 0.24, 0.2, Math.PI - 0.2); c.stroke();
+                    drawEmStar(c, -r * 0.62, -r * 0.56, r * 0.18, r * 0.07, t * 2, '#ffffff');
+                    drawEmStar(c,  r * 0.64, -r * 0.46, r * 0.15, r * 0.06, -t * 2, '#d6ffff');
+                  } else if (id === 'em_live_rofl') {
+                    const laugh = 0.5 + 0.5 * Math.sin(t * 14);
+                    drawEmSphere(c, r, '#fffbe0', '#ffc400', '#c46200', true, '#ffe259', t);
+                    c.strokeStyle = '#471e00'; c.lineWidth = lw * 1.35;
+                    for (const s of [-1, 1]) {
+                      c.beginPath(); c.moveTo(s * r * 0.56, -r * 0.28); c.lineTo(s * r * 0.18, -r * 0.14); c.lineTo(s * r * 0.56, 0); c.stroke();
+                      const td = ((t * 2.2) % 1);
+                      c.fillStyle = '#59e4ff'; c.globalAlpha = 1 - td * 0.7;
+                      c.beginPath(); c.ellipse(s * r * (0.64 + td * 0.42), -r * 0.04 + td * r * 0.34, r * 0.17, r * 0.1, s * 0.5, 0, Math.PI * 2); c.fill();
+                      c.globalAlpha = 1;
+                    }
+                    const mh = r * (0.34 + laugh * 0.24);
+                    c.fillStyle = '#590814'; c.strokeStyle = '#38050b'; c.lineWidth = lw * 0.9;
+                    c.beginPath(); c.ellipse(0, r * 0.32, r * 0.46, mh, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+                    c.fillStyle = '#fff'; c.fillRect(-r * 0.38, r * 0.32 - mh, r * 0.76, r * 0.14);
+                    c.fillStyle = '#ff4d6d'; c.beginPath(); c.ellipse(0, r * 0.36 + mh * 0.42, r * 0.24, r * 0.14, 0, 0, Math.PI * 2); c.fill();
+                  } else if (id === 'em_live_kiss') {
+                    const p = (t * 1.6) % 1;
+                    const wink = Math.sin(t * 5) > -0.25;
+                    drawEmSphere(c, r, '#ffd6f5', '#ff3b9a', '#8f0a4e', true, '#ff85d6', t);
+                    c.fillStyle = 'rgba(255,20,90,0.36)';
+                    c.beginPath(); c.ellipse(-r * 0.54, r * 0.18, r * 0.18, r * 0.1, 0, 0, Math.PI * 2); c.ellipse(r * 0.54, r * 0.18, r * 0.18, r * 0.1, 0, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = '#fff'; c.strokeStyle = '#4a0628'; c.lineWidth = lw * 0.8;
+                    c.beginPath(); c.arc(-r * 0.34, -r * 0.14, r * 0.24, 0, Math.PI * 2); c.fill(); c.stroke();
+                    c.fillStyle = '#1f0824'; c.beginPath(); c.arc(-r * 0.3, -r * 0.14, r * 0.13, 0, Math.PI * 2); c.fill();
+                    c.fillStyle = '#fff'; c.beginPath(); c.arc(-r * 0.36, -r * 0.2, r * 0.06, 0, Math.PI * 2); c.fill();
+                    if (wink) {
+                      c.strokeStyle = '#4a0628'; c.lineWidth = lw * 1.25;
+                      c.beginPath(); c.arc(r * 0.34, -r * 0.1, r * 0.2, Math.PI * 1.15, Math.PI * 1.85); c.stroke();
+                    } else {
+                      c.fillStyle = '#fff'; c.beginPath(); c.arc(r * 0.34, -r * 0.14, r * 0.24, 0, Math.PI * 2); c.fill(); c.stroke();
+                      c.fillStyle = '#1f0824'; c.beginPath(); c.arc(r * 0.34, -r * 0.14, r * 0.13, 0, Math.PI * 2); c.fill();
+                    }
+                    const lipS = 1 + 0.24 * Math.sin(t * 10);
+                    c.fillStyle = '#ff144f'; c.strokeStyle = '#6e0522'; c.lineWidth = lw * 0.7;
+                    c.beginPath(); c.ellipse(r * 0.06, r * 0.3, r * 0.18 * lipS, r * 0.11 * lipS, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+                    c.beginPath(); c.ellipse(r * 0.06, r * 0.44, r * 0.16 * lipS, r * 0.1 * lipS, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+                    c.globalAlpha = 1 - p * 0.85;
+                    drawEmHeart(c, r * (0.34 + p * 0.65), r * (0.34 - p * 0.55), r * (0.16 + p * 0.24), '#ff1e56');
+                    c.globalAlpha = 1;
+                  } else if (id === 'em_live_blaze') {
+                    const fl = 0.85 + 0.28 * Math.sin(t * 18);
+                    c.fillStyle = '#ff8c00';
+                    for (let k = -2; k <= 2; k++) {
+                      c.beginPath(); c.moveTo(k * r * 0.34, -r * 0.65);
+                      c.quadraticCurveTo(k * r * 0.44, -r * 1.32 * fl, k * r * 0.18, -r * (1.42 - Math.abs(k) * 0.14) * fl);
+                      c.quadraticCurveTo(k * r * 0.06, -r * 0.95, k * r * 0.24, -r * 0.65); c.fill();
+                    }
+                    drawEmSphere(c, r, '#ffc247', '#e62400', '#590400', true, '#ffae00', t);
+                    for (const s of [-1, 1]) {
+                      c.fillStyle = '#fff599'; c.beginPath();
+                      c.moveTo(s * r * 0.12, -r * 0.06); c.lineTo(s * r * 0.58, -r * 0.3); c.lineTo(s * r * 0.46, r * 0.08); c.closePath(); c.fill();
+                    }
+                    const roar = 0.5 + 0.5 * Math.sin(t * 13);
+                    c.fillStyle = '#3d0400'; c.strokeStyle = '#ffae00'; c.lineWidth = lw;
+                    c.beginPath(); c.ellipse(0, r * 0.36, r * (0.38 + roar * 0.14), r * (0.18 + roar * 0.24), 0, 0, Math.PI * 2); c.fill(); c.stroke();
+                    c.fillStyle = '#ffe875'; c.beginPath(); c.ellipse(0, r * 0.38, r * 0.2, r * (0.08 + roar * 0.12), 0, 0, Math.PI * 2); c.fill();
+                  } else if (id === 'em_live_yummy') {
+                    const dart = Math.sin(t * 5) * r * 0.09, munch = 0.5 + 0.5 * Math.sin(t * 11), lick = Math.sin(t * 7);
+                    drawEmSphere(c, r, '#c8fff9', '#00c4d4', '#045269', true, '#8ef8ff', t);
+                    for (const s of [-1, 1]) {
+                      c.fillStyle = '#fff'; c.strokeStyle = '#053345'; c.lineWidth = lw * 0.8;
+                      c.beginPath(); c.arc(s * r * 0.33, -r * 0.16, r * 0.25, 0, Math.PI * 2); c.fill(); c.stroke();
+                      c.fillStyle = '#071b2e'; c.beginPath(); c.arc(s * r * 0.33 + dart, -r * 0.16, r * 0.13, 0, Math.PI * 2); c.fill();
+                      c.fillStyle = '#fff'; c.beginPath(); c.arc(s * r * 0.28 + dart, -r * 0.22, r * 0.06, 0, Math.PI * 2); c.fill();
+                    }
+                    c.fillStyle = '#3d0822'; c.strokeStyle = '#053345'; c.lineWidth = lw * 0.8;
+                    c.beginPath(); c.ellipse(0, r * 0.32, r * 0.42, r * (0.14 + munch * 0.18), 0, 0, Math.PI * 2); c.fill(); c.stroke();
+                    c.fillStyle = '#ff4d88'; c.strokeStyle = '#7a0a36'; c.lineWidth = lw * 0.7;
+                    c.beginPath(); c.ellipse(lick * r * 0.28, r * 0.48, r * 0.19, r * 0.24, lick * 0.45, 0, Math.PI * 2); c.fill(); c.stroke();
+                    drawEmStar(c, -r * 0.74, -r * 0.48, r * 0.16, r * 0.07, t * 4, '#ffe259');
+                    drawEmStar(c,  r * 0.76, -r * 0.38, r * 0.14, r * 0.06, -t * 4, '#ffffff');
+                  } else if (id === 'em_live_king') {
+                    const rgb = EMOJI_RGB_COLS[Math.floor(t * 4) % EMOJI_RGB_COLS.length];
+                    drawEmSphere(c, r, '#efd1ff', '#7b2cbf', '#24054a', true, rgb, t);
+                    const cb = Math.sin(t * 6) * r * 0.08;
+                    c.fillStyle = '#ffd23f'; c.strokeStyle = '#7a4500'; c.lineWidth = lw * 0.8;
+                    c.beginPath();
+                    c.moveTo(-r * 0.46, -r * 0.86 + cb); c.lineTo(-r * 0.56, -r * 1.32 + cb);
+                    c.lineTo(-r * 0.2, -r * 1.06 + cb); c.lineTo(0, -r * 1.42 + cb);
+                    c.lineTo(r * 0.2, -r * 1.06 + cb); c.lineTo(r * 0.56, -r * 1.32 + cb);
+                    c.lineTo(r * 0.46, -r * 0.86 + cb); c.closePath(); c.fill(); c.stroke();
+                    c.fillStyle = '#ff2442'; c.beginPath(); c.arc(0, -r * 1.02 + cb, r * 0.09, 0, Math.PI * 2); c.fill();
+                    drawEmStar(c, -r * 0.34, -r * 0.12, r * 0.26, r * 0.12, t * 2, '#ffe875');
+                    drawEmStar(c,  r * 0.34, -r * 0.12, r * 0.26, r * 0.12, -t * 2, '#ffe875');
+                    const talk = 0.5 + 0.5 * Math.sin(t * 10);
+                    c.fillStyle = '#290338'; c.strokeStyle = '#ffe259'; c.lineWidth = lw * 0.85;
+                    c.beginPath(); c.ellipse(0, r * 0.34, r * 0.42, r * (0.14 + talk * 0.18), 0, 0, Math.PI * 2); c.fill(); c.stroke();
+                    c.fillStyle = '#fff'; c.fillRect(-r * 0.32, r * 0.2 + (1 - talk) * r * 0.06, r * 0.64, r * 0.12);
+                    for (let k = 0; k < 2; k++) {
+                      const oa = t * 3.8 + k * Math.PI;
+                      drawEmStar(c, Math.cos(oa) * r * 1.18, Math.sin(oa) * r * 0.95, r * 0.17, r * 0.07, t * 5, k === 0 ? '#ffe259' : '#aef8ff');
+                    }
+                  }
+                  c.restore();
+                }
+
+                function drawEmojiBubble(c, wx, wy, wr, key, isLobby, isWs) {
+                  const em = getEmojiDef(key);
+                  const box = isWs ? 54 : (isLobby ? 74 : clamp(wr * 2.45, 64, 108));
+                  const cr = box * 0.22, tw = box * 0.24, th = box * 0.24;
+                  let cx = wx + (isLobby ? 14 : 0);
+                  let cy = wy - wr - box * 0.56 - th - (isWs ? 4 : 8);
+                  if (isWs) { cx = clamp(cx, box * 0.54, wsCanvas.width - box * 0.54); cy = clamp(cy, box * 0.56, wsCanvas.height - box * 0.68); }
+                  else if (isLobby) { cx = clamp(cx, box * 0.58, appW - box * 0.58); cy = clamp(cy, box * 0.58, appH - box * 0.72); }
+                  const bx = cx - box / 2, by = cy - box / 2, tx = bx + cr + box * 0.06;
+
+                  c.save();
+                  c.fillStyle = 'rgba(0,0,0,0.28)';
+                  c.beginPath();
+                  c.moveTo(bx + cr + 3, by + 4); c.lineTo(bx + box - cr + 3, by + 4);
+                  c.quadraticCurveTo(bx + box + 3, by + 4, bx + box + 3, by + cr + 4);
+                  c.lineTo(bx + box + 3, by + box - cr + 4);
+                  c.quadraticCurveTo(bx + box + 3, by + box + 4, bx + box - cr + 3, by + box + 4);
+                  c.lineTo(tx + tw + 3, by + box + 4); c.lineTo(tx - tw * 0.18 + 3, by + box + th + 4); c.lineTo(tx + 3, by + box + 4);
+                  c.lineTo(bx + cr + 3, by + box + 4);
+                  c.quadraticCurveTo(bx + 3, by + box + 4, bx + 3, by + box - cr + 4);
+                  c.lineTo(bx + 3, by + cr + 4);
+                  c.quadraticCurveTo(bx + 3, by + 4, bx + cr + 3, by + 4);
+                  c.closePath(); c.fill();
+
+                  c.fillStyle = '#ffffff';
+                  c.strokeStyle = em.tier === 'diamond' ? '#ffd23f' : (em.tier === 'glow' ? em.glow : '#1b3554');
+                  c.lineWidth = isLobby ? 2.8 : 2.2;
+                  c.beginPath();
+                  c.moveTo(bx + cr, by); c.lineTo(bx + box - cr, by);
+                  c.quadraticCurveTo(bx + box, by, bx + box, by + cr);
+                  c.lineTo(bx + box, by + box - cr);
+                  c.quadraticCurveTo(bx + box, by + box, bx + box - cr, by + box);
+                  c.lineTo(tx + tw, by + box); c.lineTo(tx - tw * 0.18, by + box + th); c.lineTo(tx, by + box);
+                  c.lineTo(bx + cr, by + box);
+                  c.quadraticCurveTo(bx, by + box, bx, by + box - cr);
+                  c.lineTo(bx, by + cr);
+                  c.quadraticCurveTo(bx, by, bx + cr, by);
+                  c.closePath(); c.fill(); c.stroke();
+
+                  drawCustomEmoji(c, em, cx, cy, box * 0.37, globalTime);
+                  c.restore();
+                }
+
 
                 const FOOD_VARIETIES = [
                   { id: 'mixed',   name: 'Yummy Mix',     icon: '🍔', items: ['🍔','🍕','🍩','🍎','🍉','🍓','🧁','🍗','🧀','🍪','🍇','🍌'] },
@@ -1865,10 +2284,60 @@ jobs:
                 saveProfile();
 
                                const FIREBASE_DB_URL = 'https://serpent-wild-top-default-rtdb.asia-southeast1.firebasedatabase.app';
-                if (!profile.playerId) {
-                  profile.playerId = 'p_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+                                const nativeDevId = (() => {
+                  try { return (window.DeviceBridge && window.DeviceBridge.getDeviceId) ? String(window.DeviceBridge.getDeviceId() || '').replace(/[^a-zA-Z0-9_-]/g, '') : ''; } catch (e) { return ''; }
+                })();
+                if (nativeDevId) {
+                  profile.playerId = 'dev_' + nativeDevId;
+                  saveProfile();
+                } else if (!profile.playerId) {
+                  profile.playerId = 'p_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
                   saveProfile();
                 }
+
+                let _cloudReady = false, _lastCloudSnap = '';
+                async function syncProfileToCloud() {
+                  if (!_cloudReady || !profile.playerId || !FIREBASE_DB_URL) return;
+                  const snap = JSON.stringify(profile);
+                  if (snap === _lastCloudSnap) return;
+                  _lastCloudSnap = snap;
+                  try {
+                    await fetch(`${FIREBASE_DB_URL}/players/${profile.playerId}.json`, {
+                      method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: snap
+                    });
+                  } catch (e) {}
+                }
+
+                async function restoreProfileFromCloud() {
+                  if (!profile.playerId || !FIREBASE_DB_URL) { _cloudReady = true; return; }
+                  try {
+                    const r = await fetch(`${FIREBASE_DB_URL}/players/${profile.playerId}.json`);
+                    const cd = r.ok ? await r.json() : null;
+                    if (cd && typeof cd === 'object') {
+                      const localBest = Math.max(0, ...Object.values(profile.bestScores || {}).map(Number));
+                      const cloudBest = Math.max(0, ...Object.values(cd.bestScores || {}).map(Number));
+                      const isFreshInstall = (profile.stats?.games || 0) === 0 && localBest === 0;
+                      if (isFreshInstall || cloudBest >= localBest) {
+                        profile = {
+                          ...profile, ...cd, playerId: profile.playerId,
+                          potions: { ...(profile.potions || {}), ...(cd.potions || {}) },
+                          bestScores: { ...(profile.bestScores || {}), ...(cd.bestScores || {}) },
+                          stats: { ...(profile.stats || {}), ...(cd.stats || {}) },
+                          settings: { ...(profile.settings || {}), ...(cd.settings || {}) }
+                        };
+                        saveProfile();
+                        if (typeof refreshLobbyUI === 'function') refreshLobbyUI();
+                        if (typeof spawnLobbyWorm === 'function') spawnLobbyWorm();
+                      }
+                    }
+                  } catch (e) {}
+                  _lastCloudSnap = JSON.stringify(profile);
+                  _cloudReady = true;
+                }
+                restoreProfileFromCloud();
+                setInterval(syncProfileToCloud, 4000);
+                document.addEventListener('visibilitychange', () => { if (document.hidden) syncProfileToCloud(); });
+
 
                 const escHtml = (s) => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
                 const getPlayerFlag = () => {
@@ -3502,22 +3971,10 @@ jobs:
                       }
                       c.restore();
 
-                      if (this.bubbleTimer > 0 && this.bubbleText) {
-                        c.save();
-                        const bScale = (this === lobbyWorm) ? 1.65 : 1;
-                        const bFont = +(11.5 * bScale).toFixed(1);
-                        const bH = Math.round(22 * bScale);
-                        const bPad = Math.round(16 * bScale);
-                        c.font = `900 ${bFont}px sans-serif`;
-                        const tw = c.measureText(this.bubbleText).width + bPad;
-                        const bx = this.x - tw / 2, by = this.y - r - Math.round(18 * bScale) - bH;
-                        c.fillStyle = '#ffffff'; c.strokeStyle = '#1b3554'; c.lineWidth = 2 * bScale;
-                        c.beginPath(); c.roundRect ? c.roundRect(bx, by, tw, bH, bH / 2) : c.rect(bx, by, tw, bH);
-                        c.fill(); c.stroke();
-                        c.fillStyle = '#11223a'; c.textAlign = 'center'; c.textBaseline = 'middle';
-                        c.fillText(this.bubbleText, this.x, by + bH / 2);
-                        c.restore();
+                                            if (this.bubbleTimer > 0 && this.bubbleText) {
+                        drawEmojiBubble(c, this.x, this.y, r, this.bubbleText, this === lobbyWorm, this === wsPreviewWorm);
                       }
+
 
                       if (showUi && profile.settings.showNames) {
                         c.font = '900 10.5px sans-serif'; c.textAlign = 'center';
@@ -4086,10 +4543,8 @@ jobs:
                     if (!near(ep.x, ep.y)) continue;
                     ctx.save();
                     ctx.globalAlpha = clamp(ep.life / ep.maxLife, 0, 1);
-                    ctx.font = '50px sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(ep.emoji, ep.x, ep.y);
+                                        drawCustomEmoji(ctx, getEmojiDef(ep.emoji), ep.x, ep.y, 26, globalTime);
+
                     ctx.restore();
                   }
 
@@ -4553,23 +5008,42 @@ jobs:
                     });
                     pane.appendChild(lGrid);
 
-                    const xHdr = document.createElement('div'); xHdr.className = 'sec-lbl'; xHdr.textContent = '💬 Snake Expressions';
+                                        const xHdr = document.createElement('div'); xHdr.className = 'sec-lbl'; xHdr.textContent = '😎 20 Unique Realistic Emojis (10 Free • 5 Glow • 5 Live)';
                     pane.appendChild(xHdr);
-                    const xGrid = document.createElement('div'); xGrid.className = 'card-grid';
+                    const xGrid = document.createElement('div'); xGrid.className = 'ws-grid';
+                    const activeExprId = (EXPRESSIONS.find(e => e.id === profile.expr) || EXPRESSIONS[0]).id;
                     EXPRESSIONS.forEach(ex => {
-                      const owned = profile.ownedExprs.includes(ex.id) || ex.cost === 0;
-                      const eq = profile.expr === ex.id;
-                      const c = document.createElement('div'); c.className = 'item-card' + (eq ? ' selected' : '');
-                      c.innerHTML = `<strong style="color:#fff;font-size:12.5px;">"${ex.text}"</strong><button class="${eq ? 'btn-ghost' : 'btn-blue'}" style="padding:5px;font-size:9.5px;">${eq ? 'ACTIVE ✅' : (owned ? 'SELECT' : `BUY ${ex.cost} 🪙`)}</button>`;
+                      const owned = profile.ownedExprs.includes(ex.id) || ex.curr === 'free';
+                      const eq = activeExprId === ex.id;
+                      const tierCls = ex.tier === 'diamond' ? 't-Mythic' : (ex.tier === 'glow' ? 't-Legendary' : 't-Free');
+                      const c = document.createElement('div'); c.className = `snake-card ${tierCls}` + (eq ? ' selected' : '');
+                      const th = document.createElement('canvas'); th.className = 'snake-thumb'; th.width = 76; th.height = 76;
+                      drawCustomEmoji(th.getContext('2d'), ex, 38, 40, 23, globalTime);
+                      const nm = document.createElement('div'); nm.className = 'sc-name';
+                      nm.textContent = ex.tier === 'diamond' ? `✨ ${ex.text}` : ex.text;
+                      const btn = document.createElement('button');
+                      btn.className = eq ? 'btn-ghost' : (ex.curr === 'dia' && !owned ? 'btn-blue' : 'btn-gold');
+                      btn.style.cssText = 'width:100%;padding:4px 2px;font-size:8.5px;';
+                      btn.textContent = eq ? 'ACTIVE ✅' : (owned ? 'SELECT' : `${ex.cost.toLocaleString()} ${ex.curr === 'dia' ? '💎' : '🪙'}`);
                       c.onclick = () => {
-                        if (owned) profile.expr = ex.id;
-                        else if (profile.coins >= ex.cost) { profile.coins -= ex.cost; profile.ownedExprs.push(ex.id); profile.expr = ex.id; Sound.play('buy'); }
-                        else { Sound.play('over'); return; }
-                        saveProfile(); Sound.play('click'); renderWorkshop(); spawnLobbyWorm();
+                        if (wsPreviewWorm) wsPreviewWorm.say(ex.id);
+                        document.getElementById('wsExprPreview').textContent = `Emoji: ${ex.text}`;
+                        if (owned) { profile.expr = ex.id; saveProfile(); renderWorkshop(); spawnLobbyWorm(); }
+                        Sound.play('click');
                       };
+                      btn.onclick = (e) => {
+                        e.stopPropagation();
+                        if (owned) profile.expr = ex.id;
+                        else if (ex.curr === 'coin' && profile.coins >= ex.cost) { profile.coins -= ex.cost; profile.ownedExprs.push(ex.id); profile.expr = ex.id; Sound.play('buy'); }
+                        else if (ex.curr === 'dia' && profile.diamonds >= ex.cost) { profile.diamonds -= ex.cost; profile.ownedExprs.push(ex.id); profile.expr = ex.id; Sound.play('buy'); }
+                        else { Sound.play('over'); return; }
+                        saveProfile(); Sound.play('click'); renderWorkshop(); spawnLobbyWorm(); refreshLobbyUI();
+                      };
+                      c.appendChild(th); c.appendChild(nm); c.appendChild(btn);
                       xGrid.appendChild(c);
                     });
                     pane.appendChild(xGrid);
+
                   } else if (wsTab === 'potions') {
                     pane.innerHTML = '<div class="sec-lbl">🧪 Battle Potions</div>';
                     const grid = document.createElement('div'); grid.className = 'card-grid';
