@@ -185,6 +185,7 @@ jobs:
           -keep class com.apexwild.serpent.MainActivity$AudioBridge { *; }
           -keep class com.apexwild.serpent.MainActivity$BillingBridge { *; }
           -keep class com.apexwild.serpent.MainActivity$AdBridge { *; }
+          -keep class com.apexwild.serpent.MainActivity$GoogleAuthBridge { *; }
 
           -keep class com.apexwild.serpent.ReminderReceiver { *; }
           -keep class com.android.billingclient.** { *; }
@@ -241,6 +242,7 @@ jobs:
               implementation("androidx.appcompat:appcompat:1.7.0")
               implementation("com.android.billingclient:billing-ktx:7.1.1")
               implementation("com.google.android.gms:play-services-ads:24.1.0")
+              implementation("com.google.android.gms:play-services-auth:21.3.0")
           }
           EOF
 
@@ -357,6 +359,7 @@ jobs:
               }
           }
           EOF
+
           cat << 'EOF' > app/src/main/java/com/apexwild/serpent/MainActivity.kt
           package com.apexwild.serpent
 
@@ -382,6 +385,7 @@ jobs:
           import android.webkit.WebView
           import android.webkit.WebViewClient
           import android.widget.Toast
+          import androidx.activity.result.contract.ActivityResultContracts
           import androidx.appcompat.app.AppCompatActivity
           import androidx.core.app.ActivityCompat
           import androidx.core.content.ContextCompat
@@ -405,6 +409,11 @@ jobs:
           import com.google.android.gms.ads.MobileAds
           import com.google.android.gms.ads.rewarded.RewardedAd
           import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
+          import com.google.android.gms.auth.api.signin.GoogleSignIn
+          import com.google.android.gms.auth.api.signin.GoogleSignInClient
+          import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+          import com.google.android.gms.common.api.ApiException
+          import org.json.JSONObject
 
           class MainActivity : AppCompatActivity(), PurchasesUpdatedListener {
               private lateinit var webView: WebView
@@ -420,6 +429,97 @@ jobs:
               private var rewardedAd: RewardedAd? = null
               private var isLoadingRewardedAd = false
               private val rewardedAdUnitId = "ca-app-pub-3210967652219044/8395665532"
+
+              private lateinit var googleSignInClient: GoogleSignInClient
+              private val googleWebClientId = "433873271111-ui9tipkhgivih0bdnt2vd7ar1j1qk95f.apps.googleusercontent.com"
+
+              private val googleSignInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                  try {
+                      val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                      val account = task.getResult(ApiException::class.java)
+                      val uid = account?.id.orEmpty()
+                      if (uid.isNotBlank()) {
+                          val payload = JSONObject().apply {
+                              put("id", uid)
+                              put("email", account?.email.orEmpty())
+                              put("name", account?.displayName.orEmpty())
+                          }.toString()
+                          val safeJson = JSONObject.quote(payload)
+                          webView.post {
+                              webView.evaluateJavascript("window.onGoogleSignInSuccess && window.onGoogleSignInSuccess(JSON.parse($safeJson));", null)
+                          }
+                      } else {
+                          webView.post {
+                              webView.evaluateJavascript("window.onGoogleSignInFailed && window.onGoogleSignInFailed('No Google account ID');", null)
+                          }
+                      }
+                  } catch (e: ApiException) {
+                      val msg = when (e.statusCode) {
+                          10 -> "SHA-1 not added in Firebase (Error 10)"
+                          12501 -> "Cancelled"
+                          else -> "Google Sign-In Error ${e.statusCode}"
+                      }
+                      val safeMsg = JSONObject.quote(msg)
+                      webView.post {
+                          webView.evaluateJavascript("window.onGoogleSignInFailed && window.onGoogleSignInFailed($safeMsg);", null)
+                      }
+                  } catch (e: Exception) {
+                      val safeMsg = JSONObject.quote(e.message ?: "Sign-in failed")
+                      webView.post {
+                          webView.evaluateJavascript("window.onGoogleSignInFailed && window.onGoogleSignInFailed($safeMsg);", null)
+                      }
+                  }
+              }
+
+              private fun setupGoogleSignIn() {
+                  val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                      .requestIdToken(googleWebClientId)
+                      .requestEmail()
+                      .build()
+                  googleSignInClient = GoogleSignIn.getClient(this, gso)
+              }
+
+              inner class GoogleAuthBridge {
+                  @JavascriptInterface
+                  fun signIn() {
+                      runOnUiThread {
+                          try {
+                              googleSignInClient.signOut().addOnCompleteListener {
+                                  googleSignInLauncher.launch(googleSignInClient.signInIntent)
+                              }
+                          } catch (e: Exception) {
+                              Toast.makeText(this@MainActivity, "Sign-In failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                          }
+                      }
+                  }
+
+                  @JavascriptInterface
+                  fun signOut() {
+                      runOnUiThread {
+                          try {
+                              googleSignInClient.signOut().addOnCompleteListener {
+                                  webView.post {
+                                      webView.evaluateJavascript("window.onGoogleSignOut && window.onGoogleSignOut();", null)
+                                  }
+                              }
+                          } catch (_: Exception) {}
+                      }
+                  }
+
+                  @JavascriptInterface
+                  fun getSignedInUser(): String {
+                      return try {
+                          val acc = GoogleSignIn.getLastSignedInAccount(this@MainActivity)
+                          if (acc != null && !acc.id.isNullOrBlank()) {
+                              JSONObject().apply {
+                                  put("id", acc.id ?: "")
+                                  put("email", acc.email ?: "")
+                                  put("name", acc.displayName ?: "")
+                              }.toString()
+                          } else ""
+                      } catch (_: Exception) { "" }
+                  }
+              }
 
               private fun loadRewardedAd() {
                   if (isLoadingRewardedAd || rewardedAd != null) return
@@ -702,6 +802,7 @@ jobs:
                   requestNotifPermission()
                   scheduleReminder(6L * 60L * 60L * 1000L)
                   setupPlayBilling()
+                  setupGoogleSignIn()
                   MobileAds.initialize(this) { loadRewardedAd() }
 
                   webView = WebView(this).apply {
@@ -722,19 +823,19 @@ jobs:
                           loadWithOverviewMode = true
                           mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
                           textZoom = 100
-
                       }
                       addJavascriptInterface(AudioBridge(), "AndroidAudio")
                       addJavascriptInterface(BillingBridge(), "AndroidBilling")
                       addJavascriptInterface(AdBridge(), "AndroidAds")
                       addJavascriptInterface(object {
-                      @android.webkit.JavascriptInterface
-                      fun getDeviceId(): String {
-                       return try {
-                      android.provider.Settings.Secure.getString(this@MainActivity.contentResolver, android.provider.Settings.Secure.ANDROID_ID) ?: ""
-                      } catch (_: Exception) { "" }
-                    }
-                  }, "DeviceBridge")
+                          @android.webkit.JavascriptInterface
+                          fun getDeviceId(): String {
+                              return try {
+                                  android.provider.Settings.Secure.getString(this@MainActivity.contentResolver, android.provider.Settings.Secure.ANDROID_ID) ?: ""
+                              } catch (_: Exception) { "" }
+                          }
+                      }, "DeviceBridge")
+                      addJavascriptInterface(GoogleAuthBridge(), "GoogleAuthBridge")
 
                       webViewClient = WebViewClient()
                       webChromeClient = WebChromeClient()
@@ -869,7 +970,7 @@ jobs:
                 background: rgba(255,255,255,0.1); color: #eef7ff; font-size: 11px; font-weight: 800; cursor: pointer;
               }
 
-                           @keyframes champShine {
+              @keyframes champShine {
                 0% { background-position: 0% 50%; transform: scale(1); }
                 50% { background-position: 100% 50%; transform: scale(1.06); }
                 100% { background-position: 0% 50%; transform: scale(1); }
@@ -945,7 +1046,6 @@ jobs:
               .prof-rank-8  { border-color: #ffae00 !important; animation: prGlow8 2.5s ease-in-out infinite; }
               .prof-rank-9  { border-color: #2ec4b6 !important; animation: prGlow9 2.6s ease-in-out infinite; }
               .prof-rank-10 { border-color: #dce8f5 !important; animation: prGlow10 2.7s ease-in-out infinite; }
- 
 
               #introScreen {
                 position: fixed; inset: 0; z-index: 160; display: flex; flex-direction: column;
@@ -979,7 +1079,7 @@ jobs:
               }
               .top-left-grp, .top-right-grp { pointer-events: auto; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
               .prof-card { display: flex; align-items: center; gap: 8px; padding: 5px 10px 5px 6px; border-radius: 14px; cursor: pointer; }
-                            .lvl-badge {
+              .lvl-badge {
                 position: relative; overflow: hidden;
                 width: 34px; height: 34px; border-radius: 10px;
                 background: linear-gradient(180deg, #42c6ff, #0c4894);
@@ -993,7 +1093,6 @@ jobs:
                 45%, 100% { transform: translateX(260%) skewX(-24deg); }
               }
 
-              /* TOP #1: Ultra Glossy Unique Live RGB */
               @keyframes lvlTop1Flow {
                 0%   { background-position: 0% 50%; border-color: #fff8b8; }
                 25%  { background-position: 50% 100%; border-color: #aef8ff; }
@@ -1031,7 +1130,6 @@ jobs:
                 }
               }
 
-              /* TOP #2: Medium Glossy Cyan-Violet Shimmer */
               @keyframes lvlTop2Flow {
                 0%   { background-position: 0% 50%; border-color: #d6fcff; }
                 50%  { background-position: 100% 50%; border-color: #c4a6ff; }
@@ -1054,7 +1152,6 @@ jobs:
                 }
               }
 
-              /* TOP #3: Subtle Glossy Crimson-Gold Glow */
               @keyframes lvlTop3Flow {
                 0%   { background-position: 0% 50%; border-color: #ffd0c2; }
                 50%  { background-position: 100% 50%; border-color: #ffe28a; }
@@ -1359,6 +1456,7 @@ jobs:
                   </div>
                   <button class="icon-sq wz-panel" id="btnOpenCal" type="button" title="Play Calendar">📅</button>
                   <button class="net-pill" id="btnNetToggle" type="button">🟢 ONLINE</button>
+                  <button class="net-pill" id="btnGoogleLobby" type="button" style="border-color:#8ab4f8;background:rgba(16,40,82,0.95);color:#fff;">G Sign in</button>
                 </div>
                 <div class="top-right-grp">
                   <div class="curr-pill wz-panel" id="btnEnergyPill"><span>⚡</span><span id="lbEnergy">65/20</span></div>
@@ -1522,10 +1620,9 @@ jobs:
                     <button class="chip" type="button" data-wlm="time">⏱️ Time Mode</button>
                     <button class="chip" type="button" data-wlm="treasure">💰 Treasure Hunter</button>
                   </div>
-                                    <div style="font-size:10px;color:#ffe259;font-weight:800;margin-bottom:8px;">
+                  <div style="font-size:10px;color:#ffe259;font-weight:800;margin-bottom:8px;">
                     🏆 World Top 50 Real Players • Top 1–10 unlock unique glossy glowing live profile badges!
                   </div>
-
                   <div id="worldList"></div>
                 </div>
               </div>
@@ -1644,7 +1741,6 @@ jobs:
                 </div>
               </div>
             </div>
-
             <script>
               (() => {
                 'use strict';
@@ -1717,7 +1813,7 @@ jobs:
                   { id: 'gold',    name: 'Golden Grill',  cost: 1200, desc: 'Shiny gold teeth smile' }
                 ];
 
-                                const EXPRESSIONS = [
+                const EXPRESSIONS = [
                   { id: 'em_pink_cheeky',  text: 'Cheeky Pink',   tier: 'normal',  curr: 'free', cost: 0,     glow: '' },
                   { id: 'em_angry_sweat',  text: 'Angry Sweat',   tier: 'normal',  curr: 'free', cost: 0,     glow: '' },
                   { id: 'em_sunny_grin',   text: 'Sunny Grin',    tier: 'normal',  curr: 'free', cost: 0,     glow: '' },
@@ -2136,7 +2232,6 @@ jobs:
                   c.restore();
                 }
 
-
                 const FOOD_VARIETIES = [
                   { id: 'mixed',   name: 'Yummy Mix',     icon: '🍔', items: ['🍔','🍕','🍩','🍎','🍉','🍓','🧁','🍗','🧀','🍪','🍇','🍌'] },
                   { id: 'sweets',  name: 'Candy & Cake',  icon: '🧁', items: ['🍩','🧁','🍰','🍭','🍬','🍫','🍪','🍦','🥧','🍮'] },
@@ -2283,17 +2378,65 @@ jobs:
                 const saveProfile = () => { try { localStorage.setItem('serpent_wild_v26_wz', JSON.stringify(profile)); } catch (e) {} };
                 saveProfile();
 
-                               const FIREBASE_DB_URL = 'https://serpent-wild-top-default-rtdb.asia-southeast1.firebasedatabase.app';
-                                const nativeDevId = (() => {
+                const FIREBASE_DB_URL = 'https://serpent-wild-top-default-rtdb.asia-southeast1.firebasedatabase.app';
+
+                const nativeDevId = (() => {
                   try { return (window.DeviceBridge && window.DeviceBridge.getDeviceId) ? String(window.DeviceBridge.getDeviceId() || '').replace(/[^a-zA-Z0-9_-]/g, '') : ''; } catch (e) { return ''; }
                 })();
-                if (nativeDevId) {
+
+                const nativeGoogleUser = (() => {
+                  try {
+                    const raw = (window.GoogleAuthBridge && window.GoogleAuthBridge.getSignedInUser) ? window.GoogleAuthBridge.getSignedInUser() : '';
+                    return raw ? JSON.parse(raw) : null;
+                  } catch (e) { return null; }
+                })();
+
+                if (nativeGoogleUser && nativeGoogleUser.id) {
+                  profile.googleUid = String(nativeGoogleUser.id).replace(/[^a-zA-Z0-9_-]/g, '');
+                  profile.googleEmail = nativeGoogleUser.email || profile.googleEmail || '';
+                  profile.playerId = 'g_' + profile.googleUid;
+                  saveProfile();
+                } else if (profile.googleUid) {
+                  profile.playerId = 'g_' + profile.googleUid;
+                  saveProfile();
+                } else if (nativeDevId) {
                   profile.playerId = 'dev_' + nativeDevId;
                   saveProfile();
                 } else if (!profile.playerId) {
                   profile.playerId = 'p_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
                   saveProfile();
                 }
+
+                function showAuthToast(msg) {
+                  let el = document.getElementById('authToast');
+                  if (!el) {
+                    el = document.createElement('div');
+                    el.id = 'authToast';
+                    el.style.cssText = 'position:fixed;bottom:72px;left:50%;transform:translateX(-50%);z-index:200;padding:8px 16px;border-radius:999px;background:rgba(10,26,56,0.96);border:2px solid #8ab4f8;color:#fff;font-size:11.5px;font-weight:900;box-shadow:0 6px 18px rgba(0,0,0,0.55);pointer-events:none;transition:opacity 0.25s;';
+                    document.body.appendChild(el);
+                  }
+                  el.textContent = msg;
+                  el.style.opacity = '1';
+                  clearTimeout(el.__t);
+                  el.__t = setTimeout(() => { el.style.opacity = '0'; }, 3200);
+                }
+
+                function updateGoogleUi() {
+                  const lb = document.getElementById('btnGoogleLobby');
+                  if (lb) {
+                    if (profile.googleUid) {
+                      lb.textContent = '✅ Gmail Saved';
+                      lb.style.borderColor = '#69f03a';
+                      lb.style.background = 'rgba(15, 74, 24, 0.94)';
+                    } else {
+                      lb.textContent = 'G Sign in';
+                      lb.style.borderColor = '#8ab4f8';
+                      lb.style.background = 'rgba(16, 40, 82, 0.95)';
+                    }
+                  }
+                }
+
+                const mergeUnique = (a, b) => Array.from(new Set([...(Array.isArray(a) ? a : []), ...(Array.isArray(b) ? b : [])]));
 
                 let _cloudReady = false, _lastCloudSnap = '';
                 async function syncProfileToCloud() {
@@ -2320,6 +2463,8 @@ jobs:
                       if (isFreshInstall || cloudBest >= localBest) {
                         profile = {
                           ...profile, ...cd, playerId: profile.playerId,
+                          googleUid: profile.googleUid || cd.googleUid || '',
+                          googleEmail: profile.googleEmail || cd.googleEmail || '',
                           potions: { ...(profile.potions || {}), ...(cd.potions || {}) },
                           bestScores: { ...(profile.bestScores || {}), ...(cd.bestScores || {}) },
                           stats: { ...(profile.stats || {}), ...(cd.stats || {}) },
@@ -2333,11 +2478,119 @@ jobs:
                   } catch (e) {}
                   _lastCloudSnap = JSON.stringify(profile);
                   _cloudReady = true;
+                  updateGoogleUi();
                 }
+
+                window.startGoogleSignIn = () => {
+                  if (window.GoogleAuthBridge && window.GoogleAuthBridge.signIn) {
+                    window.GoogleAuthBridge.signIn();
+                  } else {
+                    showAuthToast('Google Sign-In works in Android APK');
+                  }
+                };
+
+                window.startGoogleSignOut = async () => {
+                  await syncProfileToCloud();
+                  if (window.GoogleAuthBridge && window.GoogleAuthBridge.signOut) {
+                    window.GoogleAuthBridge.signOut();
+                  } else {
+                    window.onGoogleSignOut();
+                  }
+                };
+
+                window.onGoogleSignInSuccess = async (user) => {
+                  if (!user || !user.id) return;
+                  _cloudReady = false;
+                  const cleanUid = String(user.id).replace(/[^a-zA-Z0-9_-]/g, '');
+                  const newPlayerId = 'g_' + cleanUid;
+                  try {
+                    const r = await fetch(`${FIREBASE_DB_URL}/players/${newPlayerId}.json`);
+                    const cd = r.ok ? await r.json() : null;
+                    const localBest = Math.max(0, ...Object.values(profile.bestScores || {}).map(Number));
+                    const isFresh = (profile.stats?.games || 0) === 0 && localBest === 0;
+                    if (cd && typeof cd === 'object') {
+                      if (isFresh) {
+                        profile = {
+                          ...JSON.parse(JSON.stringify(DEFAULT_PROFILE)), ...cd,
+                          potions: { ...DEFAULT_PROFILE.potions, ...(cd.potions || {}) },
+                          bestScores: { ...DEFAULT_PROFILE.bestScores, ...(cd.bestScores || {}) },
+                          stats: { ...DEFAULT_PROFILE.stats, ...(cd.stats || {}) },
+                          settings: { ...DEFAULT_PROFILE.settings, ...(cd.settings || {}) }
+                        };
+                      } else {
+                        profile = {
+                          ...profile, ...cd,
+                          coins: Math.max(profile.coins || 0, cd.coins || 0),
+                          diamonds: Math.max(profile.diamonds || 0, cd.diamonds || 0),
+                          level: Math.max(profile.level || 1, cd.level || 1),
+                          ownedSkins: mergeUnique(profile.ownedSkins, cd.ownedSkins),
+                          ownedEyes: mergeUnique(profile.ownedEyes, cd.ownedEyes),
+                          ownedLips: mergeUnique(profile.ownedLips, cd.ownedLips),
+                          ownedExprs: mergeUnique(profile.ownedExprs, cd.ownedExprs),
+                          ownedFloors: mergeUnique(profile.ownedFloors, cd.ownedFloors),
+                          claimedAch: mergeUnique(profile.claimedAch, cd.claimedAch),
+                          playedDates: mergeUnique(profile.playedDates, cd.playedDates),
+                          bestScores: {
+                            infinity: Math.max(profile.bestScores?.infinity || 0, cd.bestScores?.infinity || 0),
+                            time: Math.max(profile.bestScores?.time || 0, cd.bestScores?.time || 0),
+                            treasure: Math.max(profile.bestScores?.treasure || 0, cd.bestScores?.treasure || 0)
+                          },
+                          stats: {
+                            games: Math.max(profile.stats?.games || 0, cd.stats?.games || 0),
+                            kills: Math.max(profile.stats?.kills || 0, cd.stats?.kills || 0),
+                            bestTimeSec: Math.max(profile.stats?.bestTimeSec || 0, cd.stats?.bestTimeSec || 0),
+                            totalTimeSec: Math.max(profile.stats?.totalTimeSec || 0, cd.stats?.totalTimeSec || 0)
+                          },
+                          potions: { ...(profile.potions || {}), ...(cd.potions || {}) },
+                          settings: { ...(profile.settings || {}), ...(cd.settings || {}) }
+                        };
+                      }
+                    }
+                  } catch (e) {}
+                  profile.googleUid = cleanUid;
+                  profile.googleEmail = user.email || '';
+                  profile.playerId = newPlayerId;
+                  if (profile.name === 'ApexHunter' && user.name) profile.name = String(user.name).slice(0, 15);
+                  saveProfile();
+                  _lastCloudSnap = '';
+                  _cloudReady = true;
+                  await syncProfileToCloud();
+                  if (typeof syncAllScoresAndName === 'function') syncAllScoresAndName();
+                  if (typeof refreshLobbyUI === 'function') refreshLobbyUI();
+                  if (typeof spawnLobbyWorm === 'function') spawnLobbyWorm();
+                  if (document.getElementById('profileModal')?.classList.contains('open') && typeof renderProfileModal === 'function') renderProfileModal();
+                  showAuthToast(`✅ Account Linked: ${profile.googleEmail || profile.name}`);
+                };
+
+                window.onGoogleSignInFailed = (msg) => {
+                  if (msg && msg !== 'Cancelled') showAuthToast(`⚠️ ${msg}`);
+                };
+
+                window.onGoogleSignOut = () => {
+                  profile.googleUid = '';
+                  profile.googleEmail = '';
+                  profile.playerId = nativeDevId ? ('dev_' + nativeDevId) : ('p_' + Date.now().toString(36));
+                  saveProfile();
+                  _lastCloudSnap = '';
+                  if (typeof refreshLobbyUI === 'function') refreshLobbyUI();
+                  if (document.getElementById('profileModal')?.classList.contains('open') && typeof renderProfileModal === 'function') renderProfileModal();
+                  showAuthToast('Signed out from Google');
+                };
+
+                document.getElementById('btnGoogleLobby').addEventListener('click', () => {
+                  Sound.play('click');
+                  if (profile.googleUid) {
+                    profTab = 'dossier';
+                    renderProfileModal();
+                    document.getElementById('profileModal').classList.add('open');
+                  } else {
+                    window.startGoogleSignIn();
+                  }
+                });
+
                 restoreProfileFromCloud();
                 setInterval(syncProfileToCloud, 4000);
                 document.addEventListener('visibilitychange', () => { if (document.hidden) syncProfileToCloud(); });
-
 
                 const escHtml = (s) => String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
                 const getPlayerFlag = () => {
@@ -2497,7 +2750,6 @@ jobs:
                     if (typeof screenState === 'undefined' || screenState !== 'playing') fetchWorldLeaderboard();
                   }, 15000);
                 }, 1200);
- 
 
                 const rand = (a, b) => a + Math.random() * (b - a);
                 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -2696,7 +2948,7 @@ jobs:
                   }
                   floorPattern = ctx.createPattern(t, 'repeat');
                 }
-                             function getSkinAura(skin) {
+                function getSkinAura(skin) {
                   if (!skin || skin.curr === 'free' || skin.price <= 0) {
                     return { level: 0, power: 0, radMul: 0, alpha: 0, rim: 0, orbs: 0, ring: false, col: '' };
                   }
@@ -3339,7 +3591,8 @@ jobs:
                   }
                   drawSkinAccessory(c, skin, hr, 'front');
                 }
-                 function drawBodySegment(c, skin, x, y, sr, idx, ang) {
+
+                function drawBodySegment(c, skin, x, y, sr, idx, ang) {
                   const bt = skin.bodyType;
                   const t = globalTime;
                   const maxQ = isMaxGfx();
@@ -3712,20 +3965,13 @@ jobs:
                   drawWormHead(tc, skin, profile.eye, profile.lip, 11.5, 0, 0, 0);
                   tc.restore();
                 }
-  
 
-
-                 
-                     
-                    
-
-                  
                 class Worm {
                   constructor({ name, skin, eye, lip, x, y, isPlayer = false, score = 100, isChamp = false, scale = 1.0 }) {
                     this.name = name; this.skin = skin; this.eye = eye || 'cute'; this.lip = lip || 'smile';
                     this.isPlayer = isPlayer; this.isChamp = isChamp; this.scale = scale; this.alive = true;
                     this.x = x; this.y = y; this.angle = rand(0, Math.PI * 2); this.targetAngle = this.angle;
-                    this.score = score; this.visualScore = score; 
+                    this.score = score; this.visualScore = score;
                     this.kills = 0; this.boosting = false;
                     this.spawnShield = isPlayer ? 4.0 : 1.5;
                     this.mouthOpen = 0; this.blinkTimer = rand(1.5, 4.5); this.blinkAmt = 0;
@@ -3736,7 +3982,7 @@ jobs:
                     for (let i = 0; i < cnt; i++) this.segments.push({ x: x - Math.cos(this.angle) * i * 4.5, y: y - Math.sin(this.angle) * i * 4.5 });
                   }
 
-                              getRadius() {
+                  getRadius() {
                     const s = Math.max(0, this.visualScore != null ? this.visualScore : this.score);
                     let r;
                     if (s <= 100000) {
@@ -3748,7 +3994,8 @@ jobs:
                     }
                     return clamp(r, 9, 62.5) * this.scale;
                   }
-                                    getSegCount() {
+
+                  getSegCount() {
                     const s = Math.max(0, this.visualScore != null ? this.visualScore : this.score);
                     const rBase = this.getRadius() / (this.scale || 1);
                     let targetLenPx;
@@ -3763,11 +4010,9 @@ jobs:
                     return clamp(Math.round((targetLenPx - 2 * rBase) / spc) + 1, 14, 650);
                   }
 
-                        
-
                   say(txt) { this.bubbleText = txt; this.bubbleTimer = 2.6; }
 
-                                     updateAI(dt) {
+                  updateAI(dt) {
                     this.aiTimer -= dt;
                     this.aiReact = (this.aiReact || 0) - dt;
                     if (this.aiBoost > 0) this.aiBoost -= dt;
@@ -3856,8 +4101,6 @@ jobs:
                     }
                     this.boosting = this.aiBoost > 0 && this.score > 160;
                   }
-                
- 
 
                   update(dt) {
                     if (!this.alive) return;
@@ -3890,7 +4133,7 @@ jobs:
                     this.x += Math.cos(this.angle) * spd * dt;
                     this.y += Math.sin(this.angle) * spd * dt;
 
-                                        this.visualScore = lerp(this.visualScore, this.score, clamp(dt * 2.0, 0, 1));
+                    this.visualScore = lerp(this.visualScore, this.score, clamp(dt * 2.0, 0, 1));
                     const r = this.getRadius();
                     if (dist(this.x, this.y, WORLD_CENTER, WORLD_CENTER) + r > ARENA_RADIUS) {
                       killWorm(this, null, 'Arena Wall'); return;
@@ -3906,7 +4149,6 @@ jobs:
                     const tLen = this.getSegCount();
                     if (this.segments.length < tLen) { const tl = this.segments[this.segments.length - 1]; this.segments.push({ x: tl.x, y: tl.y }); }
                     else if (this.segments.length > tLen && this.segments.length > 14) this.segments.pop();
-
                   }
 
                   draw(c, showUi = true, viewX = 0, viewY = 0) {
@@ -3971,10 +4213,9 @@ jobs:
                       }
                       c.restore();
 
-                                            if (this.bubbleTimer > 0 && this.bubbleText) {
+                      if (this.bubbleTimer > 0 && this.bubbleText) {
                         drawEmojiBubble(c, this.x, this.y, r, this.bubbleText, this === lobbyWorm, this === wsPreviewWorm);
                       }
-
 
                       if (showUi && profile.settings.showNames) {
                         c.font = '900 10.5px sans-serif'; c.textAlign = 'center';
@@ -4027,7 +4268,7 @@ jobs:
                 function killWorm(victim, killer, reason) {
                   if (!victim.alive) return;
                   victim.alive = false;
-                                    const deadItems = ['🥩', '🥦', '🍗', '🥕', '🍖', '🍅', '🥓', '🌽', '🥩', '🌶️', '🍗', '🥒', '🍖', '🍆'];
+                  const deadItems = ['🥩', '🥦', '🍗', '🥕', '🍖', '🍅', '🥓', '🌽', '🥩', '🌶️', '🍗', '🥒', '🍖', '🍆'];
                   const dropPts = [];
                   const stepPx = 42;
                   if (victim.segments.length > 0) {
@@ -4187,7 +4428,7 @@ jobs:
                   profile.stats.totalTimeSec = (profile.stats.totalTimeSec || 0) + elapsedSec;
                   if (elapsedSec > (profile.stats.bestTimeSec || 0)) profile.stats.bestTimeSec = elapsedSec;
                   if (finalScore > (profile.bestScores[profile.mode] || 0)) profile.bestScores[profile.mode] = finalScore;
-                                    saveProfile();
+                  saveProfile();
                   document.getElementById('resTitle').textContent = profile.mode === 'time' && matchTimer <= 0 ? 'TIME UP!' : 'GAME OVER!';
                   document.getElementById('resSub').textContent = subText;
                   document.getElementById('resScore').textContent = finalScore.toLocaleString();
@@ -4280,7 +4521,6 @@ jobs:
                   if (player && player.alive) player.lookAng = lerp(player.lookAng, nearFoodAng, dt * 10);
                   if (foods.length < 1150) { spawnFood(8, true); spawnFood(12, false); }
 
-
                   for (let i = potions.length - 1; i >= 0; i--) {
                     const p = potions[i]; p.life -= dt;
                     if (p.life <= 0) { potions.splice(i, 1); continue; }
@@ -4313,8 +4553,9 @@ jobs:
                   if (player && player.alive) {
                     camera.x = lerp(camera.x, player.x, clamp(dt * 8, 0, 1));
                     camera.y = lerp(camera.y, player.y, clamp(dt * 8, 0, 1));
-                    const sizeZoom = clamp(1.14 - Math.pow(player.score, 0.21) * 0.068, 0.48, 1.08);
-                    const targetZoom = (buffs.zoom || 0) > 0 ? Math.max(0.38, sizeZoom - 0.16) : sizeZoom;
+                                     const sizeZoom = 0.96;
+                 const targetZoom = (buffs.zoom || 0) > 0 ? 0.78 : sizeZoom;
+
                     camera.zoom = lerp(camera.zoom, targetZoom, clamp(dt * 3.5, 0, 1));
                   }
 
@@ -4488,7 +4729,7 @@ jobs:
                       }
                       ctx.fillStyle = f.col; ctx.beginPath(); ctx.arc(f.x, f.y, fr, 0, Math.PI * 2); ctx.fill();
                       ctx.fillStyle = 'rgba(255,255,255,0.68)'; ctx.beginPath(); ctx.arc(f.x - fr * 0.26, f.y - fr * 0.28, fr * 0.36, 0, Math.PI * 2); ctx.fill();
-                                        } else if (f.killDrop) {
+                    } else if (f.killDrop) {
                       const wave = Math.sin(globalTime * 6.5 - (f.phase || 0));
                       const pulse = 1 + 0.12 * wave;
                       const gRad = f.r * 1.85 * pulse;
@@ -4502,7 +4743,6 @@ jobs:
                       const sp = getFoodSprite(f.icon, f.r, f.big);
                       ctx.drawImage(sp, f.x - sp.width / 2, f.y - sp.height / 2);
                     }
-
                   }
 
                   for (const p of potions) {
@@ -4543,8 +4783,7 @@ jobs:
                     if (!near(ep.x, ep.y)) continue;
                     ctx.save();
                     ctx.globalAlpha = clamp(ep.life / ep.maxLife, 0, 1);
-                                        drawCustomEmoji(ctx, getEmojiDef(ep.emoji), ep.x, ep.y, 26, globalTime);
-
+                    drawCustomEmoji(ctx, getEmojiDef(ep.emoji), ep.x, ep.y, 26, globalTime);
                     ctx.restore();
                   }
 
@@ -4575,6 +4814,7 @@ jobs:
 
                 function refreshLobbyUI() {
                   applyLanguage();
+                  if (typeof updateGoogleUi === 'function') updateGoogleUi();
                   document.getElementById('lbLvl').textContent = profile.level;
                   document.getElementById('lbName').textContent = profile.name;
                   document.getElementById('lbEnergy').textContent = `${profile.energy}/20`;
@@ -4588,12 +4828,11 @@ jobs:
                   const xpNeed = profile.level * 1000;
                   document.getElementById('lbXpBar').style.width = `${Math.min(100, ((profile.xp || 0) / xpNeed) * 100)}%`;
 
-                                    const bestAll = Math.max(profile.bestScores.infinity || 0, profile.bestScores.time || 0, profile.bestScores.treasure || 0);
+                  const bestAll = Math.max(profile.bestScores.infinity || 0, profile.bestScores.time || 0, profile.bestScores.treasure || 0);
                   const myRank = getMyWorldRank(profile.mode);
                   const badgeHtml = getRankBadgeHtml(myRank);
                   document.getElementById('lbChampWrap').innerHTML = `Best: ${bestAll.toLocaleString()}${badgeHtml ? ' ' + badgeHtml : ''}`;
                   applyProfileRankGlow(document.getElementById('btnProfileOpen'), myRank);
-
 
                   const netBtn = document.getElementById('btnNetToggle');
                   const hasNet = window.AndroidAudio ? window.AndroidAudio.isOnline() : navigator.onLine;
@@ -4824,7 +5063,7 @@ jobs:
                   const body = document.getElementById('profileBody');
                   const bestAll = Math.max(profile.bestScores.infinity || 0, profile.bestScores.time || 0, profile.bestScores.treasure || 0);
 
-                                    if (profTab === 'dossier') {
+                  if (profTab === 'dossier') {
                     const myRank = getMyWorldRank(profile.mode);
                     const rankCls = (myRank >= 1 && myRank <= 10) ? ` prof-rank-${myRank}` : '';
                     body.innerHTML = `
@@ -4835,6 +5074,10 @@ jobs:
                           <input id="profNameIn" class="text-input" maxlength="15" value="${escHtml(profile.name)}" style="text-align:center;" />
                           <div id="dossierBadgeWrap" style="margin-top:4px;">${getRankBadgeHtml(myRank)}</div>
                           <div style="font-size:10px;color:#b8d8f8;">XP: ${profile.xp || 0} / ${profile.level * 1000}</div>
+                          <div style="margin-top:6px;width:100%;padding:6px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(138,180,248,0.35);">
+                            <div style="font-size:9px;color:#8ab4f8;font-weight:900;word-break:break-all;">${profile.googleUid ? '✅ ' + escHtml(profile.googleEmail || 'Google Linked') : '☁️ Save Account on Gmail'}</div>
+                            <button class="${profile.googleUid ? 'btn-ghost' : 'btn-blue'}" id="btnProfGoogle" type="button" style="width:100%;margin-top:5px;padding:6px;font-size:9.5px;">${profile.googleUid ? 'Sign Out / Switch Gmail' : 'G Sign in with Google'}</button>
+                          </div>
                           <button class="btn-ghost" id="btnResetData" type="button" style="font-size:9.5px;color:#ff8594;border-color:#ff4757;margin-top:6px;">🗑️ Reset Data</button>
                         </div>
                         <div class="dossier-stats">
@@ -4851,6 +5094,11 @@ jobs:
                       profile.name = e.target.value.trim() || 'ApexHunter'; saveProfile(); refreshLobbyUI();
                       clearTimeout(nameSyncTimer);
                       nameSyncTimer = setTimeout(syncAllScoresAndName, 700);
+                    });
+
+                    document.getElementById('btnProfGoogle').addEventListener('click', () => {
+                      Sound.play('click');
+                      if (profile.googleUid) window.startGoogleSignOut(); else window.startGoogleSignIn();
                     });
 
                     document.getElementById('btnResetData').addEventListener('click', () => {
@@ -4902,7 +5150,7 @@ jobs:
                     document.getElementById('saMax').onclick = () => { profile.settings.gfx = 'max'; saveProfile(); resizeCanvas(); buildFloorPattern(profile.floor); renderSettingsModal(); Sound.play('click'); };
                     document.getElementById('saNames').onclick = () => { profile.settings.showNames = !profile.settings.showNames; saveProfile(); renderSettingsModal(); Sound.play('click'); };
                   } else if (setTab === 'controls') {
-                                        body.innerHTML = `
+                    body.innerHTML = `
                       <div class="setting-row"><div><div style="font-size:12px;font-weight:800;">Custom HUD Layout</div><div style="font-size:9.5px;color:#b8d8f8;">Drag, resize &amp; set opacity of Boost, Potions, Map &amp; Leaderboard</div></div><button class="btn-gold" id="scHudEdit" type="button" style="padding:6px 12px;font-size:10.5px;">🎛️ CUSTOMIZE HUD</button></div>
                       <div class="setting-row"><div><div style="font-size:12px;font-weight:800;">Joystick Mode</div></div><div style="display:flex;gap:5px;"><button class="chip ${profile.settings.joy === 'floating' ? 'selected' : ''}" id="scFloat">FLOATING</button><button class="chip ${profile.settings.joy === 'fixed' ? 'selected' : ''}" id="scFix">FIXED</button></div></div>
                       <div class="setting-row"><div><div style="font-size:12px;font-weight:800;">Joystick Size</div></div><div style="display:flex;gap:5px;"><button class="chip ${profile.settings.joySize === 'small' ? 'selected' : ''}" id="scSm">SMALL</button><button class="chip ${profile.settings.joySize === 'normal' ? 'selected' : ''}" id="scNm">NORMAL</button><button class="chip ${profile.settings.joySize === 'large' ? 'selected' : ''}" id="scLg">LARGE</button></div></div>`;
@@ -5008,7 +5256,7 @@ jobs:
                     });
                     pane.appendChild(lGrid);
 
-                                        const xHdr = document.createElement('div'); xHdr.className = 'sec-lbl'; xHdr.textContent = '😎 20 Unique Realistic Emojis (10 Free • 5 Glow • 5 Live)';
+                    const xHdr = document.createElement('div'); xHdr.className = 'sec-lbl'; xHdr.textContent = '😎 20 Unique Realistic Emojis (10 Free • 5 Glow • 5 Live)';
                     pane.appendChild(xHdr);
                     const xGrid = document.createElement('div'); xGrid.className = 'ws-grid';
                     const activeExprId = (EXPRESSIONS.find(e => e.id === profile.expr) || EXPRESSIONS[0]).id;
@@ -5043,7 +5291,6 @@ jobs:
                       xGrid.appendChild(c);
                     });
                     pane.appendChild(xGrid);
-
                   } else if (wsTab === 'potions') {
                     pane.innerHTML = '<div class="sec-lbl">🧪 Battle Potions</div>';
                     const grid = document.createElement('div'); grid.className = 'card-grid';
@@ -5147,7 +5394,7 @@ jobs:
                   document.getElementById('calendarModal').classList.add('open'); Sound.play('click');
                 }
 
-                                let wlMode = 'infinity';
+                let wlMode = 'infinity';
                 function renderWorldLeaderboard(shouldFetch = true) {
                   document.querySelectorAll('[data-wlm]').forEach(b => b.classList.toggle('selected', b.dataset.wlm === wlMode));
                   if (shouldFetch) fetchWorldLeaderboard();
@@ -5168,7 +5415,6 @@ jobs:
                     return `<div class="wl-row${rowCls}"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><strong style="min-width:26px;color:${rankCol};">#${rank}</strong><span>${e.country || '🌍'}</span><strong style="font-size:12px;">${escHtml(e.name)}${isMe ? ' (YOU)' : ''}</strong>${badge}</div><strong style="color:#ffe259;font-size:12.5px;">${e.score.toLocaleString()}</strong></div>`;
                   }).join('');
                 }
-
 
                 const toggleMute = () => { profile.settings.muted = !profile.settings.muted; saveProfile(); Sound.updateVol(); refreshLobbyUI(); Sound.play('click'); };
                 document.getElementById('btnLobbyAudio').addEventListener('click', toggleMute);
@@ -5507,6 +5753,10 @@ jobs:
           fi
           SIG_SHA256=$(keytool -list -v -keystore app/serpent-release.jks -alias "$KEY_ALIAS" -storepass "$STORE_PASS" | grep "SHA256:" | head -n 1 | awk '{print $2}' | tr -d ':')
           sed -i "s/__EXPECTED_SIG_SHA256__/$SIG_SHA256/g" app/src/main/java/com/apexwild/serpent/MainActivity.kt
+          SIG_SHA1=$(keytool -list -v -keystore app/serpent-release.jks -alias "$KEY_ALIAS" -storepass "$STORE_PASS" | grep "SHA1:" | head -n 1 | awk '{print $2}')
+          echo "=========================================="
+          echo "FIREBASE_SHA1: $SIG_SHA1"
+          echo "=========================================="
 
       - name: Build Play Store Signed AAB & Release APK
         env:
